@@ -1,23 +1,39 @@
 import { Navigation } from './components/Navigation';
-import { Hero } from './components/Hero';
-import { ProductCategories } from './components/ProductCategories';
-import { SandalsSection } from './components/SandalsSection';
-import { FeaturedCollection } from './components/FeaturedCollection';
-import { BrandStory } from './components/BrandStory';
-import { Newsletter } from './components/Newsletter';
 import { Footer } from './components/Footer';
+import { RouterProvider, useRouter } from './context/RouterContext';
+import { HomePage } from './pages/HomePage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
+import { CategoryPage } from './pages/CategoryPage';
 
-export default function App() {
+function AppContent() {
+  const { currentPage } = useRouter();
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage />;
+      case 'product':
+        return <ProductDetailPage />;
+      case 'category':
+        return <CategoryPage />;
+      default:
+        return <HomePage />;
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Navigation />
-      <Hero />
-      <ProductCategories />
-      <SandalsSection />
-      <FeaturedCollection />
-      <BrandStory />
-      <Newsletter />
+      {renderPage()}
       <Footer />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <RouterProvider>
+      <AppContent />
+    </RouterProvider>
   );
 }

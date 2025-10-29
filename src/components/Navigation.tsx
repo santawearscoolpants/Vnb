@@ -2,9 +2,11 @@ import { motion } from 'motion/react';
 import { ShoppingBag, Menu, Search, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { useRouter } from '../context/RouterContext';
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { navigateTo } = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +44,7 @@ export function Navigation() {
             <motion.div
               whileHover={{ scale: 1.05 }}
               className="cursor-pointer"
+              onClick={() => navigateTo('home')}
             >
               <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
             </motion.div>
@@ -51,7 +54,7 @@ export function Navigation() {
           {/* Right - Contact & Icons */}
           <div className="flex items-center justify-end gap-4 md:gap-6">
             <div className="hidden md:block">
-              <NavLink href="#contact">Contact Us</NavLink>
+              <NavLink onClick={() => navigateTo('home')}>Contact Us</NavLink>
             </div>
             <NavIcon icon={User} label="Account" />
             <NavIcon icon={ShoppingBag} label="Cart" badge={2} />
@@ -62,10 +65,10 @@ export function Navigation() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
   return (
-    <motion.a
-      href={href}
+    <motion.button
+      onClick={onClick}
       whileHover={{ y: -2 }}
       className="relative text-sm text-white transition-colors hover:text-white/80"
     >
@@ -75,7 +78,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
         whileHover={{ scaleX: 1 }}
         className="absolute bottom-0 left-0 h-px w-full origin-left bg-white"
       />
-    </motion.a>
+    </motion.button>
   );
 }
 

@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Heart } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from '../context/RouterContext';
 
 const sandals = [
   {
@@ -31,6 +32,8 @@ const sandals = [
 ];
 
 export function SandalsSection() {
+  const { navigateTo } = useRouter();
+
   return (
     <section className="bg-white px-4 py-24 md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -49,7 +52,7 @@ export function SandalsSection() {
         {/* Product Grid */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {sandals.map((sandal, index) => (
-            <SandalCard key={sandal.id} sandal={sandal} index={index} />
+            <SandalCard key={sandal.id} sandal={sandal} index={index} navigateTo={navigateTo} />
           ))}
         </div>
 
@@ -73,7 +76,15 @@ export function SandalsSection() {
   );
 }
 
-function SandalCard({ sandal, index }: { sandal: typeof sandals[0]; index: number }) {
+function SandalCard({
+  sandal,
+  index,
+  navigateTo
+}: {
+  sandal: typeof sandals[0];
+  index: number;
+  navigateTo: any;
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -83,7 +94,8 @@ function SandalCard({ sandal, index }: { sandal: typeof sandals[0]; index: numbe
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group"
+      className="group cursor-pointer"
+      onClick={() => navigateTo('product', { productId: sandal.id.toString() })}
     >
       {/* Image Container */}
       <div 
@@ -93,7 +105,10 @@ function SandalCard({ sandal, index }: { sandal: typeof sandals[0]; index: numbe
       >
         {/* Favorite Button */}
         <button
-          onClick={() => setIsFavorited(!isFavorited)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorited(!isFavorited);
+          }}
           className="absolute right-4 top-4 z-10 rounded-full border border-black/20 bg-white/80 p-2 backdrop-blur-sm transition-all hover:bg-white"
         >
           <Heart
@@ -120,7 +135,7 @@ function SandalCard({ sandal, index }: { sandal: typeof sandals[0]; index: numbe
       {/* Product Info Below Image */}
       <div className="mt-4 text-left">
         <h4 className="mb-1 text-black">{sandal.name}</h4>
-        <p className="text-zinc-600">{sandal.price}</p>
+        <p className="text-xs text-zinc-600">{sandal.price}</p>
       </div>
     </motion.div>
   );
