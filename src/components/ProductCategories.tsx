@@ -77,47 +77,30 @@ function CategoryCard({ category, index }: { category: typeof categories[0]; ind
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="group relative h-[400px] cursor-pointer overflow-hidden rounded-sm bg-black"
+      className="group cursor-pointer"
     >
-      {/* Image */}
-      <motion.div
-        animate={{ scale: isHovered ? 1.1 : 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="h-full w-full"
+      {/* Image Container */}
+      <div 
+        className="relative h-[400px] overflow-hidden bg-zinc-100"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <ImageWithFallback
-          src={category.image}
-          alt={category.name}
-          className="h-full w-full object-cover opacity-80"
-        />
-      </motion.div>
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-8">
         <motion.div
-          initial={{ opacity: 0.7 }}
-          animate={{ opacity: isHovered ? 1 : 0.7 }}
-          transition={{ duration: 0.3 }}
+          animate={{ scale: isHovered ? 1.05 : 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="h-full w-full"
         >
-          <p className="mb-2 text-sm tracking-[0.2em] text-white/80">
-            {category.description}
-          </p>
-          <h3 className="mb-4 text-white">{category.name}</h3>
+          <ImageWithFallback
+            src={category.image}
+            alt={category.name}
+            className="h-full w-full object-cover"
+          />
         </motion.div>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : -10 }}
-          transition={{ duration: 0.3 }}
-          className="text-sm text-white"
-        >
-          Shop Now →
-        </motion.div>
+      {/* Text Below Image */}
+      <div className="mt-4 text-center">
+        <h3 className="text-black">{category.name}</h3>
       </div>
     </motion.div>
   );
