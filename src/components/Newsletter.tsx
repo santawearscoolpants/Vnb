@@ -2,13 +2,14 @@ import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Newsletter signup:', email);
+    toast.success('Thank you for subscribing! Check your email for your 10% off code.');
     setEmail('');
   };
 

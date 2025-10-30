@@ -3,9 +3,11 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Button } from './ui/button';
 import { useRef } from 'react';
 import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { useRouter } from '../context/RouterContext';
 
 export function FeaturedCollection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { navigateTo } = useRouter();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start']
@@ -60,6 +62,7 @@ export function FeaturedCollection() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/90"
+                onClick={() => navigateTo('/collection')}
               >
                 View Collection
               </Button>

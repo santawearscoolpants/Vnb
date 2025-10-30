@@ -93,7 +93,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                   >
                     <span className="text-sm">{item.label}</span>
                     {item.hasSubmenu && (
-                      <ChevronRight className="h-4 w-4 text-zinc-400 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                     )}
                   </motion.button>
                 ))}

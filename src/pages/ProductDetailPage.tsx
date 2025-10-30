@@ -1,8 +1,10 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useRouter } from '../context/RouterContext';
-import { ChevronLeft, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingBag, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
 
 const productData: Record<string, any> = {
   '1': {
@@ -123,6 +125,14 @@ export function ProductDetailPage() {
     return <div>Product not found</div>;
   }
 
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
+    toast.success('Added to cart successfully!');
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Back Button */}
@@ -131,7 +141,7 @@ export function ProductDetailPage() {
           onClick={goBack}
           className="flex items-center gap-2 text-sm transition-opacity hover:opacity-60"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           Back
         </button>
       </div>
@@ -222,7 +232,10 @@ export function ProductDetailPage() {
             </div>
 
             {/* Add to Cart */}
-            <button className="flex w-full items-center justify-center gap-2 bg-black px-8 py-4 text-sm text-white transition-opacity hover:opacity-80">
+            <button
+              className="flex w-full items-center justify-center gap-2 bg-black px-8 py-4 text-sm text-white transition-opacity hover:opacity-80"
+              onClick={handleAddToCart}
+            >
               <ShoppingBag className="h-4 w-4" />
               ADD TO CART
             </button>

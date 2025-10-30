@@ -69,7 +69,7 @@ export function Navigation() {
                 <NavLink onClick={() => navigateTo('invest')}>Invest</NavLink>
               </div>
               <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
-              <NavIcon icon={ShoppingBag} label="Cart" badge={2} />
+              <NavIcon icon={ShoppingBag} label="Cart" badge={2} onClick={() => navigateTo('cart')} />
             </div>
           </div>
         </div>

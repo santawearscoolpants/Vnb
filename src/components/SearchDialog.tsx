@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from '../context/RouterContext';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface SearchDialogProps {
   isOpen: boolean;
@@ -18,10 +19,26 @@ const suggestedSearches = [
 ];
 
 const popularProducts = [
-  { name: 'Classic Leather Sandals', category: 'Sandals' },
-  { name: 'Italian Wool Suit', category: 'Suits' },
-  { name: 'Signature Eau de Parfum', category: 'Fragrances' },
-  { name: 'Diamond Cufflinks', category: 'Jewelry' }
+  { 
+    name: 'Classic Leather Sandals', 
+    category: 'Sandals',
+    image: 'https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400'
+  },
+  { 
+    name: 'Italian Wool Suit', 
+    category: 'Suits',
+    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400'
+  },
+  { 
+    name: 'Signature Eau de Parfum', 
+    category: 'Fragrances',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400'
+  },
+  { 
+    name: 'Diamond Cufflinks', 
+    category: 'Jewelry',
+    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400'
+  }
 ];
 
 export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
@@ -31,6 +48,10 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     // In a real app, this would filter and show results
+  };
+
+  const handleClear = () => {
+    setSearchQuery('');
   };
 
   const handleProductClick = (category: string) => {
@@ -71,7 +92,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                   autoFocus
                 />
                 <button
-                  onClick={onClose}
+                  onClick={handleClear}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 transition-colors hover:text-white"
                 >
                   <X className="h-5 w-5" />
@@ -109,17 +130,22 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                     <p className="mb-4 text-xs tracking-wider text-white/60">
                       POPULAR PRODUCTS
                     </p>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                       {popularProducts.map((product, index) => (
                         <button
                           key={index}
                           onClick={() => handleProductClick(product.category)}
-                          className="flex w-full items-center justify-between border-b border-white/10 py-3 text-left transition-colors hover:border-white/30"
+                          className="group text-left transition-all hover:opacity-80"
                         >
-                          <span className="text-white">{product.name}</span>
-                          <span className="text-sm text-white/60">
-                            {product.category}
-                          </span>
+                          <div className="mb-2 aspect-square w-full overflow-hidden bg-white/10">
+                            <ImageWithFallback
+                              src={product.image}
+                              alt={product.name}
+                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            />
+                          </div>
+                          <p className="mb-1 text-xs text-white">{product.name}</p>
+                          <p className="text-xs text-white/60">{product.category}</p>
                         </button>
                       ))}
                     </div>
