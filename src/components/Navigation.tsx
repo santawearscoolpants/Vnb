@@ -5,12 +5,14 @@ import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
 import { useRouter } from '../context/RouterContext';
 import { MenuSidebar } from './MenuSidebar';
 import { SearchDialog } from './SearchDialog';
+import { ContactSidebar } from './ContactSidebar';
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { navigateTo } = useRouter();
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const { navigateTo, currentPage } = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +23,9 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Force solid background on certain pages or when scrolled
+  const forceSolidBg = currentPage !== 'home' || isScrolled;
+
   return (
     <>
       <motion.nav
@@ -28,7 +33,7 @@ export function Navigation() {
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
         className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-          isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-transparent'
+          forceSolidBg ? 'bg-black/95 backdrop-blur-md' : 'bg-transparent'
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 md:px-8">
@@ -47,23 +52,23 @@ export function Navigation() {
 
             {/* Center - Logo */}
             <div className="flex flex-col items-center justify-center gap-1">
-              <motion.div
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="cursor-pointer"
                 onClick={() => navigateTo('home')}
               >
                 <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
-              </motion.div>
+              </motion.button>
               <span className="text-xs tracking-wider text-white/70">GHANA</span>
             </div>
 
             {/* Right - Contact, Invest & Icons */}
             <div className="flex items-center justify-end gap-4 md:gap-6">
-              <div className="hidden md:flex md:items-center md:gap-6">
-                <NavLink onClick={() => navigateTo('contact')}>Contact Us</NavLink>
-                <NavLink onClick={() => navigateTo('home')}>Invest</NavLink>
+              <div className="hidden items-center gap-6 lg:flex">
+                <NavLink onClick={() => setIsContactOpen(true)}>Contact Us</NavLink>
+                <NavLink onClick={() => navigateTo('invest')}>Invest</NavLink>
               </div>
-              <NavIcon icon={User} label="Account" />
+              <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
               <NavIcon icon={ShoppingBag} label="Cart" badge={2} />
             </div>
           </div>
@@ -71,10 +76,17 @@ export function Navigation() {
       </motion.nav>
 
       {/* Menu Sidebar */}
-      <MenuSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <MenuSidebar 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)}
+        onOpenContact={() => setIsContactOpen(true)}
+      />
 
       {/* Search Dialog */}
       <SearchDialog isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Contact Sidebar */}
+      <ContactSidebar isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
     </>
   );
 }

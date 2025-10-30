@@ -4,7 +4,8 @@ import { RouterProvider, useRouter } from './context/RouterContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
-import { ContactPage } from './pages/ContactPage';
+import { InvestPage } from './pages/InvestPage';
+import { AccountPage } from './pages/AccountPage';
 import { Toaster } from './components/ui/sonner';
 
 function AppContent() {
@@ -18,8 +19,10 @@ function AppContent() {
         return <ProductDetailPage />;
       case 'category':
         return <CategoryPage />;
-      case 'contact':
-        return <ContactPage />;
+      case 'invest':
+        return <InvestPage />;
+      case 'account':
+        return <AccountPage />;
       default:
         return <HomePage />;
     }

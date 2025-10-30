@@ -5,6 +5,7 @@ import { useRouter } from '../context/RouterContext';
 interface MenuSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenContact?: () => void;
 }
 
 const menuItems = [
@@ -21,7 +22,7 @@ const menuItems = [
   { label: 'The Maison VNB', link: 'home' }
 ];
 
-export function MenuSidebar({ isOpen, onClose }: MenuSidebarProps) {
+export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps) {
   const { navigateTo } = useRouter();
 
   const handleItemClick = (item: typeof menuItems[0]) => {
@@ -30,6 +31,18 @@ export function MenuSidebar({ isOpen, onClose }: MenuSidebarProps) {
     } else {
       navigateTo(item.link);
     }
+    onClose();
+  };
+
+  const handleContactClick = () => {
+    onClose();
+    setTimeout(() => {
+      onOpenContact?.();
+    }, 400);
+  };
+
+  const handleInvestClick = () => {
+    navigateTo('invest');
     onClose();
   };
 
@@ -84,6 +97,28 @@ export function MenuSidebar({ isOpen, onClose }: MenuSidebarProps) {
                     )}
                   </motion.button>
                 ))}
+                
+                {/* Mobile-only items */}
+                <div className="mt-6 border-t border-zinc-200 pt-4 lg:hidden">
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: menuItems.length * 0.05, duration: 0.3 }}
+                    onClick={handleContactClick}
+                    className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
+                  >
+                    <span className="text-sm">Contact Us</span>
+                  </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (menuItems.length + 1) * 0.05, duration: 0.3 }}
+                    onClick={handleInvestClick}
+                    className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
+                  >
+                    <span className="text-sm">Invest</span>
+                  </motion.button>
+                </div>
               </nav>
             </div>
           </motion.div>

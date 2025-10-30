@@ -39,7 +39,11 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.8 }}
           className="mb-6 tracking-[0.2em] text-white/80"
-          style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Libre Baskerville', serif", fontSize: '40px' }}
+          style={{ 
+            fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Libre Baskerville', serif", 
+            fontSize: 'clamp(24px, 5vw, 40px)',
+            lineHeight: '1.2'
+          }}
         >
           Abide . Grow . Bear Fruit
         </motion.p>
