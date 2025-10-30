@@ -62,65 +62,9 @@ export function BrandStory() {
             </motion.div>
           ))}
         </div>
+        </div>
 
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-24 grid gap-8 border-y border-zinc-200 py-12 md:grid-cols-4"
-        >
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mb-2"
-            >
-              10+
-            </motion.div>
-            <p className="text-sm text-zinc-600">Years of Excellence</p>
-          </div>
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mb-2"
-            >
-              50K+
-            </motion.div>
-            <p className="text-sm text-zinc-600">Satisfied Customers</p>
-          </div>
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="mb-2"
-            >
-              100+
-            </motion.div>
-            <p className="text-sm text-zinc-600">Artisan Partners</p>
-          </div>
-          <div className="text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="mb-2"
-            >
-              20+
-            </motion.div>
-            <p className="text-sm text-zinc-600">Countries Worldwide</p>
-          </div>
-        </motion.div>
-      </div>
+
     </section>
   );
 }

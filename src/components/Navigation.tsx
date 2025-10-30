@@ -3,9 +3,13 @@ import { ShoppingBag, Menu, Search, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
 import { useRouter } from '../context/RouterContext';
+import { MenuSidebar } from './MenuSidebar';
+import { SearchDialog } from './SearchDialog';
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { navigateTo } = useRouter();
 
   useEffect(() => {
@@ -18,50 +22,60 @@ export function Navigation() {
   }, []);
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6 }}
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-transparent'
-      }`}
-    >
-      <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <div className="grid h-20 grid-cols-3 items-center">
-          {/* Left - Menu & Search */}
-          <div className="flex items-center gap-6">
-            <div className="md:hidden">
-              <NavIcon icon={Menu} label="Menu" />
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6 }}
+        className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+          isScrolled ? 'bg-black/95 backdrop-blur-md' : 'bg-transparent'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 md:px-8">
+          <div className="grid h-20 grid-cols-3 items-center">
+            {/* Left - Menu & Search */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 md:hidden">
+                <NavIcon icon={Menu} label="Menu" onClick={() => setIsMenuOpen(true)} />
+                <NavIcon icon={Search} label="Search" onClick={() => setIsSearchOpen(true)} />
+              </div>
+              <div className="hidden items-center gap-6 md:flex">
+                <NavIcon icon={Menu} label="Menu" onClick={() => setIsMenuOpen(true)} />
+                <NavIcon icon={Search} label="Search" onClick={() => setIsSearchOpen(true)} />
+              </div>
             </div>
-            <div className="hidden items-center gap-6 md:flex">
-              <NavIcon icon={Menu} label="Menu" />
-              <NavIcon icon={Search} label="Search" />
-            </div>
-          </div>
 
-          {/* Center - Logo */}
-          <div className="flex flex-col items-center justify-center gap-1">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="cursor-pointer"
-              onClick={() => navigateTo('home')}
-            >
-              <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
-            </motion.div>
-            <span className="text-xs tracking-wider text-white/70">GHANA</span>
-          </div>
-
-          {/* Right - Contact & Icons */}
-          <div className="flex items-center justify-end gap-4 md:gap-6">
-            <div className="hidden md:block">
-              <NavLink onClick={() => navigateTo('home')}>Contact Us</NavLink>
+            {/* Center - Logo */}
+            <div className="flex flex-col items-center justify-center gap-1">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="cursor-pointer"
+                onClick={() => navigateTo('home')}
+              >
+                <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
+              </motion.div>
+              <span className="text-xs tracking-wider text-white/70">GHANA</span>
             </div>
-            <NavIcon icon={User} label="Account" />
-            <NavIcon icon={ShoppingBag} label="Cart" badge={2} />
+
+            {/* Right - Contact, Invest & Icons */}
+            <div className="flex items-center justify-end gap-4 md:gap-6">
+              <div className="hidden md:flex md:items-center md:gap-6">
+                <NavLink onClick={() => navigateTo('contact')}>Contact Us</NavLink>
+                <NavLink onClick={() => navigateTo('home')}>Invest</NavLink>
+              </div>
+              <NavIcon icon={User} label="Account" />
+              <NavIcon icon={ShoppingBag} label="Cart" badge={2} />
+            </div>
           </div>
         </div>
-      </div>
-    </motion.nav>
+      </motion.nav>
+
+      {/* Menu Sidebar */}
+      <MenuSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
+      {/* Search Dialog */}
+      <SearchDialog isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+    </>
   );
 }
 
@@ -85,11 +99,13 @@ function NavLink({ onClick, children }: { onClick?: () => void; children: React.
 function NavIcon({
   icon: Icon,
   label,
-  badge
+  badge,
+  onClick
 }: {
   icon: React.ElementType;
   label: string;
   badge?: number;
+  onClick?: () => void;
 }) {
   return (
     <motion.button
@@ -97,6 +113,7 @@ function NavIcon({
       whileTap={{ scale: 0.95 }}
       className="relative text-white"
       aria-label={label}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5" />
       {badge && (

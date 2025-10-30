@@ -50,7 +50,7 @@ export function SandalsSection() {
         </motion.div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
           {sandals.map((sandal, index) => (
             <SandalCard key={sandal.id} sandal={sandal} index={index} navigateTo={navigateTo} />
           ))}
@@ -99,7 +99,7 @@ function SandalCard({
     >
       {/* Image Container */}
       <div 
-        className="relative h-[400px] overflow-hidden bg-zinc-100"
+        className="relative h-[250px] overflow-hidden bg-zinc-100 md:h-[350px]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -109,10 +109,10 @@ function SandalCard({
             e.stopPropagation();
             setIsFavorited(!isFavorited);
           }}
-          className="absolute right-4 top-4 z-10 rounded-full border border-black/20 bg-white/80 p-2 backdrop-blur-sm transition-all hover:bg-white"
+          className="absolute right-2 top-2 z-10 rounded-full border border-black/20 bg-white/80 p-1.5 backdrop-blur-sm transition-all hover:bg-white md:right-4 md:top-4 md:p-2"
         >
           <Heart
-            className={`h-4 w-4 ${
+            className={`h-3 w-3 md:h-4 md:w-4 ${
               isFavorited ? 'fill-black stroke-black' : 'stroke-black'
             }`}
           />

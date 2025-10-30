@@ -67,7 +67,7 @@ export function ProductCategories() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-3">
           {categories.map((category, index) => (
             <CategoryCard key={category.id} category={category} index={index} navigateTo={navigateTo} />
           ))}
@@ -99,7 +99,7 @@ function CategoryCard({
     >
       {/* Image Container */}
       <div 
-        className="relative h-[400px] overflow-hidden bg-zinc-100"
+        className="relative h-[250px] overflow-hidden bg-zinc-100 md:h-[350px]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -119,6 +119,7 @@ function CategoryCard({
       {/* Text Below Image */}
       <div className="mt-4 text-center">
         <h3 className="text-black">{category.name}</h3>
+        <p className="mt-1 text-sm text-zinc-500">Coming soon</p>
       </div>
     </motion.div>
   );

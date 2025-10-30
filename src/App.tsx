@@ -4,6 +4,8 @@ import { RouterProvider, useRouter } from './context/RouterContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
+import { ContactPage } from './pages/ContactPage';
+import { Toaster } from './components/ui/sonner';
 
 function AppContent() {
   const { currentPage } = useRouter();
@@ -16,6 +18,8 @@ function AppContent() {
         return <ProductDetailPage />;
       case 'category':
         return <CategoryPage />;
+      case 'contact':
+        return <ContactPage />;
       default:
         return <HomePage />;
     }
@@ -26,6 +30,7 @@ function AppContent() {
       <Navigation />
       {renderPage()}
       <Footer />
+      <Toaster />
     </div>
   );
 }
