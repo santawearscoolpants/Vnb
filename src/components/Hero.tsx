@@ -68,10 +68,7 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black" />
 
       {/* Content */}
-      <div className="relative flex h-full flex-col items-center justify-center px-4 text-center">
-        {/* Logo at the top with a robust fallback if the asset fails to load */}
-        <LogoImage src={logo} />
-
+      <div className="relative flex h-full flex-col items-center justify-end px-4 text-center">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -91,7 +88,7 @@ export function Hero() {
             lineHeight: '1.2'
           }}
         >
-          Abide . Grow . Bear Fruit
+          African Timeless Luxury
         </motion.p>
 
       
