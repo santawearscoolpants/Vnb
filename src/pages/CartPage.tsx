@@ -2,11 +2,12 @@ import { motion } from 'motion/react';
 import { ShoppingBag, Truck, ArrowLeftRight, Lock, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useRouter } from '../context/RouterContext';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
-
+import logo from "../assets/logo.png";
+import { useCart } from '../context/CartContext';
 export function CartPage() {
   const { goBack } = useRouter();
-  const isEmpty = true; // Change to false when items are added
+  const { cart, loading, updateItem, removeItem, clear } = useCart();
+  const isEmpty = !(cart && cart.item_count && cart.item_count > 0);
 
   return (
     <div className="min-h-screen bg-zinc-50 pt-20">
@@ -42,7 +43,9 @@ export function CartPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Cart Content */}
           <div className="lg:col-span-2">
-            {isEmpty ? (
+            {loading ? (
+              <motion.div className="rounded-sm bg-white p-12 text-center shadow-sm">Loading...</motion.div>
+            ) : isEmpty ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -58,10 +61,30 @@ export function CartPage() {
                 </Button>
               </motion.div>
             ) : (
-              // Cart items would go here
               <div className="rounded-sm bg-white p-6 shadow-sm">
                 <h2 className="mb-6 text-black">Shopping Cart</h2>
-                {/* Cart items */}
+                <div className="space-y-4">
+                  {cart?.items.map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-4 border-b border-zinc-100 pb-4">
+                      <img src={item.product_detail?.image || '/logo.png'} alt={item.product_detail?.name} className="h-20 w-20 object-cover" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-black">{item.product_detail?.name || 'Product'}</div>
+                            <div className="text-xs text-zinc-600">{item.size ? `Size: ${item.size}` : ''} {item.color ? ` • ${item.color}` : ''}</div>
+                          </div>
+                          <div className="text-sm text-black">${Number(item.product_detail?.price || 0).toFixed(2)}</div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-3">
+                          <button onClick={() => updateItem(item.id, item.quantity - 1)} className="px-3 py-1 border">-</button>
+                          <div className="px-3">{item.quantity}</div>
+                          <button onClick={() => updateItem(item.id, item.quantity + 1)} className="px-3 py-1 border">+</button>
+                          <button onClick={() => removeItem(item.id)} className="ml-4 text-sm text-red-600">Remove</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
-import { Instagram, Facebook, Twitter, Mail } from 'lucide-react';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { motion } from "motion/react";
+import { Instagram, Facebook, Twitter, Mail } from "lucide-react";
+import logo from "../assets/logo.png";
 
 const footerLinks = {
   shop: ['Suits', 'Shoes', 'Shirts & Tees', 'Sandals', 'Fragrances', 'Jewelleries'],

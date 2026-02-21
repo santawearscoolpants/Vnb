@@ -1,23 +1,66 @@
+import { useState } from "react";
 import { motion } from "motion/react";
-import { ChevronDown } from "lucide-react";
-import { Button } from "./ui/button";
-import logo from "figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png";
+import logo from "../assets/logo.png";
+import videoSrc from "../assets/vid2.mp4";
+
+// Small inline SVG fallback (white text) encoded as a data URL so the logo
+// always displays even if the imported asset fails to load.
+const svgFallback = `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='256' height='64' viewBox='0 0 256 64'>
+    <rect width='100%' height='100%' fill='black' />
+    <text x='50%' y='50%' font-size='28' fill='white' font-family='Arial, Helvetica, sans-serif' text-anchor='middle' dominant-baseline='central'>VNB</text>
+  </svg>`
+)}`; 
+
+function LogoImage({ src }: { src: string }) {
+  // Try the imported module URL first, then common public/static paths, then the svgFallback.
+  const candidatePaths = [src, '/src/assets/logo.png', '/assets/logo.png', '/logo.png', svgFallback];
+  const [index, setIndex] = useState(0);
+  const currentSrc = candidatePaths[index] || svgFallback;
+
+  return (
+    // eslint-disable-next-line jsx-a11y/alt-text
+    <img
+      src={currentSrc}
+      alt="Vines & Branches Logo"
+      className="mb-8"
+      style={{ height: 64, width: "auto" }}
+      onError={() => {
+        // advance to the next candidate; if already at last, stay on svgFallback
+        if (index < candidatePaths.length - 1) {
+          setIndex((i) => i + 1);
+          // also emit a console warning to help debugging in the browser
+          // (will only appear in the developer console)
+          // eslint-disable-next-line no-console
+          console.warn(`Logo failed to load from ${currentSrc}, trying fallback...`);
+        }
+      }}
+      decoding="async"
+      loading="eager"
+    />
+  );
+}
 
 export function Hero() {
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Background Image with Parallax */}
+      {/* Background video with parallax-like scale animation */}
       <motion.div
-        initial={{ scale: 1.2, opacity: 0 }}
+        initial={{ scale: 1.05, opacity: 0 }}
         animate={{ scale: 1, opacity: 0.6 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
-        className="absolute inset-0"
+        className="absolute inset-0 overflow-hidden"
       >
-        <div
-          className="h-full w-full bg-cover bg-center"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1567777301743-3b7ef158aadf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBmYXNoaW9uJTIwbW9kZWx8ZW58MXx8fHwxNzYxNTA1NTM4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral')`,
-          }}
+        <video
+          src={videoSrc}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="h-full w-full object-cover"
+          // keep video positioned and covering the hero
+          style={{ display: 'block' }}
         />
       </motion.div>
 
@@ -26,6 +69,9 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative flex h-full flex-col items-center justify-center px-4 text-center">
+        {/* Logo at the top with a robust fallback if the asset fails to load */}
+        <LogoImage src={logo} />
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

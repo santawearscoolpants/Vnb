@@ -4,7 +4,8 @@ import { useRouter } from '../context/RouterContext';
 import { ArrowLeft, Heart, ShoppingBag, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import logo from "../assets/logo.png";
+import { useCart } from '../context/CartContext';
 
 const productData: Record<string, any> = {
   '1': {
@@ -120,6 +121,7 @@ export function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   const product = productData[productId || '1'];
+  const { addItem } = useCart();
 
   if (!product) {
     return <div>Product not found</div>;
@@ -130,7 +132,11 @@ export function ProductDetailPage() {
       toast.error('Please select a size');
       return;
     }
-    toast.success('Added to cart successfully!');
+    const pid = Number(productId || '1');
+    const colorName = product.colors[selectedColor]?.name || '';
+    addItem(pid, 1, selectedSize, colorName)
+      .then(() => toast.success('Added to cart successfully!'))
+      .catch(() => toast.error('Failed to add to cart'));
   };
 
   return (

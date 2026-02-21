@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
 import { ShoppingBag, Menu, Search, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { useCart } from '../context/CartContext';
+import logo from "../assets/logo.png";
 import { useRouter } from '../context/RouterContext';
 import { MenuSidebar } from './MenuSidebar';
 import { SearchDialog } from './SearchDialog';
@@ -13,6 +14,7 @@ export function Navigation() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const { navigateTo, currentPage } = useRouter();
+  const { cart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,7 +71,7 @@ export function Navigation() {
                 <NavLink onClick={() => navigateTo('invest')}>Invest</NavLink>
               </div>
               <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
-              <NavIcon icon={ShoppingBag} label="Cart" badge={2} onClick={() => navigateTo('cart')} />
+              <NavIcon icon={ShoppingBag} label="Cart" badge={cart?.item_count || 0} onClick={() => navigateTo('cart')} />
             </div>
           </div>
         </div>

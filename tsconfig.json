@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+
+    /* Module Resolution */
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    /* Imports */
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true,
+
+    /* Output */
+    "sourceMap": true,
+    "declaration": false,
+
+    /* Paths (optional, enable later if you want absolute imports)
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+    */
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

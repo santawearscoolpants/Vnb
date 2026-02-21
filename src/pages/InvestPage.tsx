@@ -3,8 +3,9 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { TrendingUp, Users, Globe, Award, ArrowRight, Check } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useState } from 'react';
-import { toast } from 'sonner@2.0.3';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { toast } from 'sonner';
+import logo from "../assets/logo.png";
+import api from '../services/api';
 
 const investmentTiers = [
   {
@@ -61,11 +62,26 @@ export function InvestPage() {
     amount: '',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Thank you for your interest! Our investment team will contact you within 48 hours.');
-    setFormData({ name: '', email: '', phone: '', amount: '', message: '' });
+    setLoading(true);
+    try {
+      await api.submitInvestment({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        tier: formData.amount,
+        message: formData.message
+      });
+      toast.success('Thank you for your interest! Our investment team will contact you within 48 hours.');
+      setFormData({ name: '', email: '', phone: '', amount: '', message: '' });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to submit inquiry. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

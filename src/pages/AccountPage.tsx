@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 type ViewMode = 'login' | 'create';
 
@@ -197,19 +197,19 @@ function CreateAccountForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
 
           <div className="mb-4">
             <Label htmlFor="location" className="mb-2 block text-sm text-zinc-700">
-              Location *
-            </Label>
-            <Select value={formData.location} onValueChange={(val) => handleChange('location', val)}>
-              <SelectTrigger className="h-12 rounded-none border-zinc-300">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="Ghana">Ghana</SelectItem>
-                <SelectItem value="Nigeria">Nigeria</SelectItem>
-                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-              </SelectContent>
-            </Select>
+                Location *
+              </Label>
+              <Select value={formData.location} onValueChange={(val: string) => handleChange('location', val)}>
+                <SelectTrigger className="h-12 rounded-none border-zinc-300">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="United States">United States</SelectItem>
+                  <SelectItem value="Ghana">Ghana</SelectItem>
+                  <SelectItem value="Nigeria">Nigeria</SelectItem>
+                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                </SelectContent>
+              </Select>
           </div>
 
           <div className="mb-4">
@@ -250,7 +250,7 @@ function CreateAccountForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
             <Label htmlFor="title" className="mb-2 block text-sm text-zinc-700">
               Title *
             </Label>
-            <Select value={formData.title} onValueChange={(val) => handleChange('title', val)} required>
+            <Select value={formData.title} onValueChange={(val: string) => handleChange('title', val)} required>
               <SelectTrigger className="h-12 rounded-none border-zinc-300">
                 <SelectValue />
               </SelectTrigger>
@@ -317,7 +317,7 @@ function CreateAccountForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
           <div className="mb-4">
             <Label className="mb-2 block text-sm text-zinc-700">Date of birth</Label>
             <div className="grid grid-cols-3 gap-2">
-              <Select value={formData.birthMonth} onValueChange={(val) => handleChange('birthMonth', val)}>
+              <Select value={formData.birthMonth} onValueChange={(val: string) => handleChange('birthMonth', val)}>
                 <SelectTrigger className="h-12 rounded-none border-zinc-300">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
@@ -386,7 +386,7 @@ function CreateAccountForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
             <Label htmlFor="state" className="mb-2 block text-sm text-zinc-700">
               State *
             </Label>
-            <Select value={formData.state} onValueChange={(val) => handleChange('state', val)} required>
+            <Select value={formData.state} onValueChange={(val: string) => handleChange('state', val)} required>
               <SelectTrigger className="h-12 rounded-none border-zinc-300">
                 <SelectValue />
               </SelectTrigger>
@@ -433,7 +433,7 @@ function CreateAccountForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
         <Checkbox
           id="newsletter"
           checked={formData.newsletter}
-          onCheckedChange={(checked) => handleChange('newsletter', checked)}
+          onCheckedChange={(checked: boolean | undefined) => handleChange('newsletter', !!checked)}
         />
         <label htmlFor="newsletter" className="text-xs text-zinc-700">
           I agree to receive information by email about offers, services, products and events from

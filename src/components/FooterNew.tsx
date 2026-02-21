@@ -2,8 +2,8 @@ import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useState } from 'react';
-import { toast } from 'sonner@2.0.3';
-import logo from 'figma:asset/a4eabd48a91cf2ad3f1c96be6aa7cc8c409fc025.png';
+import { toast } from 'sonner';
+import logo from "../assets/logo.png";
 
 const helpLinks = [
   { label: 'FAQs', href: '#' },

@@ -3,14 +3,24 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import api from '../services/api';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Thank you for subscribing! Check your email for your 10% off code.');
-    setEmail('');
+    setLoading(true);
+    try {
+      await api.subscribeNewsletter(email);
+      toast.success('Thank you for subscribing! Check your email for your 10% off code.');
+      setEmail('');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to subscribe. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,8 +51,9 @@ export function Newsletter() {
               type="submit"
               size="lg"
               className="bg-white text-black hover:bg-white/90"
+              disabled={loading}
             >
-              Subscribe
+              {loading ? 'Subscribing...' : 'Subscribe'}
             </Button>
           </form>
 

@@ -2,7 +2,8 @@ import { motion } from 'motion/react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/ui/button';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
+import api from '../services/api';
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -12,12 +13,20 @@ export function ContactPage() {
     subject: '',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send the form data to a backend
-    toast.success('Thank you for your message. We will get back to you soon!');
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    setLoading(true);
+    try {
+      await api.submitContact(formData);
+      toast.success('Thank you for your message. We will get back to you soon!');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -214,9 +223,10 @@ export function ContactPage() {
                   type="submit"
                   className="w-full bg-black text-white hover:bg-zinc-800"
                   size="lg"
+                  disabled={loading}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </motion.div>
