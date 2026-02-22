@@ -155,6 +155,7 @@ function LoginForm() {
             />
             <button
               type="button"
+              onClick={() => navigateTo('forgot-password')}
               className="mt-2 text-xs text-zinc-500 underline hover:text-black"
             >
               Forgot your password?

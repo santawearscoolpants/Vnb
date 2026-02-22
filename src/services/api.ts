@@ -135,6 +135,14 @@ class ApiService {
     return this.post('/accounts/users/check_email/', { email });
   }
 
+  requestPasswordReset(email: string) {
+    return this.post('/accounts/users/request_password_reset/', { email });
+  }
+
+  resetPassword(email: string, token: string, newPassword: string) {
+    return this.post('/accounts/users/reset_password/', { email, token, new_password: newPassword });
+  }
+
   getCurrentUser() {
     return this.get('/accounts/users/me/');
   }

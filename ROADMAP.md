@@ -10,7 +10,7 @@
 - [x] Wire `AccountPage` login to `api.checkEmail()` and `api.login()` — `emailExists` is hardcoded `false`, login never works
 - [x] Wire `CreateAccountPage` submit to `api.register()` — currently just fires a toast, no API call
 - [x] Add logged-in user session (store user in context after login)
-- [ ] Add password reset flow (forgot password page + email trigger)
+- [x] Add password reset flow (forgot password page + email trigger)
 
 ### Product Data
 - [ ] Replace hardcoded products in `ProductDetailPage` with real `api.getProduct()` calls
