@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useState, useMemo, useId, useCallback, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
+import CountryList from 'country-list-with-dial-code-and-flag';
 
 // 8px spacing: 2=8, 4=16, 6=24, 8=32, 10=40, 12=48
 
@@ -13,19 +14,27 @@ const PASSWORD_RULES = [
   { key: 'special', label: 'At least 1 special character', test: (v: string) => /[^A-Za-z0-9]/.test(v) },
 ];
 
-const COUNTRIES = [
-  { code: 'US', name: 'United States', callingCode: '+1' },
-  { code: 'GB', name: 'United Kingdom', callingCode: '+44' },
-  { code: 'GH', name: 'Ghana', callingCode: '+233' },
-  { code: 'NG', name: 'Nigeria', callingCode: '+234' },
-  { code: 'CA', name: 'Canada', callingCode: '+1' },
-  { code: 'AU', name: 'Australia', callingCode: '+61' },
-  { code: 'DE', name: 'Germany', callingCode: '+49' },
-  { code: 'FR', name: 'France', callingCode: '+33' },
-  { code: 'IN', name: 'India', callingCode: '+91' },
-  { code: 'JP', name: 'Japan', callingCode: '+81' },
-  { code: 'CN', name: 'China', callingCode: '+86' },
-];
+// All countries from library; African codes first for discoverability, then rest A–Z by name
+const AFRICAN_COUNTRY_CODES = new Set([
+  'DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CV', 'CM', 'CF', 'TD', 'KM', 'CG', 'CD', 'DJ', 'EG', 'GQ',
+  'ER', 'SZ', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'CI', 'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML',
+  'MR', 'MU', 'MA', 'MZ', 'NA', 'NE', 'NG', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS', 'SD',
+  'TZ', 'TG', 'TN', 'UG', 'ZM', 'ZW',
+]);
+
+const COUNTRIES = (() => {
+  const all = CountryList.getAll({ withSecondary: false }) as Array<{ code: string; name: string; dialCode: string }>;
+  const mapped = all.map((c) => ({
+    code: c.code,
+    name: c.name,
+    callingCode: c.dialCode?.startsWith('+') ? c.dialCode : `+${c.dialCode || ''}`,
+  }));
+  const african = mapped.filter((c) => AFRICAN_COUNTRY_CODES.has(c.code));
+  const rest = mapped.filter((c) => !AFRICAN_COUNTRY_CODES.has(c.code));
+  african.sort((a, b) => a.name.localeCompare(b.name));
+  rest.sort((a, b) => a.name.localeCompare(b.name));
+  return [...african, ...rest];
+})();
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
