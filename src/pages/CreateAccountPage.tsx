@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useState, useMemo, useId } from 'react';
 import { ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { Button } from '../components/ui/button';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
 
@@ -163,7 +164,7 @@ export function CreateAccountPage() {
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Two-column grid */}
-            <div className="grid gap-x-16 gap-y-0 md:grid-cols-2">
+            <div className="grid gap-x-24 gap-y-0 md:grid-cols-2">
               {/* ─── LEFT COLUMN: LOGIN INFORMATION ─── */}
               <div>
                 <h2 className="mb-6 border-b border-zinc-200 pb-3 text-xs font-normal tracking-[0.15em] text-black uppercase">
@@ -229,18 +230,18 @@ export function CreateAccountPage() {
                 {/* Password requirements box */}
                 <div
                   id={`${formId}-pw-rules`}
-                  className="mt-2 rounded-sm border border-zinc-200 px-5 py-4"
+                  className="mt-2 rounded-sm border border-zinc-200 px-4 py-3"
                 >
-                  <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
+                  <p className="mb-2 text-[10px] leading-snug text-zinc-500">
                     For your security, we invite you to fill your password according to the following criteria:
                   </p>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                     {PASSWORD_RULES.map(rule => {
                       const passed = rule.test(form.password);
                       return (
                         <p
                           key={rule.key}
-                          className={`text-[11px] leading-relaxed ${
+                          className={`text-[10px] leading-snug ${
                             form.password
                               ? passed
                                 ? 'text-green-700'
@@ -374,9 +375,8 @@ export function CreateAccountPage() {
                 {/* Date of birth */}
                 <div className="mt-6">
                   <label className={labelBase}>Date of birth</label>
-                  <div className="grid grid-cols-[1fr_0.6fr_0.6fr] gap-3">
-                    {/* Month */}
-                    <div className="relative">
+                  <div className="flex items-end gap-4">
+                    <div className="relative flex-1">
                       <select
                         value={form.birthMonth}
                         onChange={e => set('birthMonth', e.target.value)}
@@ -392,8 +392,6 @@ export function CreateAccountPage() {
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                     </div>
-
-                    {/* Day */}
                     <input
                       type="text"
                       inputMode="numeric"
@@ -402,10 +400,8 @@ export function CreateAccountPage() {
                       onChange={e => set('birthDay', e.target.value.replace(/[^\d]/g, ''))}
                       placeholder="Day"
                       aria-label="Birth day"
-                      className={inputBase}
+                      className={`${inputBase} w-16 shrink-0`}
                     />
-
-                    {/* Year */}
                     <input
                       type="text"
                       inputMode="numeric"
@@ -414,7 +410,7 @@ export function CreateAccountPage() {
                       onChange={e => set('birthYear', e.target.value.replace(/[^\d]/g, ''))}
                       placeholder="Year"
                       aria-label="Birth year"
-                      className={inputBase}
+                      className={`${inputBase} w-20 shrink-0`}
                     />
                   </div>
                   <p className="mt-1 text-[11px] text-zinc-400">
@@ -462,13 +458,13 @@ export function CreateAccountPage() {
 
             {/* ─── SUBMIT ─── */}
             <div className="mt-10 flex justify-center">
-              <button
+              <Button
                 type="submit"
                 disabled={!isFormValid}
-                className="h-12 cursor-pointer bg-black px-16 text-[12px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                className="h-12 rounded-none bg-zinc-800 px-12 tracking-[0.15em] uppercase hover:bg-black"
               >
                 CREATE AN ACCOUNT
-              </button>
+              </Button>
             </div>
           </form>
         </motion.div>
