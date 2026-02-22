@@ -277,13 +277,14 @@ export function CreateAccountPage() {
               )}
             </div>
 
-            {/* Two-column grid: desktop two cols, mobile single column — focus order: left then right */}
-            <div className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">
+            {/* Two-column layout: desktop side by side, mobile stacked */}
+            <div className="flex flex-col gap-8 md:flex-row md:gap-12">
               {/* ——— LEFT: Account Information ——— */}
+              <div className="flex-1 space-y-6">
               <section aria-labelledby={`${formId}-account-heading`} className="space-y-6">
                 <h2
                   id={`${formId}-account-heading`}
-                  className="border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
+                  className="text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
                 >
                   Account information
                 </h2>
@@ -438,12 +439,14 @@ export function CreateAccountPage() {
                   </AnimatePresence>
                 </div>
               </section>
+              </div>
 
               {/* ——— RIGHT: Personal Information ——— */}
+              <div className="flex-1 space-y-6">
               <section aria-labelledby={`${formId}-personal-heading`} className="space-y-6">
                 <h2
                   id={`${formId}-personal-heading`}
-                  className="border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
+                  className="text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
                 >
                   Personal information
                 </h2>
@@ -644,6 +647,7 @@ export function CreateAccountPage() {
                   )}
                 </div>
               </section>
+              </div>
             </div>
 
             {/* ——— Consent (full width below grid) ——— */}
