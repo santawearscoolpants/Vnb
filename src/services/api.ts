@@ -77,6 +77,10 @@ class ApiService {
     return this.get('/store/categories/');
   }
 
+  getCategory(slug: string) {
+    return this.get(`/store/categories/${slug}/`);
+  }
+
   getProducts(params?: { category__slug?: string; is_featured?: boolean; search?: string }) {
     return this.get('/store/products/', { params: params as any });
   }

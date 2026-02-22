@@ -13,7 +13,7 @@
 - [x] Add password reset flow (forgot password page + email trigger)
 
 ### Product Data
-- [ ] Replace hardcoded products in `ProductDetailPage` with real `api.getProduct()` calls
+- [x] Replace hardcoded products in `ProductDetailPage` with real `api.getProduct()` calls
 - [ ] Replace hardcoded category products in `CategoryPage` with `api.getProducts({ category__slug })` calls
 - [ ] Replace mock data in `FeaturedCollection`, `SandalsSection`, `ProductCategories` with `api.getFeaturedProducts()` and `api.getCategories()`
 
