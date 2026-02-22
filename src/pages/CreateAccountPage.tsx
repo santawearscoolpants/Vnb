@@ -128,10 +128,8 @@ export function CreateAccountPage() {
   const ariaInvalid = (field: string) =>
     touched[field] && errors[field] ? true : undefined;
 
-  const selectedCountry = COUNTRY_CODES.find(c => c.code === form.areaCode) || COUNTRY_CODES[0];
-
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-[#F8F7F4] pt-20">
       <div className="mx-auto max-w-[960px] px-6 py-12 md:px-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -229,7 +227,7 @@ export function CreateAccountPage() {
                 {/* Password requirements box */}
                 <div
                   id={`${formId}-pw-rules`}
-                  className="mt-2 rounded-sm border border-zinc-200 px-5 py-4"
+                  className="mt-2 rounded-sm border border-zinc-200 bg-zinc-50/80 px-5 py-4"
                 >
                   <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
                     For your security, we invite you to fill your password according to the following criteria:
@@ -329,37 +327,45 @@ export function CreateAccountPage() {
 
                 {/* Phone — area code + number */}
                 <div className="mb-1">
-                  <label className={labelBase}>Area code *</label>
                   <div className="flex gap-0">
                     {/* Country code selector */}
-                    <div className="relative shrink-0">
-                      <select
-                        value={form.areaCode}
-                        onChange={e => set('areaCode', e.target.value)}
-                        className={`${inputBase} w-[120px] cursor-pointer appearance-none pr-7`}
-                        aria-label="Country area code"
-                      >
-                        {COUNTRY_CODES.map(c => (
-                          <option key={c.code} value={c.code}>
-                            {c.flag} {c.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                    <div className="w-[120px] shrink-0">
+                      <label className={labelBase} htmlFor={`${formId}-area-code`}>
+                        Area code *
+                      </label>
+                      <div className="relative">
+                        <select
+                          id={`${formId}-area-code`}
+                          value={form.areaCode}
+                          onChange={e => set('areaCode', e.target.value)}
+                          className={`${inputBase} w-full cursor-pointer appearance-none pr-7`}
+                          aria-label="Country area code"
+                        >
+                          {COUNTRY_CODES.map(c => (
+                            <option key={c.code} value={c.code}>
+                              {c.flag} {c.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                      </div>
                     </div>
 
                     {/* Phone number */}
-                    <div className="flex-1">
+                    <div className="flex-1 pl-4">
+                      <label className={labelBase} htmlFor={`${formId}-phone`}>
+                        Telephone number *
+                      </label>
                       <input
                         id={`${formId}-phone`}
                         type="tel"
                         value={form.phone}
                         onChange={e => set('phone', e.target.value.replace(/[^\d]/g, ''))}
                         onBlur={() => { touch('phone'); validate(); }}
-                        placeholder="Telephone number *"
+                        placeholder=""
                         aria-invalid={ariaInvalid('phone')}
                         aria-describedby={`${formId}-phone-hint`}
-                        className={`${inputBase} pl-4`}
+                        className={inputBase}
                       />
                     </div>
                   </div>
@@ -460,15 +466,17 @@ export function CreateAccountPage() {
               <p className={`${errorText} pl-7`} role="alert">{fieldError('consent')}</p>
             )}
 
-            {/* ─── SUBMIT ─── */}
-            <div className="mt-10 flex justify-center">
-              <button
-                type="submit"
-                disabled={!isFormValid}
-                className="h-12 cursor-pointer bg-black px-16 text-[12px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
-              >
-                CREATE AN ACCOUNT
-              </button>
+            {/* ─── SUBMIT ─── (left edge aligned with form left column) */}
+            <div className="mt-10 grid gap-x-16 md:grid-cols-2">
+              <div className="flex justify-start">
+                <button
+                  type="submit"
+                  disabled={!isFormValid}
+                  className="h-12 cursor-pointer rounded-sm bg-black px-16 text-[12px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                >
+                  CREATE AN ACCOUNT
+                </button>
+              </div>
             </div>
           </form>
         </motion.div>
