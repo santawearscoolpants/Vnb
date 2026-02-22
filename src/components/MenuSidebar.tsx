@@ -86,9 +86,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                         <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
                         {item.label}
                       </span>
-                      {item.hasSubmenu && (
-                        <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-                      )}
+                      <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                     </motion.button>
                   );
                 })}
@@ -106,6 +104,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                       <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
                       Contact Us
                     </span>
+                    <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                   </motion.button>
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
@@ -118,6 +117,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                       <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
                       Invest
                     </span>
+                    <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                   </motion.button>
                 </div>
               </nav>
