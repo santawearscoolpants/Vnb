@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useState, useMemo, useId } from 'react';
-import { ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
 
@@ -49,9 +49,9 @@ interface FieldErrors {
 }
 
 const inputBase =
-  'w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-3 text-sm text-black outline-none transition-colors placeholder:text-zinc-400 focus:border-black';
-const labelBase = 'block text-[11px] text-zinc-500 mb-0.5';
-const errorText = 'mt-1 text-[11px] text-red-600';
+  'w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-2 text-xs text-black outline-none transition-colors placeholder:text-zinc-400 focus:border-black';
+const labelBase = 'block text-[10px] text-zinc-500 mb-0';
+const errorText = 'mt-0.5 text-[10px] text-red-600';
 
 export function CreateAccountPage() {
   const { pageParams, navigateTo } = useRouter();
@@ -130,19 +130,19 @@ export function CreateAccountPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F7F4] pt-20">
-      <div className="mx-auto max-w-[960px] px-6 py-12 md:px-10">
+      <div className="mx-auto max-w-[800px] px-5 py-8 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {/* Title */}
-          <h1 className="mb-4 text-sm font-normal tracking-[0.2em] text-black uppercase">
+          <h1 className="mb-3 text-xs font-normal tracking-[0.2em] text-black uppercase">
             CREATE AN ACCOUNT
           </h1>
 
           {/* Legal subheader */}
-          <p className="mb-10 text-[11.5px] leading-relaxed text-zinc-500">
+          <p className="mb-6 text-[10px] leading-relaxed text-zinc-500">
             By creating an account, you agree to accept the{' '}
             <button type="button" className="underline hover:text-black">
               General Terms and Conditions of Use
@@ -155,21 +155,21 @@ export function CreateAccountPage() {
           </p>
 
           {/* Required info note */}
-          <div className="mb-8 text-right text-[11px] text-zinc-500">
+          <div className="mb-6 text-right text-[10px] text-zinc-500">
             * Required information
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Two-column grid */}
-            <div className="grid gap-x-16 gap-y-0 md:grid-cols-2">
+            <div className="grid gap-x-12 gap-y-0 md:grid-cols-2">
               {/* ─── LEFT COLUMN: LOGIN INFORMATION ─── */}
               <div>
-                <h2 className="mb-6 border-b border-zinc-200 pb-3 text-xs font-normal tracking-[0.15em] text-black uppercase">
+                <h2 className="mb-4 border-b border-zinc-200 pb-2 text-[10px] font-normal tracking-[0.15em] text-black uppercase">
                   LOGIN INFORMATION
                 </h2>
 
                 {/* Email */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor={`${formId}-email`} className={labelBase}>
                     E-mail *
                   </label>
@@ -183,7 +183,7 @@ export function CreateAccountPage() {
                     aria-describedby={`${formId}-email-hint`}
                     className={inputBase}
                   />
-                  <p id={`${formId}-email-hint`} className="mt-1 text-[11px] text-zinc-400">
+                  <p id={`${formId}-email-hint`} className="mt-0.5 text-[10px] text-zinc-400">
                     Expected format: yourname@domain.com
                   </p>
                   {fieldError('email') && (
@@ -192,7 +192,7 @@ export function CreateAccountPage() {
                 </div>
 
                 {/* Password */}
-                <div className="mb-4">
+                <div className="mb-3">
                   <div className="flex items-baseline justify-between">
                     <label htmlFor={`${formId}-password`} className={labelBase}>
                       Password *
@@ -200,13 +200,10 @@ export function CreateAccountPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="flex items-center gap-1 text-[12px] text-zinc-600 hover:text-black"
+                      className="flex items-center gap-0.5 text-[11px] text-zinc-600 hover:text-black"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showPassword
-                        ? <><EyeOff className="h-3.5 w-3.5" /> Hide</>
-                        : <><Eye className="h-3.5 w-3.5" /> Show</>
-                      }
+                      {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
                   <input
@@ -227,18 +224,18 @@ export function CreateAccountPage() {
                 {/* Password requirements box */}
                 <div
                   id={`${formId}-pw-rules`}
-                  className="mt-2 rounded-sm border border-zinc-200 bg-zinc-50/80 px-5 py-4"
+                  className="mt-1.5 rounded-sm border border-zinc-200 bg-zinc-50/80 px-4 py-3"
                 >
-                  <p className="mb-3 text-[11px] leading-relaxed text-zinc-500">
+                  <p className="mb-2 text-[10px] leading-relaxed text-zinc-500">
                     For your security, we invite you to fill your password according to the following criteria:
                   </p>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                     {PASSWORD_RULES.map(rule => {
                       const passed = rule.test(form.password);
                       return (
                         <p
                           key={rule.key}
-                          className={`text-[11px] leading-relaxed ${
+                          className={`text-[10px] leading-relaxed ${
                             form.password
                               ? passed
                                 ? 'text-green-700'
@@ -256,12 +253,12 @@ export function CreateAccountPage() {
 
               {/* ─── RIGHT COLUMN: PERSONAL INFORMATION ─── */}
               <div>
-                <h2 className="mb-6 border-b border-zinc-200 pb-3 text-xs font-normal tracking-[0.15em] text-black uppercase">
+                <h2 className="mb-4 border-b border-zinc-200 pb-2 text-[10px] font-normal tracking-[0.15em] text-black uppercase">
                   Personal information
                 </h2>
 
                 {/* Title */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor={`${formId}-title`} className={labelBase}>
                     Title *
                   </label>
@@ -272,7 +269,7 @@ export function CreateAccountPage() {
                       onChange={e => set('title', e.target.value)}
                       onBlur={() => { touch('title'); validate(); }}
                       aria-invalid={ariaInvalid('title')}
-                      className={`${inputBase} cursor-pointer appearance-none pr-8`}
+                      className={`${inputBase} cursor-pointer appearance-none pr-6`}
                     >
                       <option value="" disabled hidden />
                       <option value="Mr.">Mr.</option>
@@ -280,7 +277,7 @@ export function CreateAccountPage() {
                       <option value="Ms.">Ms.</option>
                       <option value="Mx.">Mx.</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                    <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
                   </div>
                   {fieldError('title') && (
                     <p className={errorText} role="alert">{fieldError('title')}</p>
@@ -288,7 +285,7 @@ export function CreateAccountPage() {
                 </div>
 
                 {/* First name */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor={`${formId}-firstName`} className={labelBase}>
                     First name *
                   </label>
@@ -307,7 +304,7 @@ export function CreateAccountPage() {
                 </div>
 
                 {/* Last name */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor={`${formId}-lastName`} className={labelBase}>
                     Last name *
                   </label>
@@ -329,7 +326,7 @@ export function CreateAccountPage() {
                 <div className="mb-1">
                   <div className="flex gap-0">
                     {/* Country code selector */}
-                    <div className="w-[120px] shrink-0">
+                    <div className="w-[100px] shrink-0">
                       <label className={labelBase} htmlFor={`${formId}-area-code`}>
                         Area code *
                       </label>
@@ -338,7 +335,7 @@ export function CreateAccountPage() {
                           id={`${formId}-area-code`}
                           value={form.areaCode}
                           onChange={e => set('areaCode', e.target.value)}
-                          className={`${inputBase} w-full cursor-pointer appearance-none pr-7`}
+                          className={`${inputBase} w-full cursor-pointer appearance-none pr-6`}
                           aria-label="Country area code"
                         >
                           {COUNTRY_CODES.map(c => (
@@ -347,12 +344,12 @@ export function CreateAccountPage() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                        <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
                       </div>
                     </div>
 
                     {/* Phone number */}
-                    <div className="flex-1 pl-4">
+                    <div className="flex-1 pl-3">
                       <label className={labelBase} htmlFor={`${formId}-phone`}>
                         Telephone number *
                       </label>
@@ -369,7 +366,7 @@ export function CreateAccountPage() {
                       />
                     </div>
                   </div>
-                  <p id={`${formId}-phone-hint`} className="mt-1 text-[11px] text-zinc-400">
+                  <p id={`${formId}-phone-hint`} className="mt-0.5 text-[10px] text-zinc-400">
                     Expected format: phone number with 10 digits
                   </p>
                   {fieldError('phone') && (
@@ -378,15 +375,15 @@ export function CreateAccountPage() {
                 </div>
 
                 {/* Date of birth */}
-                <div className="mt-6">
+                <div className="mt-4">
                   <label className={labelBase}>Date of birth</label>
-                  <div className="grid grid-cols-[1fr_0.6fr_0.6fr] gap-3">
+                  <div className="grid grid-cols-[1fr_0.6fr_0.6fr] gap-2">
                     {/* Month */}
                     <div className="relative">
                       <select
                         value={form.birthMonth}
                         onChange={e => set('birthMonth', e.target.value)}
-                        className={`${inputBase} cursor-pointer appearance-none pr-7`}
+                        className={`${inputBase} cursor-pointer appearance-none pr-6`}
                         aria-label="Birth month"
                       >
                         <option value="" disabled hidden>Month</option>
@@ -396,7 +393,7 @@ export function CreateAccountPage() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                      <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
                     </div>
 
                     {/* Day */}
@@ -423,7 +420,7 @@ export function CreateAccountPage() {
                       className={inputBase}
                     />
                   </div>
-                  <p className="mt-1 text-[11px] text-zinc-400">
+                  <p className="mt-0.5 text-[10px] text-zinc-400">
                     Youth under the age of 18 cannot join as a member.
                   </p>
                 </div>
@@ -431,7 +428,7 @@ export function CreateAccountPage() {
             </div>
 
             {/* ─── CONSENT ─── */}
-            <div className="mt-12 flex items-start gap-3">
+            <div className="mt-8 flex items-start gap-2">
               <input
                 type="checkbox"
                 id={`${formId}-consent`}
@@ -439,7 +436,7 @@ export function CreateAccountPage() {
                 onChange={e => set('consent', e.target.checked)}
                 onBlur={() => { touch('consent'); validate(); }}
                 aria-invalid={ariaInvalid('consent')}
-                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer appearance-none border border-zinc-400 bg-white checked:border-black checked:bg-black"
+                className="mt-0 h-3.5 w-3.5 shrink-0 cursor-pointer appearance-none border border-zinc-400 bg-white checked:border-black checked:bg-black"
                 style={{
                   backgroundImage: form.consent
                     ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E")`
@@ -451,28 +448,28 @@ export function CreateAccountPage() {
               />
               <label
                 htmlFor={`${formId}-consent`}
-                className="cursor-pointer text-[11.5px] leading-relaxed text-zinc-600"
+                className="cursor-pointer text-[10px] leading-relaxed text-zinc-600"
               >
                 I agree to receive information by email about offers, services, products and events
                 from Vines &amp; Branches or other group companies, in accordance with the{' '}
                 <button type="button" className="underline hover:text-black">Privacy Policy</button>.
               </label>
             </div>
-            <p className="mt-2 pl-7 text-[10.5px] leading-relaxed text-zinc-400">
+            <p className="mt-1.5 pl-6 text-[9px] leading-relaxed text-zinc-400">
               You can unsubscribe from email marketing communications via the &ldquo;Unsubscribe&rdquo;
               link at the bottom of each of our email promotional communications.
             </p>
             {fieldError('consent') && (
-              <p className={`${errorText} pl-7`} role="alert">{fieldError('consent')}</p>
+              <p className={`${errorText} pl-6`} role="alert">{fieldError('consent')}</p>
             )}
 
             {/* ─── SUBMIT ─── (left edge aligned with form left column) */}
-            <div className="mt-10 grid gap-x-16 md:grid-cols-2">
+            <div className="mt-8 grid gap-x-12 md:grid-cols-2">
               <div className="flex justify-start">
                 <button
                   type="submit"
                   disabled={!isFormValid}
-                  className="h-12 cursor-pointer rounded-sm bg-black px-16 text-[12px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                  className="h-10 cursor-pointer rounded-sm bg-black px-12 text-[11px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
                 >
                   CREATE AN ACCOUNT
                 </button>
