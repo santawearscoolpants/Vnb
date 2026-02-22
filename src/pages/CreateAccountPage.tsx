@@ -270,7 +270,7 @@ export function CreateAccountPage() {
             </div>
 
             {/* Two-column grid: desktop two cols, mobile single column — focus order: left then right */}
-            <div className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-16 gap-y-8 md:grid-cols-2 md:gap-x-20">
               {/* ——— LEFT: Account Information ——— */}
               <section aria-labelledby={`${formId}-account-heading`} className="space-y-6">
                 <h2
