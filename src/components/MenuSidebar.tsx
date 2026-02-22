@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, Lock } from 'lucide-react';
 import { useRouter } from '../context/RouterContext';
 
 interface MenuSidebarProps {
@@ -91,7 +91,10 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                     onClick={() => handleItemClick(item)}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
-                    <span className="text-sm">{item.label}</span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                      {item.label}
+                    </span>
                     {item.hasSubmenu && (
                       <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                     )}
@@ -107,7 +110,10 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                     onClick={handleContactClick}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
-                    <span className="text-sm">Contact Us</span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                      Contact Us
+                    </span>
                   </motion.button>
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
@@ -116,7 +122,10 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                     onClick={handleInvestClick}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
-                    <span className="text-sm">Invest</span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                      Invest
+                    </span>
                   </motion.button>
                 </div>
               </nav>
