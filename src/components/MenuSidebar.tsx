@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronRight, Lock } from 'lucide-react';
 
@@ -29,11 +29,16 @@ const jitterKeyframes = {
 
 export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps) {
   const [jitterKey, setJitterKey] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  const handleLockedTap = (key: string) => {
+  const handleLockedTap = useCallback((key: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setJitterKey(null);
-    requestAnimationFrame(() => setJitterKey(key));
-  };
+    requestAnimationFrame(() => {
+      setJitterKey(key);
+      timerRef.current = setTimeout(() => setJitterKey(null), 2000);
+    });
+  }, []);
 
   return (
     <AnimatePresence>
