@@ -35,9 +35,6 @@
 - [x] Wire `api.getOrders()` to display past orders
 - [x] Persist auth session across page refreshes (currently all state is in-memory)
 
-### Wishlist / Favorites
-- [ ] Heart/favorite button in `CategoryPage` is local state only — build real wishlist backed by user account
-
 ### Product Experience
 - [ ] Size guide modal on `ProductDetailPage`
 - [ ] Real stock/availability display (sold out states, low stock warnings)
