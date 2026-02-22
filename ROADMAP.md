@@ -14,8 +14,8 @@
 
 ### Product Data
 - [x] Replace hardcoded products in `ProductDetailPage` with real `api.getProduct()` calls
-- [ ] Replace hardcoded category products in `CategoryPage` with `api.getProducts({ category__slug })` calls
-- [ ] Replace mock data in `FeaturedCollection`, `SandalsSection`, `ProductCategories` with `api.getFeaturedProducts()` and `api.getCategories()`
+- [x] Replace hardcoded category products in `CategoryPage` with `api.getProducts({ category__slug })` calls
+- [x] Replace mock data in `FeaturedCollection`, `SandalsSection`, `ProductCategories` with `api.getFeaturedProducts()` and `api.getCategories()`
 
 ### Checkout Flow
 - [ ] Build `CheckoutPage` — cart already has a 3-step progress indicator (Cart → Checkout → Confirmation) but step 2 doesn't exist

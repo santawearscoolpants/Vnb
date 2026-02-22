@@ -62,7 +62,7 @@ export function FeaturedCollection() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/90"
-                onClick={() => navigateTo('/collection')}
+                onClick={() => navigateTo('category', { categoryId: 'sandals' })}
               >
                 View Collection
               </Button>
