@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -157,7 +158,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         subtotal = cart.total
         shipping = 0
-        tax = subtotal * 0.08
+        tax = subtotal * Decimal('0.08')
         total = subtotal + shipping + tax
 
         order = Order.objects.create(
