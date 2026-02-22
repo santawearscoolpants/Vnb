@@ -20,6 +20,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    
+
     def get_serializer_class(self):
         if self.action == 'create':
             return UserRegistrationSerializer
@@ -84,6 +86,28 @@ class UserViewSet(viewsets.ModelViewSet):
             {'error': 'Not authenticated'},
             status=status.HTTP_401_UNAUTHORIZED
         )
+
+    @action(detail=False, methods=['patch'])
+    def update_profile(self, request):
+        user = request.user
+        if not user.is_authenticated:
+            return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user.first_name = request.data.get('first_name', user.first_name)
+        user.last_name = request.data.get('last_name', user.last_name)
+        user.save()
+
+        profile_data = request.data.get('profile', {})
+        if profile_data:
+            from .models import UserProfile
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            for key, value in profile_data.items():
+                if hasattr(profile, key):
+                    setattr(profile, key, value)
+            profile.save()
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def request_password_reset(self, request):

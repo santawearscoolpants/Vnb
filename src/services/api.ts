@@ -151,6 +151,10 @@ class ApiService {
     return this.get('/accounts/users/me/');
   }
 
+  updateProfile(data: { first_name?: string; last_name?: string; profile?: Record<string, any> }) {
+    return this.request('/accounts/users/update_profile/', { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
   getCurrentCart() {
     return this.get('/orders/cart/current/');
   }

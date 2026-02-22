@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Menu, Search, User, LogOut } from 'lucide-react';
+import { ShoppingBag, Menu, Search, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -123,6 +123,13 @@ export function Navigation() {
                         <p className="text-xs font-medium text-black">{user?.first_name} {user?.last_name}</p>
                         <p className="truncate text-xs text-zinc-500">{user?.email}</p>
                       </div>
+                      <button
+                        onClick={() => { setIsUserMenuOpen(false); navigateTo('account-dashboard'); }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50 hover:text-black"
+                      >
+                        <LayoutDashboard className="h-3.5 w-3.5" />
+                        My Account
+                      </button>
                       <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50 hover:text-black"

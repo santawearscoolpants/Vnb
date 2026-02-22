@@ -31,9 +31,9 @@
 ## Phase 2 — Post-MVP Polish
 
 ### Account Dashboard
-- [ ] Build logged-in account dashboard (order history, saved addresses, profile settings)
-- [ ] Wire `api.getOrders()` to display past orders
-- [ ] Persist auth session across page refreshes (currently all state is in-memory)
+- [x] Build logged-in account dashboard (order history, saved addresses, profile settings)
+- [x] Wire `api.getOrders()` to display past orders
+- [x] Persist auth session across page refreshes (currently all state is in-memory)
 
 ### Wishlist / Favorites
 - [ ] Heart/favorite button in `CategoryPage` is local state only — build real wishlist backed by user account
@@ -45,10 +45,10 @@
 
 ### Homepage
 - [ ] Audit all homepage sections (`BrandStory`, `Newsletter`, `SandalsSection`) for visual completeness
-- [ ] Wire newsletter signup to `api.subscribeNewsletter()`
+- [x] Wire newsletter signup to `api.subscribeNewsletter()`
 
 ### Contact
-- [ ] Review `ContactPage` — confirm it is wired to `api.submitContact()`
+- [x] Review `ContactPage` — confirm it is wired to `api.submitContact()`
 
 ---
 

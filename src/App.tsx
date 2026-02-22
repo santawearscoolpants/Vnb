@@ -10,6 +10,7 @@ import { InvestPage } from './pages/InvestPage';
 import { AccountPage } from './pages/AccountPage';
 import { CreateAccountPage } from './pages/CreateAccountPage';
 import { CartPage } from './pages/CartPage';
+import { AccountDashboardPage } from './pages/AccountDashboardPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
@@ -35,6 +36,8 @@ function AppContent() {
         return <CreateAccountPage />;
       case 'cart':
         return <CartPage />;
+      case 'account-dashboard':
+        return <AccountDashboardPage />;
       case 'checkout':
         return <CheckoutPage />;
       case 'order-confirmation':
