@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useState, useMemo, useId, useCallback, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
+import api from '../services/api';
 import CountryList from 'country-list-with-dial-code-and-flag';
 
 // 8px spacing: 2=8, 4=16, 6=24, 8=32, 10=40, 12=48
@@ -234,10 +235,32 @@ export function CreateAccountPage() {
     });
     if (!validate() || isUnder18 || !isFormValid) return;
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 800));
-    toast.success('Account created successfully!');
-    navigateTo('account');
-    setIsSubmitting(false);
+    try {
+      await api.register({
+        email: form.email,
+        password: form.password,
+        first_name: form.firstName,
+        last_name: form.lastName,
+        profile: {
+          title: form.title,
+          phone: `${selectedCountry.callingCode}${form.phone}`,
+          country: form.country,
+          date_of_birth: `${form.birthYear}-${form.birthMonth}-${form.birthDay}`,
+          marketing_consent: form.consentMarketing,
+        },
+      });
+      toast.success('Account created successfully! Please sign in.');
+      navigateTo('account', { email: form.email, showPassword: 'true' });
+    } catch (err: any) {
+      const message: string = err?.message || '';
+      if (message.toLowerCase().includes('email') && message.toLowerCase().includes('exist')) {
+        navigateTo('account', { email: form.email, emailRegistered: 'true' });
+      } else {
+        toast.error(message || 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // If email already registered, redirect to login and show password field
