@@ -18,6 +18,7 @@
     /* Type Checking */
     "strict": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
 
     /* Output */
     "sourceMap": true,
