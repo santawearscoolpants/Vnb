@@ -9,7 +9,7 @@
 ### Auth & Accounts
 - [x] Wire `AccountPage` login to `api.checkEmail()` and `api.login()` — `emailExists` is hardcoded `false`, login never works
 - [x] Wire `CreateAccountPage` submit to `api.register()` — currently just fires a toast, no API call
-- [ ] Add logged-in user session (store user in context after login)
+- [x] Add logged-in user session (store user in context after login)
 - [ ] Add password reset flow (forgot password page + email trigger)
 
 ### Product Data

@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { useRouter } from '../context/RouterContext';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import api from '../services/api';
 
@@ -26,6 +27,7 @@ export function AccountPage() {
 
 function LoginForm() {
   const { navigateTo, pageParams } = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState(pageParams.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(pageParams.showPassword === 'true');
@@ -60,7 +62,7 @@ function LoginForm() {
     setError(null);
     setIsLoading(true);
     try {
-      await api.login(email, password);
+      await login(email, password);
       toast.success('Welcome back!');
       navigateTo('home');
     } catch {

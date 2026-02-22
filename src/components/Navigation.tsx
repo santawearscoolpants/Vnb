@@ -1,29 +1,53 @@
-import { motion } from 'motion/react';
-import { ShoppingBag, Menu, Search, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ShoppingBag, Menu, Search, User, LogOut } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import logo from "../assets/logo.png";
 import { useRouter } from '../context/RouterContext';
 import { MenuSidebar } from './MenuSidebar';
 import { SearchDialog } from './SearchDialog';
 import { ContactSidebar } from './ContactSidebar';
+import { toast } from 'sonner';
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { navigateTo, currentPage } = useRouter();
   const { cart } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    setIsUserMenuOpen(false);
+    await logout();
+    toast.success('You have been signed out.');
+    navigateTo('home');
+  };
+
+  const initials = user
+    ? `${user.first_name[0] ?? ''}${user.last_name[0] ?? ''}`.toUpperCase()
+    : null;
 
   // Force solid background on certain pages or when scrolled
   const forceSolidBg = currentPage !== 'home' || isScrolled;
@@ -70,7 +94,46 @@ export function Navigation() {
                 <NavLink onClick={() => setIsContactOpen(true)}>Contact Us</NavLink>
                 <NavLink onClick={() => navigateTo('invest')}>Invest</NavLink>
               </div>
-              <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
+              {/* User menu */}
+              <div ref={userMenuRef} className="relative">
+                {isAuthenticated ? (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    aria-label="Account menu"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-medium text-black"
+                  >
+                    {initials}
+                  </motion.button>
+                ) : (
+                  <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
+                )}
+
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-10 w-48 rounded-sm bg-white py-1 shadow-lg"
+                    >
+                      <div className="border-b border-zinc-100 px-4 py-2">
+                        <p className="text-xs font-medium text-black">{user?.first_name} {user?.last_name}</p>
+                        <p className="truncate text-xs text-zinc-500">{user?.email}</p>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50 hover:text-black"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        Sign out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <NavIcon icon={ShoppingBag} label="Cart" badge={cart?.item_count || 0} onClick={() => navigateTo('cart')} />
             </div>
           </div>

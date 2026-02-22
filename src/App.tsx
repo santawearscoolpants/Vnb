@@ -2,6 +2,7 @@ import { Navigation } from './components/Navigation';
 import { FooterNew } from './components/FooterNew';
 import { RouterProvider, useRouter } from './context/RouterContext';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
@@ -52,9 +53,11 @@ function AppContent() {
 export default function App() {
   return (
     <RouterProvider>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </AuthProvider>
     </RouterProvider>
   );
 }
