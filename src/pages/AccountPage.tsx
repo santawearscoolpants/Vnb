@@ -24,11 +24,11 @@ export function AccountPage() {
 }
 
 function LoginForm() {
-  const { navigateTo } = useRouter();
-  const [email, setEmail] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const { navigateTo, pageParams } = useRouter();
+  const [email, setEmail] = useState(pageParams.email || '');
+  const [showPassword, setShowPassword] = useState(pageParams.showPassword === 'true');
   const [password, setPassword] = useState('');
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [emailSubmitted, setEmailSubmitted] = useState(pageParams.showPassword === 'true');
   const [emailExists] = useState(false);
 
   const handleEmailContinue = (e: React.FormEvent) => {
