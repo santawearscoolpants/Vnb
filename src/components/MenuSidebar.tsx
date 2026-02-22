@@ -9,17 +9,17 @@ interface MenuSidebarProps {
   onOpenContact?: () => void;
 }
 
-// Items with a categoryId navigate to that category; without one they show "coming soon" jitter
-const menuItems: { label: string; categoryId?: string; page?: string }[] = [
-  { label: 'New', categoryId: 'new' },
-  { label: 'Women', categoryId: 'women' },
-  { label: 'Men', categoryId: 'men' },
-  { label: 'Bags and Wallets', categoryId: 'bags' },
-  { label: 'Jewelry', categoryId: 'jewelry' },
-  { label: 'Perfumes and Beauty', categoryId: 'fragrances' },
-  { label: 'Watches', categoryId: 'watches' },
+const menuItems = [
   { label: 'Gifts and Personalization' },
+  { label: 'New' },
+  { label: 'Bags and Wallets' },
+  { label: 'Women' },
+  { label: 'Men' },
+  { label: 'Perfumes and Beauty' },
+  { label: 'Jewelry' },
+  { label: 'Watches' },
   { label: 'Trunks, Travel and Home' },
+  { label: 'Services' },
   { label: 'The Maison VNB' },
 ];
 
@@ -42,14 +42,6 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
     });
   }, []);
 
-  const handleItemClick = (item: typeof menuItems[0], key: string) => {
-    if (item.categoryId) {
-      navigateTo('category', { categoryId: item.categoryId });
-      onClose();
-    } else {
-      handleLockedTap(key);
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -89,20 +81,17 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
               <nav className="space-y-1">
                 {menuItems.map((item, index) => {
                   const key = `menu-${index}`;
-                  const isLinked = Boolean(item.categoryId);
                   return (
                     <motion.button
                       key={key}
                       initial={{ opacity: 0, x: -20 }}
                       animate={jitterKey === key ? jitterKeyframes : { opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
-                      onClick={() => handleItemClick(item, key)}
+                      onClick={() => handleLockedTap(key)}
                       className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                     >
                       <span className="flex items-center gap-2 text-sm">
-                        {!isLinked && (
-                          <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
-                        )}
+                        <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
                         {item.label}
                       </span>
                       <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
