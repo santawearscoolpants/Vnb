@@ -10,6 +10,8 @@ import { InvestPage } from './pages/InvestPage';
 import { AccountPage } from './pages/AccountPage';
 import { CreateAccountPage } from './pages/CreateAccountPage';
 import { CartPage } from './pages/CartPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { Toaster } from './components/ui/sonner';
@@ -33,6 +35,10 @@ function AppContent() {
         return <CreateAccountPage />;
       case 'cart':
         return <CartPage />;
+      case 'checkout':
+        return <CheckoutPage />;
+      case 'order-confirmation':
+        return <OrderConfirmationPage />;
       case 'forgot-password':
         return <ForgotPasswordPage />;
       case 'reset-password':
@@ -43,7 +49,7 @@ function AppContent() {
   };
 
   // Pages with custom footers (don't show FooterNew)
-  const pagesWithCustomFooter = ['cart'];
+  const pagesWithCustomFooter = ['cart', 'checkout', 'order-confirmation'];
   const showFooter = !pagesWithCustomFooter.includes(currentPage);
 
   return (

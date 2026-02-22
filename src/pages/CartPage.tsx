@@ -4,8 +4,9 @@ import { Button } from '../components/ui/button';
 import { useRouter } from '../context/RouterContext';
 import logo from "../assets/logo.png";
 import { useCart } from '../context/CartContext';
+import { ArrowRight } from 'lucide-react';
 export function CartPage() {
-  const { goBack } = useRouter();
+  const { goBack, navigateTo } = useRouter();
   const { cart, loading, updateItem, removeItem, clear } = useCart();
   const isEmpty = !(cart && cart.item_count && cart.item_count > 0);
 
@@ -91,6 +92,42 @@ export function CartPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Order Summary + Checkout */}
+            {!isEmpty && !loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-sm bg-white p-6 shadow-sm"
+              >
+                <h3 className="mb-4 text-sm font-medium text-black">ORDER SUMMARY</h3>
+                <div className="space-y-2 border-b border-zinc-100 pb-4">
+                  <div className="flex justify-between text-xs text-zinc-700">
+                    <span>Subtotal</span>
+                    <span>${Number(cart?.total ?? 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-zinc-700">
+                    <span>Shipping</span>
+                    <span className="text-green-700">Free</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-zinc-700">
+                    <span>Tax (8%)</span>
+                    <span>${(Number(cart?.total ?? 0) * 0.08).toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-between text-sm font-medium text-black">
+                  <span>Total</span>
+                  <span>${(Number(cart?.total ?? 0) * 1.08).toFixed(2)}</span>
+                </div>
+                <Button
+                  onClick={() => navigateTo('checkout')}
+                  className="mt-6 w-full rounded-none bg-black py-6 text-xs font-medium tracking-widest text-white hover:bg-zinc-800"
+                >
+                  PROCEED TO CHECKOUT
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+
             {/* The Orange Box */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

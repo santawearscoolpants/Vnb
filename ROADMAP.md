@@ -18,9 +18,9 @@
 - [x] Replace mock data in `FeaturedCollection`, `SandalsSection`, `ProductCategories` with `api.getFeaturedProducts()` and `api.getCategories()`
 
 ### Checkout Flow
-- [ ] Build `CheckoutPage` — cart already has a 3-step progress indicator (Cart → Checkout → Confirmation) but step 2 doesn't exist
-- [ ] Build `OrderConfirmationPage` — step 3 of the cart flow
-- [ ] Wire `api.createOrder()` through the checkout form (method already exists in `api.ts`)
+- [x] Build `CheckoutPage` — cart already has a 3-step progress indicator (Cart → Checkout → Confirmation) but step 2 doesn't exist
+- [x] Build `OrderConfirmationPage` — step 3 of the cart flow
+- [x] Wire `api.createOrder()` through the checkout form (method already exists in `api.ts`)
 
 ### Navigation
 - [ ] Audit `MenuSidebar` and `Navigation` — ensure all links route correctly and cart count reflects `CartContext`
@@ -84,9 +84,9 @@
 |---|---|
 | ~~`AccountPage`~~ | ~~`emailExists` hardcoded to `false` — login path is completely broken~~ ✓ Fixed |
 | ~~`CreateAccountPage`~~ | ~~Form submit doesn't call the API~~ ✓ Fixed |
-| `ProductDetailPage` | All product data is hardcoded (4 mock products) |
-| `CategoryPage` | All category/product data is hardcoded |
-| `CartPage` | Checkout button leads nowhere — step 2 doesn't exist |
+| ~~`ProductDetailPage`~~ | ~~All product data is hardcoded (4 mock products)~~ ✓ Fixed |
+| ~~`CategoryPage`~~ | ~~All category/product data is hardcoded~~ ✓ Fixed |
+| ~~`CartPage`~~ | ~~Checkout button leads nowhere — step 2 doesn't exist~~ ✓ Fixed |
 | `InvestPage` | "Download Investor Deck" button is a dead link |
 | `ContactPage` | Not yet audited |
 
