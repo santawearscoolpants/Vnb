@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronRight, Lock } from 'lucide-react';
+import { useRouter } from '../context/RouterContext';
 
 interface MenuSidebarProps {
   isOpen: boolean;
@@ -8,18 +9,18 @@ interface MenuSidebarProps {
   onOpenContact?: () => void;
 }
 
-const menuItems = [
+// Items with a categoryId navigate to that category; without one they show "coming soon" jitter
+const menuItems: { label: string; categoryId?: string; page?: string }[] = [
+  { label: 'New', categoryId: 'new' },
+  { label: 'Women', categoryId: 'women' },
+  { label: 'Men', categoryId: 'men' },
+  { label: 'Bags and Wallets', categoryId: 'bags' },
+  { label: 'Jewelry', categoryId: 'jewelry' },
+  { label: 'Perfumes and Beauty', categoryId: 'fragrances' },
+  { label: 'Watches', categoryId: 'watches' },
   { label: 'Gifts and Personalization' },
-  { label: 'New' },
-  { label: 'Bags and Wallets', hasSubmenu: true },
-  { label: 'Women' },
-  { label: 'Men' },
-  { label: 'Perfumes and Beauty' },
-  { label: 'Jewelry' },
-  { label: 'Watches' },
   { label: 'Trunks, Travel and Home' },
-  { label: 'Services' },
-  { label: 'The Maison VNB' }
+  { label: 'The Maison VNB' },
 ];
 
 const jitterKeyframes = {
@@ -30,6 +31,7 @@ const jitterKeyframes = {
 export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps) {
   const [jitterKey, setJitterKey] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const { navigateTo } = useRouter();
 
   const handleLockedTap = useCallback((key: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -39,6 +41,15 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
       timerRef.current = setTimeout(() => setJitterKey(null), 2000);
     });
   }, []);
+
+  const handleItemClick = (item: typeof menuItems[0], key: string) => {
+    if (item.categoryId) {
+      navigateTo('category', { categoryId: item.categoryId });
+      onClose();
+    } else {
+      handleLockedTap(key);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -78,17 +89,20 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
               <nav className="space-y-1">
                 {menuItems.map((item, index) => {
                   const key = `menu-${index}`;
+                  const isLinked = Boolean(item.categoryId);
                   return (
                     <motion.button
                       key={key}
                       initial={{ opacity: 0, x: -20 }}
                       animate={jitterKey === key ? jitterKeyframes : { opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
-                      onClick={() => handleLockedTap(key)}
+                      onClick={() => handleItemClick(item, key)}
                       className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                     >
                       <span className="flex items-center gap-2 text-sm">
-                        <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                        {!isLinked && (
+                          <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                        )}
                         {item.label}
                       </span>
                       <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
@@ -100,28 +114,22 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                 <div className="mt-6 border-t border-zinc-200 pt-4 lg:hidden">
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
-                    animate={jitterKey === 'contact' ? jitterKeyframes : { opacity: 1, x: 0 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: menuItems.length * 0.05, duration: 0.3 }}
-                    onClick={() => handleLockedTap('contact')}
+                    onClick={() => { onOpenContact?.(); onClose(); }}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
-                    <span className="flex items-center gap-2 text-sm">
-                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
-                      Contact Us
-                    </span>
+                    <span className="text-sm">Contact Us</span>
                     <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                   </motion.button>
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
-                    animate={jitterKey === 'invest' ? jitterKeyframes : { opacity: 1, x: 0 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: (menuItems.length + 1) * 0.05, duration: 0.3 }}
-                    onClick={() => handleLockedTap('invest')}
+                    onClick={() => { navigateTo('invest'); onClose(); }}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
-                    <span className="flex items-center gap-2 text-sm">
-                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
-                      Invest
-                    </span>
+                    <span className="text-sm">Invest</span>
                     <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                   </motion.button>
                 </div>

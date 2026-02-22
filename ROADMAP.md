@@ -23,8 +23,8 @@
 - [x] Wire `api.createOrder()` through the checkout form (method already exists in `api.ts`)
 
 ### Navigation
-- [ ] Audit `Navigation` — ensure all links route correctly and cart count reflects `CartContext`
-- [ ] Connect `SearchDialog` to `api.getProducts({ search })` — component exists, needs backend wiring
+- [x] Audit `Navigation` — ensure all links route correctly and cart count reflects `CartContext`
+- [x] Connect `SearchDialog` to `api.getProducts({ search })` — component exists, needs backend wiring
 
 ---
 
