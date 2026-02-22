@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useMemo, useId, useCallback, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
 
@@ -269,13 +268,10 @@ export function CreateAccountPage() {
               )}
             </div>
 
-            {/* Two-column grid: desktop two cols with clear gutter, mobile single column — focus order: left then right */}
-            <div className="grid grid-cols-1 gap-y-8 md:grid-cols-2 md:gap-x-20">
+            {/* Two-column grid: desktop two cols, mobile single column — focus order: left then right */}
+            <div className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">
               {/* ——— LEFT: Account Information ——— */}
-              <section
-                aria-labelledby={`${formId}-account-heading`}
-                className="space-y-6 md:border-r md:border-zinc-200 md:pr-10"
-              >
+              <section aria-labelledby={`${formId}-account-heading`} className="space-y-6">
                 <h2
                   id={`${formId}-account-heading`}
                   className="border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
@@ -435,10 +431,7 @@ export function CreateAccountPage() {
               </section>
 
               {/* ——— RIGHT: Personal Information ——— */}
-              <section
-                aria-labelledby={`${formId}-personal-heading`}
-                className="space-y-6 md:pl-2"
-              >
+              <section aria-labelledby={`${formId}-personal-heading`} className="space-y-6">
                 <h2
                   id={`${formId}-personal-heading`}
                   className="border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
@@ -450,23 +443,20 @@ export function CreateAccountPage() {
                   <label htmlFor={`${formId}-title`} className={labelBase}>
                     Title <span className="text-zinc-500">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      id={`${formId}-title`}
-                      value={form.title}
-                      onChange={e => set('title', e.target.value)}
-                      onBlur={() => { touch('title'); validate(); }}
-                      aria-invalid={ariaInvalid('title')}
-                      className={`${inputBase} cursor-pointer appearance-none pr-9`}
-                    >
-                      <option value="">Select</option>
-                      <option value="Mr.">Mr.</option>
-                      <option value="Mrs.">Mrs.</option>
-                      <option value="Ms.">Ms.</option>
-                      <option value="Mx.">Mx.</option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                  </div>
+                  <select
+                    id={`${formId}-title`}
+                    value={form.title}
+                    onChange={e => set('title', e.target.value)}
+                    onBlur={() => { touch('title'); validate(); }}
+                    aria-invalid={ariaInvalid('title')}
+                    className={`${inputBase} cursor-pointer pr-9`}
+                  >
+                    <option value="">Select</option>
+                    <option value="Mr.">Mr.</option>
+                    <option value="Mrs.">Mrs.</option>
+                    <option value="Ms.">Ms.</option>
+                    <option value="Mx.">Mx.</option>
+                  </select>
                   {fieldError('title') && (
                     <p className={errorBase} role="alert">{fieldError('title')}</p>
                   )}
@@ -532,21 +522,18 @@ export function CreateAccountPage() {
                   <label htmlFor={`${formId}-country`} className={labelBase}>
                     Country <span className="text-zinc-500">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      id={`${formId}-country`}
-                      value={form.country}
-                      onChange={e => set('country', e.target.value)}
-                      onBlur={() => { touch('country'); validate(); }}
-                      aria-invalid={ariaInvalid('country')}
-                      className={`${inputBase} cursor-pointer appearance-none pr-9`}
-                    >
-                      {COUNTRIES.map(c => (
-                        <option key={c.code} value={c.code}>{c.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                  </div>
+                  <select
+                    id={`${formId}-country`}
+                    value={form.country}
+                    onChange={e => set('country', e.target.value)}
+                    onBlur={() => { touch('country'); validate(); }}
+                    aria-invalid={ariaInvalid('country')}
+                    className={`${inputBase} cursor-pointer pr-9`}
+                  >
+                    {COUNTRIES.map(c => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
                   {fieldError('country') && (
                     <p className={errorBase} role="alert">{fieldError('country')}</p>
                   )}
@@ -594,55 +581,46 @@ export function CreateAccountPage() {
 
                 <div>
                   <span className={labelBase}>Date of birth <span className="text-zinc-500">*</span></span>
-                  <div className="grid grid-cols-[1fr_1fr_0.9fr] gap-2 mt-1">
-                    <div className="relative">
-                      <select
-                        id={`${formId}-birthMonth`}
-                        value={form.birthMonth}
-                        onChange={e => set('birthMonth', e.target.value)}
-                        onBlur={() => { touch('birthMonth'); validate(); }}
-                        aria-label="Birth month"
-                        className={`${inputBase} cursor-pointer appearance-none pr-8`}
-                      >
-                        <option value="">Month</option>
-                        {MONTHS.map((m, i) => (
-                          <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        id={`${formId}-birthDay`}
-                        value={form.birthDay}
-                        onChange={e => set('birthDay', e.target.value)}
-                        onBlur={() => { touch('birthDay'); validate(); }}
-                        aria-label="Birth day"
-                        className={`${inputBase} cursor-pointer appearance-none pr-8`}
-                      >
-                        <option value="">Day</option>
-                        {DAYS.map(d => (
-                          <option key={d} value={String(d).padStart(2, '0')}>{d}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        id={`${formId}-birthYear`}
-                        value={form.birthYear}
-                        onChange={e => set('birthYear', e.target.value)}
-                        onBlur={() => { touch('birthYear'); validate(); }}
-                        aria-label="Birth year"
-                        className={`${inputBase} cursor-pointer appearance-none pr-8`}
-                      >
-                        <option value="">Year</option>
-                        {YEARS.map(y => (
-                          <option key={y} value={String(y)}>{y}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    </div>
+                  <div className="flex flex-nowrap items-stretch gap-3 mt-1">
+                    <select
+                      id={`${formId}-birthMonth`}
+                      value={form.birthMonth}
+                      onChange={e => set('birthMonth', e.target.value)}
+                      onBlur={() => { touch('birthMonth'); validate(); }}
+                      aria-label="Birth month"
+                      className={`${inputBase} cursor-pointer pr-8 flex-1 min-w-0`}
+                    >
+                      <option value="">Month</option>
+                      {MONTHS.map((m, i) => (
+                        <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                      ))}
+                    </select>
+                    <select
+                      id={`${formId}-birthDay`}
+                      value={form.birthDay}
+                      onChange={e => set('birthDay', e.target.value)}
+                      onBlur={() => { touch('birthDay'); validate(); }}
+                      aria-label="Birth day"
+                      className={`${inputBase} cursor-pointer pr-8 flex-1 min-w-0`}
+                    >
+                      <option value="">Day</option>
+                      {DAYS.map(d => (
+                        <option key={d} value={String(d).padStart(2, '0')}>{d}</option>
+                      ))}
+                    </select>
+                    <select
+                      id={`${formId}-birthYear`}
+                      value={form.birthYear}
+                      onChange={e => set('birthYear', e.target.value)}
+                      onBlur={() => { touch('birthYear'); validate(); }}
+                      aria-label="Birth year"
+                      className={`${inputBase} cursor-pointer pr-8 flex-1 min-w-0`}
+                    >
+                      <option value="">Year</option>
+                      {YEARS.map(y => (
+                        <option key={y} value={String(y)}>{y}</option>
+                      ))}
+                    </select>
                   </div>
                   {dobComplete && isUnder18 && (
                     <p className="mt-2 text-xs text-red-600" role="alert">
