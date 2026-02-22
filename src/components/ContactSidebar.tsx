@@ -50,7 +50,7 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
               >
                 {/* Welcome Message */}
                 <p className="text-sm text-zinc-600">
-                  Wherever you are, Vines & Branches Client Advisors will be delighted to assist you.
+                  Wherever you are, VNBWAY Client Advisors will be delighted to assist you.
                 </p>
 
                 {/* Phone Number */}
@@ -60,7 +60,7 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
                     href="tel:+233123456789"
                     className="text-zinc-900 transition-colors hover:text-zinc-600"
                   >
-                    +1 866 VUITTON
+                    +233(0)59 484 9077 | +233(0)24 909 7323
                   </a>
                 </div>
 
