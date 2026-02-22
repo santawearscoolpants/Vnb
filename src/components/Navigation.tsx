@@ -46,7 +46,7 @@ export function Navigation() {
   };
 
   const initials = user
-    ? `${user.first_name[0] ?? ''}${user.last_name[0] ?? ''}`.toUpperCase()
+    ? `${(user.first_name ?? '')[0] ?? ''}${(user.last_name ?? '')[0] ?? ''}`.toUpperCase()
     : null;
 
   // Force solid background on certain pages or when scrolled
@@ -104,7 +104,7 @@ export function Navigation() {
                     aria-label="Account menu"
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-medium text-black"
                   >
-                    {initials}
+                    {initials || <User className="h-4 w-4" />}
                   </motion.button>
                 ) : (
                   <NavIcon icon={User} label="Account" onClick={() => navigateTo('account')} />
