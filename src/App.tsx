@@ -7,6 +7,7 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
 import { InvestPage } from './pages/InvestPage';
 import { AccountPage } from './pages/AccountPage';
+import { CreateAccountPage } from './pages/CreateAccountPage';
 import { CartPage } from './pages/CartPage';
 import { Toaster } from './components/ui/sonner';
 
@@ -25,6 +26,8 @@ function AppContent() {
         return <InvestPage />;
       case 'account':
         return <AccountPage />;
+      case 'create-account':
+        return <CreateAccountPage />;
       case 'cart':
         return <CartPage />;
       default:
