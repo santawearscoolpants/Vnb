@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronRight, Lock } from 'lucide-react';
-import { useRouter } from '../context/RouterContext';
 
 interface MenuSidebarProps {
   isOpen: boolean;
@@ -9,41 +9,30 @@ interface MenuSidebarProps {
 }
 
 const menuItems = [
-  { label: 'Gifts and Personalization', link: 'home' },
-  { label: 'New', link: 'home' },
-  { label: 'Bags and Wallets', link: 'category', categoryId: 'bags', hasSubmenu: true },
-  { label: 'Women', link: 'home' },
-  { label: 'Men', link: 'home' },
-  { label: 'Perfumes and Beauty', link: 'category', categoryId: 'fragrances' },
-  { label: 'Jewelry', link: 'category', categoryId: 'jewelleries' },
-  { label: 'Watches', link: 'home' },
-  { label: 'Trunks, Travel and Home', link: 'home' },
-  { label: 'Services', link: 'home' },
-  { label: 'The Maison VNB', link: 'home' }
+  { label: 'Gifts and Personalization' },
+  { label: 'New' },
+  { label: 'Bags and Wallets', hasSubmenu: true },
+  { label: 'Women' },
+  { label: 'Men' },
+  { label: 'Perfumes and Beauty' },
+  { label: 'Jewelry' },
+  { label: 'Watches' },
+  { label: 'Trunks, Travel and Home' },
+  { label: 'Services' },
+  { label: 'The Maison VNB' }
 ];
 
+const jitterKeyframes = {
+  x: [0, -4, 4, -3, 3, -2, 2, 0],
+  transition: { duration: 0.4, ease: 'easeInOut' as const },
+};
+
 export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps) {
-  const { navigateTo } = useRouter();
+  const [jitterKey, setJitterKey] = useState<string | null>(null);
 
-  const handleItemClick = (item: typeof menuItems[0]) => {
-    if (item.categoryId) {
-      navigateTo('category', { categoryId: item.categoryId });
-    } else {
-      navigateTo(item.link);
-    }
-    onClose();
-  };
-
-  const handleContactClick = () => {
-    onClose();
-    setTimeout(() => {
-      onOpenContact?.();
-    }, 400);
-  };
-
-  const handleInvestClick = () => {
-    navigateTo('invest');
-    onClose();
+  const handleLockedTap = (key: string) => {
+    setJitterKey(null);
+    requestAnimationFrame(() => setJitterKey(key));
   };
 
   return (
@@ -82,32 +71,35 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
             {/* Menu Items */}
             <div className="overflow-y-auto p-6" style={{ height: 'calc(100% - 73px)' }}>
               <nav className="space-y-1">
-                {menuItems.map((item, index) => (
-                  <motion.button
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                    onClick={() => handleItemClick(item)}
-                    className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
-                  >
-                    <span className="flex items-center gap-2 text-sm">
-                      <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
-                      {item.label}
-                    </span>
-                    {item.hasSubmenu && (
-                      <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-                    )}
-                  </motion.button>
-                ))}
+                {menuItems.map((item, index) => {
+                  const key = `menu-${index}`;
+                  return (
+                    <motion.button
+                      key={key}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={jitterKey === key ? jitterKeyframes : { opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      onClick={() => handleLockedTap(key)}
+                      className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        <Lock className="h-3 w-3 text-zinc-400 opacity-40" aria-hidden />
+                        {item.label}
+                      </span>
+                      {item.hasSubmenu && (
+                        <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+                      )}
+                    </motion.button>
+                  );
+                })}
                 
                 {/* Mobile-only items */}
                 <div className="mt-6 border-t border-zinc-200 pt-4 lg:hidden">
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    animate={jitterKey === 'contact' ? jitterKeyframes : { opacity: 1, x: 0 }}
                     transition={{ delay: menuItems.length * 0.05, duration: 0.3 }}
-                    onClick={handleContactClick}
+                    onClick={() => handleLockedTap('contact')}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
                     <span className="flex items-center gap-2 text-sm">
@@ -117,9 +109,9 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                   </motion.button>
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    animate={jitterKey === 'invest' ? jitterKeyframes : { opacity: 1, x: 0 }}
                     transition={{ delay: (menuItems.length + 1) * 0.05, duration: 0.3 }}
-                    onClick={handleInvestClick}
+                    onClick={() => handleLockedTap('invest')}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
                     <span className="flex items-center gap-2 text-sm">
