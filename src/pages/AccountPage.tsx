@@ -1,10 +1,11 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
+import api from '../services/api';
 
 export function AccountPage() {
   return (
@@ -26,83 +27,166 @@ export function AccountPage() {
 function LoginForm() {
   const { navigateTo, pageParams } = useRouter();
   const [email, setEmail] = useState(pageParams.email || '');
-  const [showPassword, setShowPassword] = useState(pageParams.showPassword === 'true');
   const [password, setPassword] = useState('');
-  const [emailSubmitted, setEmailSubmitted] = useState(pageParams.showPassword === 'true');
-  const [emailExists] = useState(false);
+  const [showPassword, setShowPassword] = useState(pageParams.showPassword === 'true');
+  const [emailExists, setEmailExists] = useState(pageParams.showPassword === 'true');
+  const [emailChecked, setEmailChecked] = useState(pageParams.showPassword === 'true');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleEmailContinue = (e: React.FormEvent) => {
+  const handleEmailContinue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setEmailSubmitted(true);
-    if (!emailExists) {
-      navigateTo('create-account', { email });
+    setError(null);
+    setIsLoading(true);
+    try {
+      const result = await api.checkEmail(email) as { exists: boolean };
+      setEmailChecked(true);
+      if (result.exists) {
+        setEmailExists(true);
+      } else {
+        navigateTo('create-account', { email });
+      }
+    } catch {
+      setError('Unable to check email. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Login successful!');
+    if (!password) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      await api.login(email, password);
+      toast.success('Welcome back!');
+      navigateTo('home');
+    } catch {
+      setError('Incorrect password. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    setEmailChecked(false);
+    setEmailExists(false);
+    setPassword('');
+    setError(null);
   };
 
   return (
-    <form onSubmit={emailSubmitted && emailExists ? handleLogin : handleEmailContinue} className="mx-auto max-w-md">
+    <form
+      onSubmit={emailChecked && emailExists ? handleLogin : handleEmailContinue}
+      className="mx-auto max-w-md"
+    >
       <p className="mb-6 text-center text-sm text-zinc-700">
         Please enter your email below to access or create your account
       </p>
 
+      {/* Email field */}
       <div className="mb-6">
         <Label htmlFor="email" className="mb-2 block text-sm text-zinc-700">
           E-mail *
         </Label>
-        <Input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="yourname@domain.com"
-          required
-          className="h-12 rounded-none border-zinc-300"
-        />
-        <p className="mt-1 text-xs text-zinc-500">Expected format: yourname@domain.com</p>
+        <div className="flex gap-2">
+          <Input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailChecked) handleBack();
+            }}
+            placeholder="yourname@domain.com"
+            required
+            disabled={emailChecked && emailExists}
+            className="h-12 rounded-none border-zinc-300 disabled:bg-zinc-50 disabled:text-zinc-500"
+          />
+          {emailChecked && emailExists && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="shrink-0 text-xs text-zinc-500 underline hover:text-black"
+            >
+              Change
+            </button>
+          )}
+        </div>
+        {!emailChecked && (
+          <p className="mt-1 text-xs text-zinc-500">Expected format: yourname@domain.com</p>
+        )}
       </div>
 
-      {emailSubmitted && emailExists && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="mb-6 overflow-hidden"
-        >
-          <Label htmlFor="login-password" className="mb-2 block text-sm text-zinc-700">
-            Password *
-          </Label>
-          <div className="relative">
+      {/* Password field — only shown after email is confirmed to exist */}
+      <AnimatePresence>
+        {emailChecked && emailExists && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="mb-6 overflow-hidden"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="login-password" className="block text-sm text-zinc-700">
+                Password *
+              </Label>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-xs text-zinc-500 underline hover:text-black"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
             <Input
               type={showPassword ? 'text' : 'password'}
               id="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoFocus
               required
-              className="h-12 rounded-none border-zinc-300 pr-16"
+              className="h-12 rounded-none border-zinc-300"
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-zinc-600 hover:text-black"
+              className="mt-2 text-xs text-zinc-500 underline hover:text-black"
             >
-              {showPassword ? 'Hide' : 'Show'}
+              Forgot your password?
             </button>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error message */}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mb-4 text-xs text-red-600"
+            role="alert"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       <Button
         type="submit"
-        className="mb-4 h-12 w-full rounded-none bg-zinc-800 hover:bg-black"
+        disabled={isLoading}
+        className="mb-4 h-12 w-full rounded-none bg-zinc-800 hover:bg-black disabled:bg-zinc-400"
       >
-        CONTINUE
+        {isLoading
+          ? 'Please wait…'
+          : emailChecked && emailExists
+          ? 'SIGN IN'
+          : 'CONTINUE'}
       </Button>
     </form>
   );
 }
-

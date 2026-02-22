@@ -7,7 +7,7 @@
 ## Phase 1 — MVP (Launch-Ready Core)
 
 ### Auth & Accounts
-- [ ] Wire `AccountPage` login to `api.checkEmail()` and `api.login()` — `emailExists` is hardcoded `false`, login never works
+- [x] Wire `AccountPage` login to `api.checkEmail()` and `api.login()` — `emailExists` is hardcoded `false`, login never works
 - [ ] Wire `CreateAccountPage` submit to `api.register()` — currently just fires a toast, no API call
 - [ ] Add logged-in user session (store user in context after login)
 - [ ] Add password reset flow (forgot password page + email trigger)
@@ -82,7 +82,7 @@
 
 | Location | Issue |
 |---|---|
-| `AccountPage` | `emailExists` hardcoded to `false` — login path is completely broken |
+| ~~`AccountPage`~~ | ~~`emailExists` hardcoded to `false` — login path is completely broken~~ ✓ Fixed |
 | `CreateAccountPage` | Form submit doesn't call the API |
 | `ProductDetailPage` | All product data is hardcoded (4 mock products) |
 | `CategoryPage` | All category/product data is hardcoded |
