@@ -1,26 +1,9 @@
-import { motion } from 'motion/react';
-import { useState, useMemo, useId } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useState, useMemo, useId, useCallback } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { toast } from 'sonner';
 
-const COUNTRY_CODES = [
-  { code: '+1', label: 'US +1', flag: '🇺🇸' },
-  { code: '+44', label: 'UK +44', flag: '🇬🇧' },
-  { code: '+233', label: 'GH +233', flag: '🇬🇭' },
-  { code: '+234', label: 'NG +234', flag: '🇳🇬' },
-  { code: '+91', label: 'IN +91', flag: '🇮🇳' },
-  { code: '+33', label: 'FR +33', flag: '🇫🇷' },
-  { code: '+49', label: 'DE +49', flag: '🇩🇪' },
-  { code: '+81', label: 'JP +81', flag: '🇯🇵' },
-  { code: '+86', label: 'CN +86', flag: '🇨🇳' },
-  { code: '+61', label: 'AU +61', flag: '🇦🇺' },
-];
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+// 8px spacing system: space-2=8, space-4=16, space-6=24, space-8=32, space-10=40, space-12=48
 
 const PASSWORD_RULES = [
   { key: 'length', label: 'At least 10 characters', test: (v: string) => v.length >= 10 },
@@ -33,14 +16,8 @@ const PASSWORD_RULES = [
 interface FormData {
   email: string;
   password: string;
-  title: string;
   firstName: string;
   lastName: string;
-  areaCode: string;
-  phone: string;
-  birthMonth: string;
-  birthDay: string;
-  birthYear: string;
   consent: boolean;
 }
 
@@ -48,10 +25,13 @@ interface FieldErrors {
   [key: string]: string;
 }
 
-const inputBase =
-  'w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-2 text-xs text-black outline-none transition-colors placeholder:text-zinc-400 focus:border-black';
-const labelBase = 'block text-[10px] text-zinc-500 mb-0';
-const errorText = 'mt-0.5 text-[10px] text-red-600';
+// Reusable input styles: visible border, focus ring, transition (WCAG AA contrast)
+const inputClassName =
+  'w-full rounded-sm border border-zinc-300 bg-white px-3 py-3 text-sm text-black outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-zinc-400 hover:border-zinc-400 focus:border-black focus:ring-2 focus:ring-zinc-300/50 focus:ring-offset-0';
+const labelClassName = 'block text-sm font-medium text-zinc-800 mb-1';
+const helperClassName = 'text-xs text-zinc-500 leading-relaxed';
+const errorClassName = 'text-xs text-red-600 mt-1';
+const successClassName = 'text-xs text-green-700 mt-1';
 
 export function CreateAccountPage() {
   const { pageParams, navigateTo } = useRouter();
@@ -60,26 +40,24 @@ export function CreateAccountPage() {
   const [form, setForm] = useState<FormData>({
     email: pageParams.email || '',
     password: '',
-    title: '',
     firstName: '',
     lastName: '',
-    areaCode: '+1',
-    phone: '',
-    birthMonth: '',
-    birthDay: '',
-    birthYear: '',
     consent: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const set = (field: keyof FormData, value: string | boolean) =>
+  const set = useCallback((field: keyof FormData, value: string | boolean) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
-  const touch = (field: string) =>
+  const touch = useCallback((field: string) => {
     setTouched(prev => ({ ...prev, [field]: true }));
+  }, []);
 
   const passwordValid = useMemo(
     () => PASSWORD_RULES.every(r => r.test(form.password)),
@@ -90,390 +68,419 @@ export function CreateAccountPage() {
     return (
       form.email.includes('@') &&
       passwordValid &&
-      form.title !== '' &&
       form.firstName.trim() !== '' &&
       form.lastName.trim() !== '' &&
-      form.phone.trim() !== '' &&
       form.consent
     );
   }, [form, passwordValid]);
 
-  const validate = (): boolean => {
+  const validate = useCallback((): boolean => {
     const e: FieldErrors = {};
-    if (!form.email || !form.email.includes('@')) e.email = 'Please enter a valid email address.';
-    if (!passwordValid) e.password = 'Password does not meet all requirements.';
-    if (!form.title) e.title = 'Please select a title.';
-    if (!form.firstName.trim()) e.firstName = 'First name is required.';
-    if (!form.lastName.trim()) e.lastName = 'Last name is required.';
-    if (!form.phone.trim()) e.phone = 'Telephone number is required.';
-    if (!form.consent) e.consent = 'You must agree to continue.';
+    if (!form.email || !form.email.includes('@')) {
+      e.email = 'Enter a valid email address.';
+    }
+    if (!passwordValid) {
+      e.password = 'Password must meet all requirements below.';
+    }
+    if (!form.firstName.trim()) {
+      e.firstName = 'Enter your first name.';
+    }
+    if (!form.lastName.trim()) {
+      e.lastName = 'Enter your last name.';
+    }
+    if (!form.consent) {
+      e.consent = 'You must agree to create an account.';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched({
-      email: true, password: true, title: true,
-      firstName: true, lastName: true, phone: true, consent: true,
-    });
-    if (!validate()) return;
-    toast.success('Account created successfully!');
-    navigateTo('account');
-  };
+  }, [form, passwordValid]);
 
   const fieldError = (field: string) =>
     touched[field] && errors[field] ? errors[field] : null;
-
+  const fieldValid = (field: string) => {
+    if (!touched[field]) return false;
+    if (field === 'email') return form.email.includes('@');
+    if (field === 'password') return passwordValid;
+    if (field === 'firstName') return form.firstName.trim() !== '';
+    if (field === 'lastName') return form.lastName.trim() !== '';
+    return false;
+  };
   const ariaInvalid = (field: string) =>
     touched[field] && errors[field] ? true : undefined;
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched({
+      email: true,
+      password: true,
+      firstName: true,
+      lastName: true,
+      consent: true,
+    });
+    if (!validate()) return;
+    setIsSubmitting(true);
+    await new Promise(r => setTimeout(r, 800));
+    toast.success('Account created successfully!');
+    navigateTo('account');
+    setIsSubmitting(false);
+  };
+
+  const emailFromPreviousStep = Boolean(pageParams.email);
+
   return (
-    <div className="min-h-screen bg-[#F8F7F4] pt-20">
-      <div className="mx-auto max-w-[800px] px-5 py-8 md:px-8">
+    <div className="min-h-screen bg-[#F8F7F4] pt-20 pb-16">
+      <div className="mx-auto w-full max-w-[520px] px-4 py-8 sm:px-6">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
         >
-          {/* Title */}
-          <h1 className="mb-3 text-xs font-normal tracking-[0.2em] text-black uppercase">
-            CREATE AN ACCOUNT
+          {/* Page title — strong hierarchy */}
+          <h1 className="mb-2 text-base font-medium tracking-[0.12em] text-black uppercase sm:text-lg">
+            Create an account
           </h1>
 
-          {/* Legal subheader */}
-          <p className="mb-6 text-[10px] leading-relaxed text-zinc-500">
-            By creating an account, you agree to accept the{' '}
-            <button type="button" className="underline hover:text-black">
-              General Terms and Conditions of Use
-            </button>{' '}
-            and that your data will be processed in compliance with the{' '}
-            <button type="button" className="underline hover:text-black">
+          {/* Legal (terms + privacy) — separate from consent, readable */}
+          <p className={`mb-8 ${helperClassName}`} style={{ lineHeight: 1.6 }}>
+            By creating an account, you agree to our{' '}
+            <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded">
+              General Terms and Conditions
+            </a>{' '}
+            and that your data will be processed in line with our{' '}
+            <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded">
               Privacy Policy
-            </button>{' '}
-            of Vines &amp; Branches.
+            </a>{' '}
+            (Vines &amp; Branches).
           </p>
 
-          {/* Required info note */}
-          <div className="mb-6 text-right text-[10px] text-zinc-500">
-            * Required information
-          </div>
+          <form onSubmit={handleSubmit} noValidate aria-label="Create account">
+            {/* Validation summary for screen readers */}
+            <div
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+              role="status"
+            >
+              {Object.keys(errors).length > 0 && (
+                <span>
+                  Form has {Object.keys(errors).length} error
+                  {Object.keys(errors).length !== 1 ? 's' : ''}. Please correct and try again.
+                </span>
+              )}
+            </div>
 
-          <form onSubmit={handleSubmit} noValidate>
-            {/* Two-column grid */}
-            <div className="grid gap-x-12 gap-y-0 md:grid-cols-2">
-              {/* ─── LEFT COLUMN: LOGIN INFORMATION ─── */}
-              <div>
-                <h2 className="mb-4 border-b border-zinc-200 pb-2 text-[10px] font-normal tracking-[0.15em] text-black uppercase">
-                  LOGIN INFORMATION
-                </h2>
+            {/* ——— Account Information ——— */}
+            <section aria-labelledby={`${formId}-account-heading`} className="mb-8">
+              <h2
+                id={`${formId}-account-heading`}
+                className="mb-4 border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
+              >
+                Account information
+              </h2>
 
-                {/* Email */}
-                <div className="mb-4">
-                  <label htmlFor={`${formId}-email`} className={labelBase}>
-                    E-mail *
-                  </label>
+              {/* Email — prefilled & locked when from previous step */}
+              <div className="mb-6">
+                <label htmlFor={`${formId}-email`} className={labelClassName}>
+                  Email <span className="text-zinc-500">*</span>
+                </label>
+                <div className="relative">
                   <input
                     id={`${formId}-email`}
                     type="email"
                     value={form.email}
                     onChange={e => set('email', e.target.value)}
                     onBlur={() => { touch('email'); validate(); }}
+                    readOnly={emailFromPreviousStep}
                     aria-invalid={ariaInvalid('email')}
-                    aria-describedby={`${formId}-email-hint`}
-                    className={inputBase}
+                    aria-describedby={emailFromPreviousStep ? `${formId}-email-verified` : `${formId}-email-hint`}
+                    className={`${inputClassName} ${emailFromPreviousStep ? 'cursor-not-allowed border-zinc-200 bg-zinc-50/80' : ''}`}
                   />
-                  <p id={`${formId}-email-hint`} className="mt-0.5 text-[10px] text-zinc-400">
-                    Expected format: yourname@domain.com
-                  </p>
-                  {fieldError('email') && (
-                    <p className={errorText} role="alert">{fieldError('email')}</p>
-                  )}
-                </div>
-
-                {/* Password */}
-                <div className="mb-3">
-                  <div className="flex items-baseline justify-between">
-                    <label htmlFor={`${formId}-password`} className={labelBase}>
-                      Password *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="flex items-center gap-0.5 text-[11px] text-zinc-600 hover:text-black"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  {emailFromPreviousStep && (
+                    <span
+                      id={`${formId}-email-verified`}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded bg-zinc-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-700"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-                  <input
-                    id={`${formId}-password`}
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={e => set('password', e.target.value)}
-                    onBlur={() => { touch('password'); validate(); }}
-                    aria-invalid={ariaInvalid('password')}
-                    aria-describedby={`${formId}-pw-rules`}
-                    className={inputBase}
-                  />
-                  {fieldError('password') && (
-                    <p className={errorText} role="alert">{fieldError('password')}</p>
+                      Verified
+                    </span>
                   )}
                 </div>
-
-                {/* Password requirements box */}
-                <div
-                  id={`${formId}-pw-rules`}
-                  className="mt-1.5 rounded-sm border border-zinc-200 bg-zinc-50/80 px-4 py-3"
-                >
-                  <p className="mb-2 text-[10px] leading-relaxed text-zinc-500">
-                    For your security, we invite you to fill your password according to the following criteria:
+                {!emailFromPreviousStep && (
+                  <p id={`${formId}-email-hint`} className={`mt-1 ${helperClassName}`}>
+                    Use the email you entered on the previous step.
                   </p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                    {PASSWORD_RULES.map(rule => {
-                      const passed = rule.test(form.password);
-                      return (
-                        <p
-                          key={rule.key}
-                          className={`text-[10px] leading-relaxed ${
-                            form.password
-                              ? passed
-                                ? 'text-green-700'
-                                : 'text-zinc-500'
-                              : 'text-zinc-500'
-                          }`}
-                        >
-                          {rule.label}
-                        </p>
-                      );
-                    })}
-                  </div>
-                </div>
+                )}
+                <AnimatePresence mode="wait">
+                  {fieldError('email') && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={errorClassName}
+                      role="alert"
+                    >
+                      {fieldError('email')}
+                    </motion.p>
+                  )}
+                  {fieldValid('email') && !fieldError('email') && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className={successClassName}
+                    >
+                      Looks good.
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* ─── RIGHT COLUMN: PERSONAL INFORMATION ─── */}
-              <div>
-                <h2 className="mb-4 border-b border-zinc-200 pb-2 text-[10px] font-normal tracking-[0.15em] text-black uppercase">
-                  Personal information
-                </h2>
-
-                {/* Title */}
-                <div className="mb-4">
-                  <label htmlFor={`${formId}-title`} className={labelBase}>
-                    Title *
+              {/* Password — requirements on focus, live checklist */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor={`${formId}-password`} className={labelClassName}>
+                    Password <span className="text-zinc-500">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      id={`${formId}-title`}
-                      value={form.title}
-                      onChange={e => set('title', e.target.value)}
-                      onBlur={() => { touch('title'); validate(); }}
-                      aria-invalid={ariaInvalid('title')}
-                      className={`${inputBase} cursor-pointer appearance-none pr-6`}
-                    >
-                      <option value="" disabled hidden />
-                      <option value="Mr.">Mr.</option>
-                      <option value="Mrs.">Mrs.</option>
-                      <option value="Ms.">Ms.</option>
-                      <option value="Mx.">Mx.</option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-                  </div>
-                  {fieldError('title') && (
-                    <p className={errorText} role="alert">{fieldError('title')}</p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-xs text-zinc-600 underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
                 </div>
+                <input
+                  id={`${formId}-password`}
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={e => set('password', e.target.value)}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => { setPasswordFocused(false); touch('password'); validate(); }}
+                  aria-invalid={ariaInvalid('password')}
+                  aria-describedby={passwordFocused || form.password ? `${formId}-pw-rules` : undefined}
+                  className={inputClassName}
+                />
+                <AnimatePresence mode="wait">
+                  {fieldError('password') && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={errorClassName}
+                      role="alert"
+                    >
+                      {fieldError('password')}
+                    </motion.p>
+                  )}
+                  {fieldValid('password') && !fieldError('password') && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className={successClassName}
+                    >
+                      Password meets all requirements.
+                    </motion.p>
+                  )}
+                </AnimatePresence>
 
-                {/* First name */}
-                <div className="mb-4">
-                  <label htmlFor={`${formId}-firstName`} className={labelBase}>
-                    First name *
+                {/* Password requirements — reveal on focus, live checklist */}
+                <AnimatePresence>
+                  {(passwordFocused || form.password) && (
+                    <motion.div
+                      id={`${formId}-pw-rules`}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <p className={`mt-3 mb-2 ${helperClassName}`}>
+                        Your password must include:
+                      </p>
+                      <ul className="space-y-1" aria-live="polite">
+                        {PASSWORD_RULES.map(rule => {
+                          const passed = rule.test(form.password);
+                          return (
+                            <motion.li
+                              key={rule.key}
+                              initial={{ opacity: 0, x: -4 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className={`flex items-center gap-2 text-xs ${passed ? 'text-green-700' : 'text-zinc-500'}`}
+                            >
+                              <span
+                                className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
+                                aria-hidden
+                                style={{
+                                  borderColor: passed ? 'var(--green-700, #15803d)' : 'currentColor',
+                                  color: passed ? 'var(--green-700, #15803d)' : 'currentColor',
+                                  backgroundColor: passed ? 'rgba(21,128,61,0.1)' : 'transparent',
+                                }}
+                              >
+                                {passed ? '✓' : '·'}
+                              </span>
+                              {rule.label}
+                            </motion.li>
+                          );
+                        })}
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </section>
+
+            {/* ——— Personal Information ——— */}
+            <section aria-labelledby={`${formId}-personal-heading`} className="mb-8">
+              <h2
+                id={`${formId}-personal-heading`}
+                className="mb-4 border-b border-zinc-200 pb-2 text-xs font-medium tracking-[0.1em] text-zinc-800 uppercase"
+              >
+                Personal information
+              </h2>
+
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor={`${formId}-firstName`} className={labelClassName}>
+                    First name <span className="text-zinc-500">*</span>
                   </label>
                   <input
                     id={`${formId}-firstName`}
                     type="text"
+                    autoComplete="given-name"
                     value={form.firstName}
                     onChange={e => set('firstName', e.target.value)}
                     onBlur={() => { touch('firstName'); validate(); }}
                     aria-invalid={ariaInvalid('firstName')}
-                    className={inputBase}
+                    className={inputClassName}
                   />
-                  {fieldError('firstName') && (
-                    <p className={errorText} role="alert">{fieldError('firstName')}</p>
-                  )}
+                  <AnimatePresence mode="wait">
+                    {fieldError('firstName') && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={errorClassName}
+                        role="alert"
+                      >
+                        {fieldError('firstName')}
+                      </motion.p>
+                    )}
+                    {fieldValid('firstName') && !fieldError('firstName') && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={successClassName}
+                      >
+                        Looks good.
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Last name */}
-                <div className="mb-4">
-                  <label htmlFor={`${formId}-lastName`} className={labelBase}>
-                    Last name *
+                <div>
+                  <label htmlFor={`${formId}-lastName`} className={labelClassName}>
+                    Last name <span className="text-zinc-500">*</span>
                   </label>
                   <input
                     id={`${formId}-lastName`}
                     type="text"
+                    autoComplete="family-name"
                     value={form.lastName}
                     onChange={e => set('lastName', e.target.value)}
                     onBlur={() => { touch('lastName'); validate(); }}
                     aria-invalid={ariaInvalid('lastName')}
-                    className={inputBase}
+                    className={inputClassName}
                   />
-                  {fieldError('lastName') && (
-                    <p className={errorText} role="alert">{fieldError('lastName')}</p>
-                  )}
-                </div>
-
-                {/* Phone — area code + number */}
-                <div className="mb-1">
-                  <div className="flex gap-0">
-                    {/* Country code selector */}
-                    <div className="w-[100px] shrink-0">
-                      <label className={labelBase} htmlFor={`${formId}-area-code`}>
-                        Area code *
-                      </label>
-                      <div className="relative">
-                        <select
-                          id={`${formId}-area-code`}
-                          value={form.areaCode}
-                          onChange={e => set('areaCode', e.target.value)}
-                          className={`${inputBase} w-full cursor-pointer appearance-none pr-6`}
-                          aria-label="Country area code"
-                        >
-                          {COUNTRY_CODES.map(c => (
-                            <option key={c.code} value={c.code}>
-                              {c.flag} {c.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-1 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
-                      </div>
-                    </div>
-
-                    {/* Phone number */}
-                    <div className="flex-1 pl-3">
-                      <label className={labelBase} htmlFor={`${formId}-phone`}>
-                        Telephone number *
-                      </label>
-                      <input
-                        id={`${formId}-phone`}
-                        type="tel"
-                        value={form.phone}
-                        onChange={e => set('phone', e.target.value.replace(/[^\d]/g, ''))}
-                        onBlur={() => { touch('phone'); validate(); }}
-                        placeholder=""
-                        aria-invalid={ariaInvalid('phone')}
-                        aria-describedby={`${formId}-phone-hint`}
-                        className={inputBase}
-                      />
-                    </div>
-                  </div>
-                  <p id={`${formId}-phone-hint`} className="mt-0.5 text-[10px] text-zinc-400">
-                    Expected format: phone number with 10 digits
-                  </p>
-                  {fieldError('phone') && (
-                    <p className={errorText} role="alert">{fieldError('phone')}</p>
-                  )}
-                </div>
-
-                {/* Date of birth */}
-                <div className="mt-4">
-                  <label className={labelBase}>Date of birth</label>
-                  <div className="grid grid-cols-[1fr_0.6fr_0.6fr] gap-2">
-                    {/* Month */}
-                    <div className="relative">
-                      <select
-                        value={form.birthMonth}
-                        onChange={e => set('birthMonth', e.target.value)}
-                        className={`${inputBase} cursor-pointer appearance-none pr-6`}
-                        aria-label="Birth month"
+                  <AnimatePresence mode="wait">
+                    {fieldError('lastName') && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={errorClassName}
+                        role="alert"
                       >
-                        <option value="" disabled hidden>Month</option>
-                        {MONTHS.map((m, i) => (
-                          <option key={m} value={String(i + 1).padStart(2, '0')}>
-                            {m}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
-                    </div>
-
-                    {/* Day */}
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={2}
-                      value={form.birthDay}
-                      onChange={e => set('birthDay', e.target.value.replace(/[^\d]/g, ''))}
-                      placeholder="Day"
-                      aria-label="Birth day"
-                      className={inputBase}
-                    />
-
-                    {/* Year */}
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={4}
-                      value={form.birthYear}
-                      onChange={e => set('birthYear', e.target.value.replace(/[^\d]/g, ''))}
-                      placeholder="Year"
-                      aria-label="Birth year"
-                      className={inputBase}
-                    />
-                  </div>
-                  <p className="mt-0.5 text-[10px] text-zinc-400">
-                    Youth under the age of 18 cannot join as a member.
-                  </p>
+                        {fieldError('lastName')}
+                      </motion.p>
+                    )}
+                    {fieldValid('lastName') && !fieldError('lastName') && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={successClassName}
+                      >
+                        Looks good.
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* ─── CONSENT ─── */}
-            <div className="mt-8 flex items-start gap-2">
-              <input
-                type="checkbox"
-                id={`${formId}-consent`}
-                checked={form.consent}
-                onChange={e => set('consent', e.target.checked)}
-                onBlur={() => { touch('consent'); validate(); }}
-                aria-invalid={ariaInvalid('consent')}
-                className="mt-0 h-3.5 w-3.5 shrink-0 cursor-pointer appearance-none border border-zinc-400 bg-white checked:border-black checked:bg-black"
-                style={{
-                  backgroundImage: form.consent
-                    ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E")`
-                    : 'none',
-                  backgroundSize: '100%',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                }}
-              />
-              <label
-                htmlFor={`${formId}-consent`}
-                className="cursor-pointer text-[10px] leading-relaxed text-zinc-600"
-              >
-                I agree to receive information by email about offers, services, products and events
-                from Vines &amp; Branches or other group companies, in accordance with the{' '}
-                <button type="button" className="underline hover:text-black">Privacy Policy</button>.
-              </label>
-            </div>
-            <p className="mt-1.5 pl-6 text-[9px] leading-relaxed text-zinc-400">
-              You can unsubscribe from email marketing communications via the &ldquo;Unsubscribe&rdquo;
-              link at the bottom of each of our email promotional communications.
-            </p>
-            {fieldError('consent') && (
-              <p className={`${errorText} pl-6`} role="alert">{fieldError('consent')}</p>
-            )}
-
-            {/* ─── SUBMIT ─── (left edge aligned with form left column) */}
-            <div className="mt-8 grid gap-x-12 md:grid-cols-2">
-              <div className="flex justify-start">
-                <button
-                  type="submit"
-                  disabled={!isFormValid}
-                  className="h-10 cursor-pointer rounded-sm bg-black px-12 text-[11px] font-normal tracking-[0.2em] text-white uppercase transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+            {/* ——— Consent ——— */}
+            <div className="mb-10">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id={`${formId}-consent`}
+                  checked={form.consent}
+                  onChange={e => set('consent', e.target.checked)}
+                  onBlur={() => { touch('consent'); validate(); }}
+                  aria-invalid={ariaInvalid('consent')}
+                  aria-describedby={`${formId}-consent-desc`}
+                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-400 text-black focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-[#F8F7F4]"
+                />
+                <label
+                  htmlFor={`${formId}-consent`}
+                  id={`${formId}-consent-desc`}
+                  className="cursor-pointer text-sm text-zinc-700 leading-relaxed"
+                  style={{ lineHeight: 1.5 }}
                 >
-                  CREATE AN ACCOUNT
-                </button>
+                  I agree to receive emails about offers, services, products and events from Vines &amp;
+                  Branches and group companies, in accordance with the{' '}
+                  <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black rounded">
+                    Privacy Policy
+                  </a>
+                  .
+                </label>
               </div>
+              <p className={`mt-2 pl-7 text-xs text-zinc-500`} style={{ lineHeight: 1.5 }}>
+                You can unsubscribe at any time via the link in our emails.
+              </p>
+              <AnimatePresence mode="wait">
+                {fieldError('consent') && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`${errorClassName} pl-7`}
+                    role="alert"
+                  >
+                    {fieldError('consent')}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ——— CTA ——— */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={!isFormValid || isSubmitting}
+                className="flex h-12 w-full min-h-[48px] items-center justify-center rounded-sm bg-black px-6 text-sm font-medium tracking-[0.12em] text-white uppercase transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-[#F8F7F4] disabled:cursor-not-allowed disabled:bg-zinc-400 disabled:text-zinc-200"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Creating…
+                  </span>
+                ) : (
+                  'Create account'
+                )}
+              </button>
             </div>
           </form>
         </motion.div>
