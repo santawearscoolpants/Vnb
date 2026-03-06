@@ -8,6 +8,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { CONTACT_EMAILS } from '../constants/contact';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
@@ -603,8 +604,8 @@ function ProfileTab({
         <div className="rounded-sm bg-zinc-50 p-6 text-xs text-zinc-500 leading-relaxed">
           <p className="mb-1 font-medium text-zinc-700">Need help?</p>
           Contact our team at{' '}
-          <a href="mailto:support@vinesandbranches.com" className="underline hover:text-black">
-            support@vinesandbranches.com
+          <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="underline hover:text-black">
+            {CONTACT_EMAILS.customerCare}
           </a>{' '}
           or call us Monday–Saturday, 9AM–6PM.
         </div>

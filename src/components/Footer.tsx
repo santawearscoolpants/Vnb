@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Instagram, Facebook, Twitter, Mail } from "lucide-react";
 import logo from "../assets/logo.png";
+import { CONTACT_EMAILS } from "../constants/contact";
 
 const footerLinks = {
   shop: ['Suits', 'Shoes', 'Shirts & Tees', 'Sandals', 'Fragrances', 'Jewelleries'],
@@ -13,7 +14,7 @@ const socialLinks = [
   { icon: Instagram, label: 'Instagram', href: '#' },
   { icon: Facebook, label: 'Facebook', href: '#' },
   { icon: Twitter, label: 'Twitter', href: '#' },
-  { icon: Mail, label: 'Email', href: '#' }
+  { icon: Mail, label: 'Email', href: `mailto:${CONTACT_EMAILS.info}` }
 ];
 
 export function Footer() {
@@ -35,6 +36,17 @@ export function Footer() {
                 Redefining luxury fashion with timeless pieces that celebrate
                 craftsmanship, elegance, and individuality.
               </p>
+              <div className="mb-6 space-y-1 text-sm text-white/70">
+                <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="block hover:text-white transition-colors">
+                  {CONTACT_EMAILS.customerCare}
+                </a>
+                <a href={`mailto:${CONTACT_EMAILS.info}`} className="block hover:text-white transition-colors">
+                  {CONTACT_EMAILS.info}
+                </a>
+                <a href={`mailto:${CONTACT_EMAILS.investment}`} className="block hover:text-white transition-colors">
+                  {CONTACT_EMAILS.investment}
+                </a>
+              </div>
               <div className="flex gap-4">
                 {socialLinks.map((social) => (
                   <motion.a

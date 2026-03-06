@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Phone } from 'lucide-react';
+import { CONTACT_EMAILS } from '../constants/contact';
 
 interface ContactSidebarProps {
   isOpen: boolean;
@@ -61,6 +62,15 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
                     className="text-zinc-900 transition-colors hover:text-zinc-600"
                   >
                     +233(0)59 484 9077 | +233(0)24 909 7323
+                  </a>
+                </div>
+
+                <div className="space-y-2 border-b border-zinc-200 pb-6 text-sm text-zinc-700">
+                  <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="block transition-colors hover:text-zinc-900">
+                    {CONTACT_EMAILS.customerCare}
+                  </a>
+                  <a href={`mailto:${CONTACT_EMAILS.info}`} className="block transition-colors hover:text-zinc-900">
+                    {CONTACT_EMAILS.info}
                   </a>
                 </div>
 

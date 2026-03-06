@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { CONTACT_EMAILS } from '../constants/contact';
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -109,8 +110,13 @@ export function ContactPage() {
                   <div>
                     <h3 className="mb-1 text-black">Email Us</h3>
                     <p className="text-zinc-600">
-                      info@vinesandbranches.com<br />
-                      support@vinesandbranches.com
+                      <a href={`mailto:${CONTACT_EMAILS.info}`} className="underline hover:text-black">
+                        {CONTACT_EMAILS.info}
+                      </a>
+                      <br />
+                      <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="underline hover:text-black">
+                        {CONTACT_EMAILS.customerCare}
+                      </a>
                     </p>
                   </div>
                 </div>

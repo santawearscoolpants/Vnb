@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import logo from "../assets/logo.png";
+import { CONTACT_EMAILS } from '../constants/contact';
 
 const helpLinks = [
   { label: 'FAQs', href: '#' },
@@ -57,7 +58,14 @@ export function FooterNew() {
           <div>
             <h4 className="mb-4 text-xs tracking-wider text-black">HELP</h4>
             <p className="mb-3 text-xs text-zinc-700">
-              Our Client Advisors are available to assist you by phone at{' '}
+              Our Client Advisors are available to assist you by phone or email. Reach us at{' '}
+              <a
+                href={`mailto:${CONTACT_EMAILS.customerCare}`}
+                className="underline hover:text-black"
+              >
+                {CONTACT_EMAILS.customerCare}
+              </a>{' '}
+              or by phone at{' '}
               <a href="tel:+18668848866" className="underline hover:text-black">
                 +1 866 VUITTON
               </a>
@@ -135,12 +143,26 @@ export function FooterNew() {
 
         {/* Location Selector */}
         <div className="mt-8 border-t border-zinc-200 pt-8">
-          <p className="text-xs text-zinc-700">
-            Ship to:{' '}
-            <button className="inline-flex items-center gap-1 underline hover:text-black">
-              🇺🇸 United States
-            </button>
-          </p>
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <p className="text-xs text-zinc-700">
+              Ship to:{' '}
+              <button className="inline-flex items-center gap-1 underline hover:text-black">
+                🇺🇸 United States
+              </button>
+            </p>
+            <div className="space-y-1 text-xs text-zinc-700 md:text-right">
+              <p className="tracking-wider text-black">EMAIL US</p>
+              <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="block underline hover:text-black">
+                {CONTACT_EMAILS.customerCare}
+              </a>
+              <a href={`mailto:${CONTACT_EMAILS.info}`} className="block underline hover:text-black">
+                {CONTACT_EMAILS.info}
+              </a>
+              <a href={`mailto:${CONTACT_EMAILS.investment}`} className="block underline hover:text-black">
+                {CONTACT_EMAILS.investment}
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Legal Links */}

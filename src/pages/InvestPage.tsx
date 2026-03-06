@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import logo from "../assets/logo.png";
 import api from '../services/api';
+import { CONTACT_EMAILS } from '../constants/contact';
 
 const investmentTiers = [
   {
@@ -279,6 +280,13 @@ export function InvestPage() {
             <h2 className="mb-4 text-black">Express Your Interest</h2>
             <p className="text-zinc-600">
               Fill out the form below and our investment team will contact you
+            </p>
+            <p className="mt-2 text-sm text-zinc-500">
+              Prefer email? Reach us directly at{' '}
+              <a href={`mailto:${CONTACT_EMAILS.investment}`} className="underline hover:text-black">
+                {CONTACT_EMAILS.investment}
+              </a>
+              .
             </p>
           </motion.div>
 
