@@ -36,9 +36,9 @@
 - [x] Persist auth session across page refreshes (currently all state is in-memory)
 
 ### Product Experience
-- [ ] Size guide modal on `ProductDetailPage`
-- [ ] Real stock/availability display (sold out states, low stock warnings)
-- [ ] Product image zoom on hover/click
+- [x] Size guide modal on `ProductDetailPage`
+- [x] Real stock/availability display (sold out states, low stock warnings)
+- [x] Product image zoom on hover/click
 
 ### Homepage
 - [ ] Audit all homepage sections (`BrandStory`, `Newsletter`, `SandalsSection`) for visual completeness

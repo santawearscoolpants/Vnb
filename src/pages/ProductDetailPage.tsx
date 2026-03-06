@@ -1,8 +1,8 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useRouter } from '../context/RouterContext';
-import { ArrowLeft, ShoppingBag } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ArrowLeft, ShoppingBag, Ruler, X, ZoomIn } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
@@ -42,6 +42,16 @@ export function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+
+  const closeZoomOnEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') setIsImageZoomOpen(false);
+  }, []);
+  useEffect(() => {
+    if (isImageZoomOpen) window.addEventListener('keydown', closeZoomOnEscape);
+    return () => window.removeEventListener('keydown', closeZoomOnEscape);
+  }, [isImageZoomOpen, closeZoomOnEscape]);
 
   useEffect(() => {
     if (!productId) {
@@ -130,18 +140,24 @@ export function ProductDetailPage() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
             {/* Left: Images */}
             <div className="space-y-4">
-              <motion.div
+              <motion.button
+                type="button"
                 key={selectedImage}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="aspect-square overflow-hidden bg-zinc-100"
+                className="group relative aspect-square w-full overflow-hidden bg-zinc-100 text-left"
+                onClick={() => setIsImageZoomOpen(true)}
+                aria-label="Zoom image"
               >
                 <ImageWithFallback
                   src={imageUrls[selectedImage] || ''}
                   alt={product.name}
-                  className="h-full w-full object-contain"
+                  className="h-full w-full object-contain transition-transform group-hover:scale-105"
                 />
-              </motion.div>
+                <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                  <ZoomIn className="h-4 w-4" />
+                </span>
+              </motion.button>
 
               {imageUrls.length > 1 && (
                 <div className="flex gap-2">
@@ -171,8 +187,15 @@ export function ProductDetailPage() {
                 <p className="text-sm text-zinc-600">
                   ${Number(product.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
+                {/* Stock / availability */}
                 {!product.in_stock && (
-                  <p className="mt-1 text-xs text-red-600">Out of stock</p>
+                  <p className="mt-1 text-sm font-medium text-red-600">Out of stock</p>
+                )}
+                {product.in_stock && product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+                  <p className="mt-1 text-sm text-amber-700">Only {product.stock_quantity} left</p>
+                )}
+                {product.in_stock && product.stock_quantity > 5 && (
+                  <p className="mt-1 text-xs text-zinc-500">In stock</p>
                 )}
               </div>
 
@@ -202,7 +225,17 @@ export function ProductDetailPage() {
               {/* Size Selection */}
               {availableSizes.length > 0 && (
                 <div>
-                  <p className="mb-4 text-sm">Size</p>
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-sm">Size</p>
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      className="flex items-center gap-1 text-xs text-zinc-500 underline hover:text-black"
+                    >
+                      <Ruler className="h-3.5 w-3.5" />
+                      Size guide
+                    </button>
+                  </div>
                   <div className="grid grid-cols-4 gap-2">
                     {availableSizes.map((s) => (
                       <button
@@ -251,6 +284,106 @@ export function ProductDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Size guide modal */}
+          <AnimatePresence>
+            {isSizeGuideOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                onClick={() => setIsSizeGuideOpen(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-sm bg-white p-6 shadow-xl"
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-black">Size guide</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeGuideOpen(false)}
+                      className="rounded-full p-1 text-zinc-500 hover:bg-zinc-100 hover:text-black"
+                      aria-label="Close"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <p className="mb-4 text-xs text-zinc-500">
+                    Measure your feet or body and compare to the table below. If between sizes, we recommend sizing up.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                      <thead>
+                        <tr className="border-b border-zinc-200">
+                          <th className="py-2 text-left font-medium text-black">US</th>
+                          <th className="py-2 text-left font-medium text-black">UK</th>
+                          <th className="py-2 text-left font-medium text-black">EU</th>
+                          <th className="py-2 text-left font-medium text-black">Length (cm)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-zinc-600">
+                        {[
+                          [6, 5, 39, 24], [7, 6, 40, 24.5], [8, 7, 41, 25.5], [9, 8, 42, 26],
+                          [10, 9, 43, 27], [11, 10, 44, 28], [12, 11, 45, 29],
+                        ].map(([us, uk, eu, cm], i) => (
+                          <tr key={i} className="border-b border-zinc-100">
+                            <td className="py-2">{us}</td>
+                            <td className="py-2">{uk}</td>
+                            <td className="py-2">{eu}</td>
+                            <td className="py-2">{cm}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-4 text-xs text-zinc-400">
+                    Sizes may vary by style. For clothing, refer to the product description or contact us.
+                  </p>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Image zoom modal */}
+          <AnimatePresence>
+            {isImageZoomOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+                onClick={() => setIsImageZoomOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsImageZoomOpen(false)}
+                  className="absolute right-4 top-4 rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white"
+                  aria-label="Close zoom"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.9 }}
+                  transition={{ type: 'spring', damping: 25 }}
+                  className="relative max-h-[90vh] max-w-[90vw]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ImageWithFallback
+                    src={imageUrls[selectedImage] || ''}
+                    alt={product.name}
+                    className="max-h-[90vh] w-auto max-w-full object-contain"
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>
