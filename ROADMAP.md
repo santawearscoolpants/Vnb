@@ -52,7 +52,7 @@
 ## Phase 3 — Full Product
 
 ### Payments
-- [ ] Integrate payment processor (Stripe or Paystack — Paystack recommended for African market) into `CheckoutPage`
+- [x] Integrate payment processor (Stripe or Paystack — Paystack recommended for African market) into `CheckoutPage`
 - [ ] Make Apple Pay button on `ProductDetailPage` functional (currently a placeholder)
 
 ### Investor Page

@@ -15,6 +15,7 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { PaymentCallbackPage } from './pages/PaymentCallbackPage';
 import { Toaster } from './components/ui/sonner';
 
 function AppContent() {
@@ -46,13 +47,15 @@ function AppContent() {
         return <ForgotPasswordPage />;
       case 'reset-password':
         return <ResetPasswordPage />;
+      case 'payment-callback':
+        return <PaymentCallbackPage />;
       default:
         return <HomePage />;
     }
   };
 
   // Pages with custom footers (don't show FooterNew)
-  const pagesWithCustomFooter = ['cart', 'checkout', 'order-confirmation'];
+  const pagesWithCustomFooter = ['cart', 'checkout', 'order-confirmation', 'payment-callback'];
   const showFooter = !pagesWithCustomFooter.includes(currentPage);
 
   return (

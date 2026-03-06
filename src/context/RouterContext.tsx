@@ -17,12 +17,34 @@ interface RouterContextType {
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined);
 
+function getInitialRoute() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('payment_callback') === '1' || params.get('reference')) {
+    const extra: Record<string, string> = {};
+    const reference = params.get('reference');
+    if (reference) extra.reference = reference;
+    return {
+      currentPage: 'payment-callback',
+      pageParams: extra,
+      history: ['home', 'checkout', 'payment-callback'],
+    };
+  }
+
+  return {
+    currentPage: 'home',
+    pageParams: {},
+    history: ['home'],
+  };
+}
+
 export function RouterProvider({ children }: { children: ReactNode }) {
-  const [currentPage, setCurrentPage] = useState('home');
+  const initialRoute = getInitialRoute();
+  const [currentPage, setCurrentPage] = useState(initialRoute.currentPage);
   const [productId, setProductId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [pageParams, setPageParams] = useState<Record<string, string>>({});
-  const [history, setHistory] = useState<string[]>(['home']);
+  const [pageParams, setPageParams] = useState<Record<string, string>>(initialRoute.pageParams);
+  const [history, setHistory] = useState<string[]>(initialRoute.history);
 
   const navigateTo = (page: string, params?: NavigateParams) => {
     setCurrentPage(page);

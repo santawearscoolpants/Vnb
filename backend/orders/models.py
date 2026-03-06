@@ -52,6 +52,11 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     order_number = models.CharField(max_length=50, unique=True)
@@ -71,6 +76,11 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    payment_provider = models.CharField(max_length=50, blank=True)
+    payment_reference = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    payment_currency = models.CharField(max_length=10, default='USD')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    paid_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -110,3 +120,49 @@ class OrderItem(models.Model):
             self.price = self.product.price
         self.subtotal = self.price * self.quantity
         super().save(*args, **kwargs)
+
+
+class PaymentAttempt(models.Model):
+    STATUS_CHOICES = [
+        ('initialized', 'Initialized'),
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.OneToOneField(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment_attempt')
+    reference = models.CharField(max_length=100, unique=True)
+    access_code = models.CharField(max_length=100, blank=True)
+    authorization_url = models.URLField(blank=True)
+
+    email = models.EmailField()
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    notes = models.TextField(blank=True)
+
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='USD')
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initialized')
+    paystack_status = models.CharField(max_length=50, blank=True)
+    cart_snapshot = models.JSONField(default=list)
+    cart_item_ids = models.JSONField(default=list)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.reference

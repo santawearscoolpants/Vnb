@@ -130,7 +130,12 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Vines & Branches <no-reply@vinesandbranches.com>')
-FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
+PAYSTACK_CURRENCY = config('PAYSTACK_CURRENCY', default='USD')
+PAYSTACK_BASE_URL = config('PAYSTACK_BASE_URL', default='https://api.paystack.co')
+PAYSTACK_CALLBACK_URL = config('PAYSTACK_CALLBACK_URL', default=f'{FRONTEND_URL}?payment_callback=1')
 
 CORS_ALLOW_CREDENTIALS = True
 

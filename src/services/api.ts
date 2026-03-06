@@ -1,5 +1,22 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+export interface PaymentInitializationResponse {
+  authorization_url: string;
+  access_code: string;
+  reference: string;
+}
+
+export interface PaymentVerificationResponse {
+  status: string;
+  order: {
+    id: number;
+    order_number: string;
+    email: string;
+    total: string;
+    payment_currency?: string;
+  };
+}
+
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
@@ -200,6 +217,25 @@ class ApiService {
 
   getOrders() {
     return this.get('/orders/orders/');
+  }
+
+  initializePayment(data: {
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip_code: string;
+    country: string;
+    notes?: string;
+  }) {
+    return this.post<PaymentInitializationResponse>('/orders/payments/initialize/', data);
+  }
+
+  verifyPayment(reference: string) {
+    return this.get<PaymentVerificationResponse>('/orders/payments/verify/', { params: { reference } });
   }
 }
 

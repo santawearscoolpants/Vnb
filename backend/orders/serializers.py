@@ -36,7 +36,9 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'order_number', 'email', 'first_name', 'last_name', 'phone',
             'address', 'city', 'state', 'zip_code', 'country',
-            'subtotal', 'shipping', 'tax', 'total', 'status', 'notes',
+            'subtotal', 'shipping', 'tax', 'total', 'status',
+            'payment_provider', 'payment_reference', 'payment_currency', 'payment_status', 'paid_at',
+            'notes',
             'items', 'created_at', 'updated_at'
         ]
         read_only_fields = ['order_number', 'created_at', 'updated_at']
@@ -53,3 +55,14 @@ class OrderCreateSerializer(serializers.Serializer):
     zip_code = serializers.CharField(max_length=20)
     country = serializers.CharField(max_length=100)
     notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class PaymentInitializeResponseSerializer(serializers.Serializer):
+    authorization_url = serializers.URLField()
+    access_code = serializers.CharField()
+    reference = serializers.CharField()
+
+
+class PaymentVerifyResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    order = OrderSerializer()

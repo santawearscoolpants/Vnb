@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, PaymentAttempt
 
 
 class CartItemInline(admin.TabularInline):
@@ -27,16 +27,19 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['order_number', 'user', 'email', 'total', 'status', 'created_at']
-    list_filter = ['status', 'created_at']
-    search_fields = ['order_number', 'email', 'first_name', 'last_name', 'phone']
-    readonly_fields = ['order_number', 'created_at', 'updated_at']
+    list_display = ['order_number', 'user', 'email', 'total', 'status', 'payment_status', 'created_at']
+    list_filter = ['status', 'payment_status', 'created_at']
+    search_fields = ['order_number', 'payment_reference', 'email', 'first_name', 'last_name', 'phone']
+    readonly_fields = ['order_number', 'payment_reference', 'paid_at', 'created_at', 'updated_at']
     list_editable = ['status']
     inlines = [OrderItemInline]
 
     fieldsets = (
         ('Order Information', {
-            'fields': ('order_number', 'user', 'status')
+            'fields': ('order_number', 'user', 'status', 'payment_status')
+        }),
+        ('Payment', {
+            'fields': ('payment_provider', 'payment_reference', 'payment_currency', 'paid_at')
         }),
         ('Customer Information', {
             'fields': ('email', 'first_name', 'last_name', 'phone')
@@ -55,3 +58,11 @@ class OrderAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(PaymentAttempt)
+class PaymentAttemptAdmin(admin.ModelAdmin):
+    list_display = ['reference', 'email', 'total', 'currency', 'status', 'paystack_status', 'created_at']
+    list_filter = ['status', 'currency', 'created_at']
+    search_fields = ['reference', 'email', 'first_name', 'last_name']
+    readonly_fields = ['reference', 'access_code', 'authorization_url', 'cart_snapshot', 'cart_item_ids', 'verified_at', 'created_at', 'updated_at']

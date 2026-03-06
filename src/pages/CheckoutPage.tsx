@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Lock, Package } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import logo from '../assets/logo.png';
 
 const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:8000';
+const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
 function resolveImageUrl(url?: string) {
   if (!url) return '/logo.png';
   if (url.startsWith('http')) return url;
@@ -41,21 +42,31 @@ type FormData = {
 };
 
 export function CheckoutPage() {
-  const { goBack, navigateTo } = useRouter();
-  const { cart, refresh } = useCart();
+  const { goBack } = useRouter();
+  const { cart } = useCart();
   const { user } = useAuth();
 
-  const [form, setForm] = useState<FormData>({
-    email: user?.email ?? '',
-    firstName: user?.first_name ?? '',
-    lastName: user?.last_name ?? '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    notes: '',
+  const [form, setForm] = useState<FormData>(() => {
+    const base = {
+      email: user?.email ?? '',
+      firstName: user?.first_name ?? '',
+      lastName: user?.last_name ?? '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'United States',
+      notes: '',
+    };
+
+    try {
+      const saved = sessionStorage.getItem(CHECKOUT_FORM_STORAGE_KEY);
+      if (!saved) return base;
+      return { ...base, ...JSON.parse(saved) };
+    } catch {
+      return base;
+    }
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -65,6 +76,10 @@ export function CheckoutPage() {
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
   const isEmpty = items.length === 0;
+
+  useEffect(() => {
+    sessionStorage.setItem(CHECKOUT_FORM_STORAGE_KEY, JSON.stringify(form));
+  }, [form]);
 
   function set(field: keyof FormData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -96,7 +111,7 @@ export function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const order = (await api.createOrder({
+      const payment = await api.initializePayment({
         email: form.email,
         first_name: form.firstName,
         last_name: form.lastName,
@@ -107,14 +122,9 @@ export function CheckoutPage() {
         zip_code: form.zipCode,
         country: form.country,
         notes: form.notes || undefined,
-      })) as any;
-
-      await refresh();
-      navigateTo('order-confirmation', {
-        orderNumber: order.order_number,
-        orderTotal: String(order.total),
-        email: form.email,
       });
+
+      window.location.assign(payment.authorization_url);
     } catch (err: any) {
       toast.error(err?.message || 'Something went wrong. Please try again.');
     } finally {
@@ -311,11 +321,11 @@ export function CheckoutPage() {
                 disabled={isSubmitting || isEmpty}
                 className="w-full rounded-none bg-black py-6 text-xs font-medium tracking-widest text-white hover:bg-zinc-800 disabled:opacity-50"
               >
-                {isSubmitting ? 'PLACING ORDER…' : 'PLACE ORDER'}
+                {isSubmitting ? 'REDIRECTING TO PAYSTACK…' : 'CONTINUE TO PAYMENT'}
                 <Lock className="ml-2 h-4 w-4" />
               </Button>
               <p className="text-center text-xs text-zinc-500">
-                Your payment information is encrypted and secure.
+                You will complete payment securely on Paystack. We only confirm the order after verification.
               </p>
             </div>
 
@@ -396,6 +406,18 @@ export function CheckoutPage() {
                     <a href="#" className="underline">certain items</a>.
                   </p>
                 </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="rounded-sm bg-white p-6 shadow-sm"
+              >
+                <h3 className="mb-2 text-sm font-medium uppercase tracking-widest text-black">Payment</h3>
+                <p className="text-xs leading-relaxed text-zinc-600">
+                  Secure checkout is powered by Paystack. After you continue, you will be redirected to complete payment and then returned here automatically.
+                </p>
               </motion.div>
             </div>
           </div>
