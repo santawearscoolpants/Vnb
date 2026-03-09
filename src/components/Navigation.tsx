@@ -108,13 +108,13 @@ export function Navigation() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 4 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute left-1/2 top-6 z-50 w-44 -translate-x-1/2 overflow-hidden rounded-sm bg-white shadow-lg"
+                      className="absolute left-1/2 top-6 z-50 w-56 -translate-x-1/2 overflow-hidden rounded-sm bg-white p-2 shadow-lg"
                     >
                       {SUPPORTED_CURRENCIES.map((code) => (
                         <button
                           key={code}
                           onClick={() => { setCurrency(code as CurrencyCode); setIsCurrencyOpen(false); }}
-                          className={`block w-full whitespace-nowrap px-5 py-2.5 text-left text-xs transition ${
+                          className={`block w-full rounded-sm px-4 py-3 text-left text-xs tracking-wide transition ${
                             code === currency ? 'bg-zinc-100 font-medium text-black' : 'text-zinc-600 hover:bg-zinc-50 hover:text-black'
                           }`}
                         >
