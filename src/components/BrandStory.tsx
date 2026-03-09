@@ -62,9 +62,7 @@ export function BrandStory() {
             </motion.div>
           ))}
         </div>
-        </div>
-
-
+      </div>
     </section>
   );
 }

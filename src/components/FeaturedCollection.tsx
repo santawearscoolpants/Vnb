@@ -44,7 +44,7 @@ export function FeaturedCollection() {
               transition={{ duration: 0.6 }}
             >
               <p className="mb-4 text-sm tracking-[0.3em] text-white/60">
-                FALL/WINTER 2025
+                SPRING/SUMMER 2026
               </p>
               <h2 className="mb-6 text-white">
                 The Art of Luxury
@@ -62,7 +62,7 @@ export function FeaturedCollection() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/90"
-                onClick={() => navigateTo('category', { categoryId: 'sandals' })}
+                onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 View Collection
               </Button>

@@ -41,7 +41,7 @@
 - [x] Product image zoom on hover/click
 
 ### Homepage
-- [ ] Audit all homepage sections (`BrandStory`, `Newsletter`, `SandalsSection`) for visual completeness
+- [x] Audit all homepage sections (`BrandStory`, `Newsletter`, `SandalsSection`) for visual completeness
 - [x] Wire newsletter signup to `api.subscribeNewsletter()`
 
 ### Contact
@@ -84,7 +84,7 @@
 | ~~`ProductDetailPage`~~ | ~~All product data is hardcoded (4 mock products)~~ ✓ Fixed |
 | ~~`CategoryPage`~~ | ~~All category/product data is hardcoded~~ ✓ Fixed |
 | ~~`CartPage`~~ | ~~Checkout button leads nowhere — step 2 doesn't exist~~ ✓ Fixed |
-| `InvestPage` | "Download Investor Deck" button is a dead link |
+| ~~`InvestPage`~~ | ~~"Download Investor Deck" button is a dead link~~ ✓ Fixed |
 | `ContactPage` | Not yet audited |
 
 ---

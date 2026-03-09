@@ -29,7 +29,6 @@ interface PaginatedProducts {
 
 export function SandalsSection() {
   const { navigateTo } = useRouter();
-  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
