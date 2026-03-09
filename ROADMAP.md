@@ -84,7 +84,7 @@
 | ~~`CategoryPage`~~ | ~~All category/product data is hardcoded~~ ✓ Fixed |
 | ~~`CartPage`~~ | ~~Checkout button leads nowhere — step 2 doesn't exist~~ ✓ Fixed |
 | ~~`InvestPage`~~ | ~~"Download Investor Deck" button is a dead link~~ ✓ Fixed |
-| `ContactPage` | Not yet audited |
+| ~~`ContactPage`~~ | ~~Not yet audited~~ ✓ Audited — centralized contact constants, added i18n, fixed phone numbers, fixed dead sidebar links |
 
 ---
 

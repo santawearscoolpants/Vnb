@@ -33,6 +33,19 @@ function getInitialRoute() {
     };
   }
 
+  const page = params.get('page');
+  if (page) {
+    const extra: Record<string, string> = {};
+    for (const [key, value] of params.entries()) {
+      if (key !== 'page') extra[key] = value;
+    }
+    return {
+      currentPage: page,
+      pageParams: extra,
+      history: ['home', page],
+    };
+  }
+
   return {
     currentPage: 'home',
     pageParams: {},

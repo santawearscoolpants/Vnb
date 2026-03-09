@@ -249,8 +249,8 @@ export function CreateAccountPage() {
           marketing_consent: form.consentMarketing,
         },
       });
-      toast.success('Account created successfully! Please sign in.');
-      navigateTo('account', { email: form.email, showPassword: 'true' });
+      toast.success('Account created successfully! You can now sign in.');
+      navigateTo('account');
     } catch (err: any) {
       const message: string = err?.message || '';
       if (message.toLowerCase().includes('email') && message.toLowerCase().includes('exist')) {

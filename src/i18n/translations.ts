@@ -142,6 +142,33 @@ const en = {
   'search.placeholder': 'Search products...',
   'search.noResults': 'No products found',
   'search.showingResults': 'Showing 8 of {count} results',
+
+  // Contact Page
+  'contact.heading': 'Contact Us',
+  'contact.subtitle': "We'd love to hear from you. Get in touch with our team.",
+  'contact.getInTouch': 'Get In Touch',
+  'contact.intro': 'Whether you have a question about our products, need assistance with an order, or just want to learn more about VNB, our team is here to help.',
+  'contact.visitUs': 'Visit Us',
+  'contact.callUs': 'Call Us',
+  'contact.emailUs': 'Email Us',
+  'contact.businessHours': 'Business Hours',
+  'contact.sendMessage': 'Send Us a Message',
+  'contact.fullName': 'Full Name',
+  'contact.email': 'Email Address',
+  'contact.phone': 'Phone Number',
+  'contact.subject': 'Subject',
+  'contact.message': 'Message',
+  'contact.send': 'Send Message',
+  'contact.sending': 'Sending...',
+  'contact.success': 'Thank you for your message. We will get back to you soon!',
+  'contact.error': 'Failed to send message. Please try again.',
+
+  // Contact Sidebar
+  'contactSidebar.welcome': 'Wherever you are, VNBWAY Client Advisors will be delighted to assist you.',
+  'contactSidebar.needHelp': 'Need Help?',
+  'contactSidebar.faq': 'FAQ',
+  'contactSidebar.careServices': 'Care Services',
+  'contactSidebar.findStore': 'Find a Store',
 } as const;
 
 const fr: Record<keyof typeof en, string> = {
@@ -280,6 +307,33 @@ const fr: Record<keyof typeof en, string> = {
   'search.placeholder': 'Rechercher des produits...',
   'search.noResults': 'Aucun produit trouvé',
   'search.showingResults': 'Affichage de 8 sur {count} résultats',
+
+  // Contact Page
+  'contact.heading': 'Nous Contacter',
+  'contact.subtitle': 'Nous serions ravis de vous entendre. Contactez notre équipe.',
+  'contact.getInTouch': 'Prenez Contact',
+  'contact.intro': "Que vous ayez une question sur nos produits, besoin d'aide avec une commande ou que vous souhaitiez en savoir plus sur VNB, notre équipe est là pour vous aider.",
+  'contact.visitUs': 'Rendez-nous Visite',
+  'contact.callUs': 'Appelez-nous',
+  'contact.emailUs': 'Envoyez-nous un Email',
+  'contact.businessHours': "Heures d'Ouverture",
+  'contact.sendMessage': 'Envoyez-nous un Message',
+  'contact.fullName': 'Nom Complet',
+  'contact.email': 'Adresse Email',
+  'contact.phone': 'Numéro de Téléphone',
+  'contact.subject': 'Sujet',
+  'contact.message': 'Message',
+  'contact.send': 'Envoyer le Message',
+  'contact.sending': 'Envoi en cours...',
+  'contact.success': 'Merci pour votre message. Nous vous répondrons bientôt !',
+  'contact.error': "Échec de l'envoi du message. Veuillez réessayer.",
+
+  // Contact Sidebar
+  'contactSidebar.welcome': 'Où que vous soyez, les conseillers VNBWAY seront ravis de vous assister.',
+  'contactSidebar.needHelp': "Besoin d'Aide ?",
+  'contactSidebar.faq': 'FAQ',
+  'contactSidebar.careServices': "Services d'Entretien",
+  'contactSidebar.findStore': 'Trouver une Boutique',
 };
 
 export const translations: Record<Language, Record<string, string>> = { en, fr };

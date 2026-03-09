@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import api from '../services/api';
-import { CONTACT_EMAILS } from '../constants/contact';
+import { CONTACT_EMAILS, CONTACT_PHONES, CONTACT_ADDRESS, BUSINESS_HOURS } from '../constants/contact';
+import { useI18n } from '../i18n/I18nContext';
 
 export function ContactPage() {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,10 +23,10 @@ export function ContactPage() {
     setLoading(true);
     try {
       await api.submitContact(formData);
-      toast.success('Thank you for your message. We will get back to you soon!');
+      toast.success(t('contact.success'));
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send message. Please try again.');
+      toast.error(error.message || t('contact.error'));
     } finally {
       setLoading(false);
     }
@@ -37,6 +39,8 @@ export function ContactPage() {
     }));
   };
 
+  const hours = [BUSINESS_HOURS.weekday, BUSINESS_HOURS.saturday, BUSINESS_HOURS.sunday];
+
   return (
     <div className="min-h-screen bg-zinc-50 pt-20">
       {/* Header */}
@@ -48,10 +52,8 @@ export function ContactPage() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="mb-4">Contact Us</h1>
-            <p className="text-white/80">
-              We'd love to hear from you. Get in touch with our team.
-            </p>
+            <h1 className="mb-4">{t('contact.heading')}</h1>
+            <p className="text-white/80">{t('contact.subtitle')}</p>
           </motion.div>
         </div>
       </section>
@@ -68,47 +70,46 @@ export function ContactPage() {
               className="space-y-8"
             >
               <div>
-                <h2 className="mb-6 text-black">Get In Touch</h2>
-                <p className="text-zinc-600">
-                  Whether you have a question about our products, need assistance with an order, 
-                  or just want to learn more about VNB, our team is here to help.
-                </p>
+                <h2 className="mb-6 text-black">{t('contact.getInTouch')}</h2>
+                <p className="text-zinc-600">{t('contact.intro')}</p>
               </div>
 
-              {/* Contact Details */}
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black text-white">
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="mb-1 text-black">Visit Us</h3>
+                    <h3 className="mb-1 text-black">{t('contact.visitUs')}</h3>
                     <p className="text-zinc-600">
-                      123 Luxury Avenue<br />
-                      Accra, Ghana
+                      {CONTACT_ADDRESS.line1}<br />
+                      {CONTACT_ADDRESS.line2}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black text-white">
                     <Phone className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="mb-1 text-black">Call Us</h3>
+                    <h3 className="mb-1 text-black">{t('contact.callUs')}</h3>
                     <p className="text-zinc-600">
-                      +233 (0) 123 456 789<br />
-                      Mon - Sat, 9AM - 6PM
+                      <a href={CONTACT_PHONES.primaryHref} className="hover:text-black">{CONTACT_PHONES.primary}</a>
+                      <br />
+                      <a href={CONTACT_PHONES.secondaryHref} className="hover:text-black">{CONTACT_PHONES.secondary}</a>
+                      <br />
+                      <span className="text-xs text-zinc-400">Mon - Sat, 9AM - 6PM</span>
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black text-white">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="mb-1 text-black">Email Us</h3>
+                    <h3 className="mb-1 text-black">{t('contact.emailUs')}</h3>
                     <p className="text-zinc-600">
                       <a href={`mailto:${CONTACT_EMAILS.info}`} className="underline hover:text-black">
                         {CONTACT_EMAILS.info}
@@ -124,20 +125,14 @@ export function ContactPage() {
 
               {/* Business Hours */}
               <div className="rounded-sm bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-black">Business Hours</h3>
+                <h3 className="mb-4 text-black">{t('contact.businessHours')}</h3>
                 <div className="space-y-2 text-sm text-zinc-600">
-                  <div className="flex justify-between">
-                    <span>Monday - Friday</span>
-                    <span>9:00 AM - 7:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saturday</span>
-                    <span>10:00 AM - 6:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sunday</span>
-                    <span>Closed</span>
-                  </div>
+                  {hours.map((h) => (
+                    <div key={h.days} className="flex justify-between">
+                      <span>{h.days}</span>
+                      <span>{h.hours}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -149,11 +144,11 @@ export function ContactPage() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="rounded-sm bg-white p-8 shadow-sm"
             >
-              <h3 className="mb-6 text-black">Send Us a Message</h3>
+              <h3 className="mb-6 text-black">{t('contact.sendMessage')}</h3>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm text-zinc-700">
-                    Full Name *
+                    {t('contact.fullName')} *
                   </label>
                   <input
                     type="text"
@@ -168,7 +163,7 @@ export function ContactPage() {
 
                 <div>
                   <label htmlFor="email" className="mb-2 block text-sm text-zinc-700">
-                    Email Address *
+                    {t('contact.email')} *
                   </label>
                   <input
                     type="email"
@@ -183,7 +178,7 @@ export function ContactPage() {
 
                 <div>
                   <label htmlFor="phone" className="mb-2 block text-sm text-zinc-700">
-                    Phone Number
+                    {t('contact.phone')}
                   </label>
                   <input
                     type="tel"
@@ -197,7 +192,7 @@ export function ContactPage() {
 
                 <div>
                   <label htmlFor="subject" className="mb-2 block text-sm text-zinc-700">
-                    Subject *
+                    {t('contact.subject')} *
                   </label>
                   <input
                     type="text"
@@ -212,7 +207,7 @@ export function ContactPage() {
 
                 <div>
                   <label htmlFor="message" className="mb-2 block text-sm text-zinc-700">
-                    Message *
+                    {t('contact.message')} *
                   </label>
                   <textarea
                     id="message"
@@ -232,7 +227,7 @@ export function ContactPage() {
                   disabled={loading}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  {loading ? 'Sending...' : 'Send Message'}
+                  {loading ? t('contact.sending') : t('contact.send')}
                 </Button>
               </form>
             </motion.div>

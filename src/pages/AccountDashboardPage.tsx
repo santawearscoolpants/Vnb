@@ -61,7 +61,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 export function AccountDashboardPage() {
   const { user, logout } = useAuth();
   const { navigateTo, goBack } = useRouter();
-  const { formatPrice } = useCurrency();
   const [tab, setTab] = useState<Tab>('orders');
 
   useEffect(() => {
@@ -154,6 +153,7 @@ function OrdersTab() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { navigateTo } = useRouter();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     api.getOrders()
@@ -206,6 +206,7 @@ function OrdersTab() {
 
 function OrderCard({ order }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
+  const { formatPrice } = useCurrency();
   const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending;
   const StatusIcon = cfg.icon;
   const date = new Date(order.created_at).toLocaleDateString('en-US', {
@@ -535,7 +536,7 @@ function ProfileTab({
   user,
   onLogout,
 }: {
-  user: { id: number; email: string; first_name: string; last_name: string };
+  user: { id: string | number; email: string; first_name: string; last_name: string };
   onLogout: () => void;
 }) {
   const [form, setForm] = useState({ firstName: user.first_name, lastName: user.last_name });

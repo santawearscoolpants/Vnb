@@ -6,7 +6,6 @@ import { Input } from '../components/ui/input';
 import { useRouter } from '../context/RouterContext';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
-import api from '../services/api';
 
 export function AccountPage() {
   return (
@@ -26,143 +25,82 @@ export function AccountPage() {
 }
 
 function LoginForm() {
-  const { navigateTo, pageParams } = useRouter();
+  const { navigateTo } = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState(pageParams.email || '');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(pageParams.showPassword === 'true');
-  const [emailExists, setEmailExists] = useState(pageParams.showPassword === 'true');
-  const [emailChecked, setEmailChecked] = useState(pageParams.showPassword === 'true');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleEmailContinue = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setError(null);
-    setIsLoading(true);
-    try {
-      const result = await api.checkEmail(email) as { exists: boolean };
-      setEmailChecked(true);
-      if (result.exists) {
-        setEmailExists(true);
-      } else {
-        navigateTo('create-account', { email });
-      }
-    } catch {
-      setError('Unable to check email. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) return;
+    if (!email || !password) return;
     setError(null);
     setIsLoading(true);
     try {
       await login(email, password);
       toast.success('Welcome back!');
       navigateTo('home');
-    } catch {
-      setError('Incorrect password. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'Sign in failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBack = () => {
-    setEmailChecked(false);
-    setEmailExists(false);
-    setPassword('');
-    setError(null);
-  };
-
   return (
-    <form
-      onSubmit={emailChecked && emailExists ? handleLogin : handleEmailContinue}
-      className="mx-auto max-w-md"
-    >
+    <form onSubmit={handleLogin} className="mx-auto max-w-md">
       <p className="mb-6 text-center text-sm text-zinc-700">
-        Please enter your email below to access or create your account
+        Sign in with your email and password.
       </p>
 
-      {/* Email field */}
       <div className="mb-6">
         <Label htmlFor="email" className="mb-2 block text-sm text-zinc-700">
           E-mail *
         </Label>
-        <div className="flex gap-2">
-          <Input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (emailChecked) handleBack();
-            }}
-            placeholder="yourname@domain.com"
-            required
-            disabled={emailChecked && emailExists}
-            className="h-12 rounded-none border-zinc-300 disabled:bg-zinc-50 disabled:text-zinc-500"
-          />
-          {emailChecked && emailExists && (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="shrink-0 text-xs text-zinc-500 underline hover:text-black"
-            >
-              Change
-            </button>
-          )}
-        </div>
-        {!emailChecked && (
-          <p className="mt-1 text-xs text-zinc-500">Expected format: yourname@domain.com</p>
-        )}
+        <Input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="yourname@domain.com"
+          required
+          className="h-12 rounded-none border-zinc-300"
+        />
+        <p className="mt-1 text-xs text-zinc-500">Expected format: yourname@domain.com</p>
       </div>
 
-      {/* Password field — only shown after email is confirmed to exist */}
-      <AnimatePresence>
-        {emailChecked && emailExists && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-            className="mb-6 overflow-hidden"
+      <div className="mb-6 overflow-hidden">
+        <div className="mb-2 flex items-center justify-between">
+          <Label htmlFor="login-password" className="block text-sm text-zinc-700">
+            Password *
+          </Label>
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-xs text-zinc-500 underline hover:text-black"
           >
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="login-password" className="block text-sm text-zinc-700">
-                Password *
-              </Label>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-xs text-zinc-500 underline hover:text-black"
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              id="login-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-              required
-              className="h-12 rounded-none border-zinc-300"
-            />
-            <button
-              type="button"
-              onClick={() => navigateTo('forgot-password')}
-              className="mt-2 text-xs text-zinc-500 underline hover:text-black"
-            >
-              Forgot your password?
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        <Input
+          type={showPassword ? 'text' : 'password'}
+          id="login-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoFocus
+          required
+          className="h-12 rounded-none border-zinc-300"
+        />
+        <button
+          type="button"
+          onClick={() => navigateTo('forgot-password')}
+          className="mt-2 text-xs text-zinc-500 underline hover:text-black"
+        >
+          Forgot your password?
+        </button>
+      </div>
 
       {/* Error message */}
       <AnimatePresence>
@@ -184,12 +122,15 @@ function LoginForm() {
         disabled={isLoading}
         className="mb-4 h-12 w-full rounded-none bg-zinc-800 hover:bg-black disabled:bg-zinc-400"
       >
-        {isLoading
-          ? 'Please wait…'
-          : emailChecked && emailExists
-          ? 'SIGN IN'
-          : 'CONTINUE'}
+        {isLoading ? 'Please wait…' : 'SIGN IN'}
       </Button>
+
+      <p className="text-center text-xs text-zinc-500">
+        New here?{' '}
+        <button type="button" onClick={() => navigateTo('create-account')} className="underline hover:text-black">
+          Create account
+        </button>
+      </p>
     </form>
   );
 }

@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Phone } from 'lucide-react';
-import { CONTACT_EMAILS } from '../constants/contact';
+import { CONTACT_EMAILS, CONTACT_PHONES } from '../constants/contact';
+import { useI18n } from '../i18n/I18nContext';
+import { useRouter } from '../context/RouterContext';
 
 interface ContactSidebarProps {
   isOpen: boolean;
@@ -8,6 +10,14 @@ interface ContactSidebarProps {
 }
 
 export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
+  const { t } = useI18n();
+  const { navigateTo } = useRouter();
+
+  const handleLinkClick = () => {
+    onClose();
+    navigateTo('contact');
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -32,9 +42,10 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-zinc-200 p-6">
-              <h2 className="text-black">Contact Us</h2>
+              <h2 className="text-black">{t('nav.contactUs')}</h2>
               <button
                 onClick={onClose}
+                aria-label="Close"
                 className="text-zinc-600 transition-colors hover:text-black"
               >
                 <X className="h-5 w-5" />
@@ -49,22 +60,33 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
                 transition={{ delay: 0.2 }}
                 className="space-y-8"
               >
-                {/* Welcome Message */}
                 <p className="text-sm text-zinc-600">
-                  Wherever you are, VNBWAY Client Advisors will be delighted to assist you.
+                  {t('contactSidebar.welcome')}
                 </p>
 
-                {/* Phone Number */}
-                <div className="flex items-center gap-3 border-b border-zinc-200 pb-6">
-                  <Phone className="h-5 w-5 text-zinc-700" />
-                  <a
-                    href="tel:+233123456789"
-                    className="text-zinc-900 transition-colors hover:text-zinc-600"
-                  >
-                    +233(0)59 484 9077 | +233(0)24 909 7323
-                  </a>
+                {/* Phone Numbers */}
+                <div className="space-y-2 border-b border-zinc-200 pb-6">
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-zinc-700" />
+                    <a
+                      href={CONTACT_PHONES.primaryHref}
+                      className="text-zinc-900 transition-colors hover:text-zinc-600"
+                    >
+                      {CONTACT_PHONES.primary}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-transparent" />
+                    <a
+                      href={CONTACT_PHONES.secondaryHref}
+                      className="text-zinc-900 transition-colors hover:text-zinc-600"
+                    >
+                      {CONTACT_PHONES.secondary}
+                    </a>
+                  </div>
                 </div>
 
+                {/* Emails */}
                 <div className="space-y-2 border-b border-zinc-200 pb-6 text-sm text-zinc-700">
                   <a href={`mailto:${CONTACT_EMAILS.customerCare}`} className="block transition-colors hover:text-zinc-900">
                     {CONTACT_EMAILS.customerCare}
@@ -76,11 +98,26 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
 
                 {/* Need Help Section */}
                 <div>
-                  <h3 className="mb-4 text-sm text-zinc-900">Need Help?</h3>
+                  <h3 className="mb-4 text-sm text-zinc-900">{t('contactSidebar.needHelp')}</h3>
                   <nav className="space-y-1">
-                    <ContactLink>FAQ</ContactLink>
-                    <ContactLink>Care Services</ContactLink>
-                    <ContactLink>Find a Store</ContactLink>
+                    <button
+                      onClick={handleLinkClick}
+                      className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
+                    >
+                      {t('contactSidebar.faq')}
+                    </button>
+                    <button
+                      onClick={handleLinkClick}
+                      className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
+                    >
+                      {t('contactSidebar.careServices')}
+                    </button>
+                    <button
+                      onClick={handleLinkClick}
+                      className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
+                    >
+                      {t('contactSidebar.findStore')}
+                    </button>
                   </nav>
                 </div>
               </motion.div>
@@ -89,13 +126,5 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
         </>
       )}
     </AnimatePresence>
-  );
-}
-
-function ContactLink({ children }: { children: React.ReactNode }) {
-  return (
-    <button className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600">
-      {children}
-    </button>
   );
 }

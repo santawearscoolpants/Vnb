@@ -1,15 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import api from '../services/api';
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-}
+import { supabase, mapSupabaseUser, type AppUser } from '../lib/supabase';
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -19,25 +12,45 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session on mount — if the server still has a valid session cookie
   useEffect(() => {
-    api.getCurrentUser()
-      .then((u) => setUser(u as User))
-      .catch(() => setUser(null))
-      .finally(() => setIsLoading(false));
+    let isMounted = true;
+
+    supabase.auth.getUser()
+      .then(({ data, error }) => {
+        if (!isMounted) return;
+        if (error || !data.user) {
+          setUser(null);
+          return;
+        }
+        setUser(mapSupabaseUser(data.user));
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+      setUser(session?.user ? mapSupabaseUser(session.user) : null);
+    });
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    await api.login(email, password);
-    const u = await api.getCurrentUser();
-    setUser(u as User);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (!data.user) throw new Error('Unable to sign in.');
+    setUser(mapSupabaseUser(data.user));
   }, []);
 
   const logout = useCallback(async () => {
-    await api.logout();
+    await supabase.auth.signOut();
     setUser(null);
   }, []);
 

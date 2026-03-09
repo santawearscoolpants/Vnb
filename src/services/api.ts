@@ -1,3 +1,5 @@
+import { mapSupabaseUser, supabase } from '../lib/supabase';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export interface PaymentInitializationResponse {
@@ -141,35 +143,116 @@ class ApiService {
     last_name: string;
     profile?: any;
   }) {
-    return this.post('/accounts/users/', data);
+    return supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.first_name,
+          last_name: data.last_name,
+        },
+      },
+    }).then(async ({ data: authData, error }) => {
+      if (error) throw error;
+
+      // If session exists immediately (email-confirmation disabled), store profile too.
+      if (authData.user && authData.session && data.profile) {
+        await supabase.from('user_profiles').upsert({
+          user_id: authData.user.id,
+          title: data.profile.title || '',
+          phone: data.profile.phone || '',
+          location: data.profile.country || 'United States',
+          newsletter_subscribed: !!data.profile.marketing_consent,
+        });
+      }
+      return authData;
+    });
   }
 
   login(email: string, password: string) {
-    return this.post('/accounts/users/login/', { email, password });
+    return supabase.auth.signInWithPassword({ email, password }).then(({ data, error }) => {
+      if (error) throw error;
+      return data;
+    });
   }
 
   logout() {
-    return this.post('/accounts/users/logout/');
+    return supabase.auth.signOut().then(({ error }) => {
+      if (error) throw error;
+      return { message: 'Logout successful' };
+    });
   }
 
   checkEmail(email: string) {
-    return this.post('/accounts/users/check_email/', { email });
+    // Supabase client should not enumerate users.
+    // Login flow now asks for password directly.
+    return Promise.resolve({ exists: true, email });
   }
 
   requestPasswordReset(email: string) {
-    return this.post('/accounts/users/request_password_reset/', { email });
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}?page=reset-password`,
+    }).then(({ error }) => {
+      if (error) throw error;
+      return { message: 'If that email is registered, a reset link has been sent.' };
+    });
   }
 
   resetPassword(email: string, token: string, newPassword: string) {
-    return this.post('/accounts/users/reset_password/', { email, token, new_password: newPassword });
+    return supabase.auth.updateUser({ password: newPassword }).then(({ error }) => {
+      if (error) throw error;
+      return { message: 'Password reset successfully. You can now sign in.' };
+    });
   }
 
   getCurrentUser() {
-    return this.get('/accounts/users/me/');
+    return supabase.auth.getUser().then(({ data, error }) => {
+      if (error) throw error;
+      if (!data.user) throw new Error('Not authenticated');
+      return mapSupabaseUser(data.user);
+    });
   }
 
   updateProfile(data: { first_name?: string; last_name?: string; profile?: Record<string, any> }) {
-    return this.request('/accounts/users/update_profile/', { method: 'PATCH', body: JSON.stringify(data) });
+    return supabase.auth.getUser().then(async ({ data: userData, error }) => {
+      if (error) throw error;
+      if (!userData.user) throw new Error('Not authenticated');
+
+      const user = userData.user;
+      const metadata = {
+        ...user.user_metadata,
+        first_name: data.first_name ?? user.user_metadata?.first_name ?? '',
+        last_name: data.last_name ?? user.user_metadata?.last_name ?? '',
+      };
+
+      const { error: updateAuthError } = await supabase.auth.updateUser({ data: metadata });
+      if (updateAuthError) throw updateAuthError;
+
+      if (data.profile) {
+        const { error: profileError } = await supabase.from('user_profiles').upsert({
+          user_id: user.id,
+          title: data.profile.title || '',
+          phone: data.profile.phone || '',
+          area_code: data.profile.area_code || '+1',
+          birth_date: data.profile.birth_date || null,
+          company: data.profile.company || '',
+          address: data.profile.address || '',
+          address_continued: data.profile.address_continued || '',
+          city: data.profile.city || '',
+          state: data.profile.state || '',
+          zip_code: data.profile.zip_code || '',
+          zip_plus: data.profile.zip_plus || '',
+          location: data.profile.location || 'United States',
+          newsletter_subscribed: !!data.profile.newsletter_subscribed,
+        });
+        if (profileError) throw profileError;
+      }
+
+      return mapSupabaseUser({
+        ...user,
+        user_metadata: metadata,
+      });
+    });
   }
 
   getCurrentCart() {
@@ -216,7 +299,18 @@ class ApiService {
   }
 
   getOrders() {
-    return this.get('/orders/orders/');
+    return supabase.auth.getUser().then(async ({ data, error }) => {
+      if (error) throw error;
+      if (!data.user) return [];
+
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', data.user.id)
+        .order('created_at', { ascending: false });
+      if (ordersError) throw ordersError;
+      return orders || [];
+    });
   }
 
   initializePayment(data: {

@@ -15,8 +15,7 @@ const PASSWORD_RULES = [
 ];
 
 export function ResetPasswordPage() {
-  const { pageParams, navigateTo } = useRouter();
-  const { email = '', token = '' } = pageParams;
+  const { navigateTo } = useRouter();
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -28,32 +27,16 @@ export function ResetPasswordPage() {
   const passwordValid = PASSWORD_RULES.every((r) => r.test(password));
   const confirmMatch = password !== '' && password === confirm;
 
-  // Guard: if no token/email in params, this page was accessed directly
-  if (!email || !token) {
-    return (
-      <div className="min-h-screen bg-zinc-50 pt-20">
-        <div className="mx-auto max-w-5xl px-4 py-16 md:px-8">
-          <div className="rounded-sm bg-white p-8 shadow-sm md:p-12 text-center">
-            <p className="text-sm text-zinc-600 mb-6">This reset link is invalid or has already been used.</p>
-            <Button className="rounded-none bg-zinc-800 hover:bg-black" onClick={() => navigateTo('forgot-password')}>
-              Request a new link
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordValid || !confirmMatch) return;
     setError(null);
     setIsLoading(true);
     try {
-      await api.resetPassword(email, token, password);
+      await api.resetPassword('', '', password);
       setDone(true);
     } catch (err: any) {
-      setError(err?.message || 'Invalid or expired reset link. Please request a new one.');
+      setError(err?.message || 'Invalid or expired recovery session. Please request a new link.');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +71,7 @@ export function ResetPasswordPage() {
                 </p>
                 <Button
                   className="rounded-none bg-zinc-800 hover:bg-black"
-                  onClick={() => navigateTo('account', { email })}
+                  onClick={() => navigateTo('account')}
                 >
                   Sign in
                 </Button>
@@ -102,7 +85,7 @@ export function ResetPasswordPage() {
                 className="mx-auto max-w-md"
               >
                 <p className="mb-8 text-center text-sm text-zinc-600">
-                  Enter a new password for <span className="font-medium">{email}</span>.
+                  Enter your new password to complete account recovery.
                 </p>
 
                 {/* New password */}

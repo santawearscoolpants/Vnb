@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VNB Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>VNB Admin Panel</h1>
+        <p>Supabase-backed operations console</p>
+      </div>
+      <div id="authStatus" class="auth-status">Not signed in</div>
+    </header>
+
+    <main class="container">
+      <section id="configWarning" class="card warning hidden">
+        <h2>Missing config</h2>
+        <p>
+          Copy <code>config.example.js</code> to <code>config.js</code> and
+          add your Supabase URL + anon key.
+        </p>
+      </section>
+
+      <section id="authCard" class="card">
+        <h2>Admin login</h2>
+        <form id="loginForm" class="grid two">
+          <label>
+            Email
+            <input name="email" type="email" required />
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" required />
+          </label>
+          <button type="submit" class="primary">Sign in</button>
+        </form>
+      </section>
+
+      <section id="appSection" class="hidden">
+        <div class="tabs">
+          <button class="tab active" data-tab="dashboard">Dashboard</button>
+          <button class="tab" data-tab="categories">Categories</button>
+          <button class="tab" data-tab="products">Products</button>
+          <button class="tab" data-tab="orders">Orders</button>
+          <button class="tab" data-tab="contact">Contact</button>
+          <button class="tab" data-tab="invest">Invest</button>
+          <button class="tab" data-tab="newsletter">Newsletter</button>
+          <button id="signOutBtn" class="danger right">Sign out</button>
+        </div>
+
+        <section id="dashboard" class="panel active">
+          <div class="stats" id="statsGrid"></div>
+        </section>
+
+        <section id="categories" class="panel">
+          <div class="card">
+            <h3>Create category</h3>
+            <form id="createCategoryForm" class="grid three">
+              <label>Name <input name="name" required /></label>
+              <label>Slug <input name="slug" required /></label>
+              <label>Image URL <input name="image_url" /></label>
+              <label class="full">Description <textarea name="description"></textarea></label>
+              <label><input name="is_active" type="checkbox" checked /> Active</label>
+              <button type="submit" class="primary">Create category</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>Categories</h3>
+            <div id="categoriesTable"></div>
+          </div>
+        </section>
+
+        <section id="products" class="panel">
+          <div class="card">
+            <h3>Create product</h3>
+            <form id="createProductForm" class="grid three">
+              <label>Name <input name="name" required /></label>
+              <label>Slug <input name="slug" required /></label>
+              <label>SKU <input name="sku" /></label>
+              <label>Category
+                <select name="category_id" id="categorySelect" required></select>
+              </label>
+              <label>Price (GHS) <input name="price" type="number" step="0.01" min="0" required /></label>
+              <label>Stock qty <input name="stock_quantity" type="number" min="0" value="0" required /></label>
+              <label>Image URL <input name="image_url" /></label>
+              <label><input name="is_active" type="checkbox" checked /> Active</label>
+              <label><input name="is_featured" type="checkbox" /> Featured</label>
+              <label class="full">Description <textarea name="description" required></textarea></label>
+              <button type="submit" class="primary">Create product</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>Products</h3>
+            <div id="productsTable"></div>
+          </div>
+        </section>
+
+        <section id="orders" class="panel">
+          <div class="card">
+            <h3>Orders</h3>
+            <div id="ordersTable"></div>
+          </div>
+        </section>
+
+        <section id="contact" class="panel">
+          <div class="card">
+            <h3>Contact messages</h3>
+            <div id="contactTable"></div>
+          </div>
+        </section>
+
+        <section id="invest" class="panel">
+          <div class="card">
+            <h3>Investment inquiries</h3>
+            <div id="investTable"></div>
+          </div>
+        </section>
+
+        <section id="newsletter" class="panel">
+          <div class="card">
+            <h3>Newsletter subscribers</h3>
+            <div id="newsletterTable"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
