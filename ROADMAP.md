@@ -61,7 +61,7 @@
 
 ### Internationalisation
 - [x] Currency switcher — geo-detection, prompt, navbar selector, exchange-rate conversion (GHS/USD/NGN/GBP/EUR/KES)
-- [ ] Multi-language support if targeting Francophone Africa
+- [x] Multi-language support — EN/FR with i18n context, translation dictionary, and navbar language selector
 
 ### SEO & Performance
 - [ ] Add per-page meta tags and Open Graph tags (currently a SPA with no per-route meta)

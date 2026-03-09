@@ -1,7 +1,9 @@
 import { motion } from "motion/react";
+import { useI18n } from "../i18n/I18nContext";
 import videoSrc from "../assets/vid2.mp4";
 
 export function Hero() {
+  const { t } = useI18n();
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
       {/* Background video with parallax-like scale animation */}
@@ -48,7 +50,7 @@ export function Hero() {
             lineHeight: '1.2'
           }}
         >
-          African Timeless Luxury
+          {t('hero.tagline')}
         </motion.p>
 
       
@@ -60,7 +62,7 @@ export function Hero() {
           className="text-sm text-white underline transition-colors hover:text-white/80"
           onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          Shop Now
+          {t('hero.shopNow')}
         </motion.button>
       </div>
     </section>

@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useI18n } from '../i18n/I18nContext';
+import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n/translations';
+import type { Language } from '../i18n/translations';
 import { SUPPORTED_CURRENCIES } from '../utils/currency';
 import type { CurrencyCode } from '../utils/currency';
 import logo from "../assets/logo.png";
@@ -20,12 +23,15 @@ export function Navigation() {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const currencyMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
   const { navigateTo, currentPage } = useRouter();
   const { cart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const { currency, setCurrency } = useCurrency();
+  const { language, setLanguage, t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -40,6 +46,9 @@ export function Navigation() {
       }
       if (currencyMenuRef.current && !currencyMenuRef.current.contains(e.target as Node)) {
         setIsCurrencyOpen(false);
+      }
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -93,45 +102,84 @@ export function Navigation() {
               >
                 <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
               </motion.button>
-              <div ref={currencyMenuRef} className="relative">
-                <button
-                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                  className="flex items-center gap-1 text-xs tracking-wider text-white/70 transition hover:text-white"
-                >
-                  {currency}
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-                <AnimatePresence>
-                  {isCurrencyOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      transition={{ duration: 0.12 }}
-                      className="absolute left-1/2 top-6 z-50 w-56 -translate-x-1/2 overflow-hidden rounded-sm bg-white p-2 shadow-lg"
-                    >
-                      {SUPPORTED_CURRENCIES.map((code) => (
-                        <button
-                          key={code}
-                          onClick={() => { setCurrency(code as CurrencyCode); setIsCurrencyOpen(false); }}
-                          className={`block w-full rounded-sm px-4 py-3 text-left text-xs tracking-wide transition ${
-                            code === currency ? 'bg-zinc-100 font-medium text-black' : 'text-zinc-600 hover:bg-zinc-50 hover:text-black'
-                          }`}
-                        >
-                          {code}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <div className="flex items-center gap-3">
+                {/* Currency selector */}
+                <div ref={currencyMenuRef} className="relative">
+                  <button
+                    onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                    className="flex items-center gap-1 text-xs tracking-wider text-white/70 transition hover:text-white"
+                  >
+                    {currency}
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                  <AnimatePresence>
+                    {isCurrencyOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute left-1/2 top-6 z-50 w-56 -translate-x-1/2 overflow-hidden rounded-sm bg-white p-2 shadow-lg"
+                      >
+                        {SUPPORTED_CURRENCIES.map((code) => (
+                          <button
+                            key={code}
+                            onClick={() => { setCurrency(code as CurrencyCode); setIsCurrencyOpen(false); }}
+                            className={`block w-full rounded-sm px-4 py-3 text-left text-xs tracking-wide transition ${
+                              code === currency ? 'bg-zinc-100 font-medium text-black' : 'text-zinc-600 hover:bg-zinc-50 hover:text-black'
+                            }`}
+                          >
+                            {code}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <span className="text-white/30">|</span>
+
+                {/* Language selector */}
+                <div ref={langMenuRef} className="relative">
+                  <button
+                    onClick={() => setIsLangOpen(!isLangOpen)}
+                    className="flex items-center gap-1 text-xs tracking-wider text-white/70 transition hover:text-white"
+                  >
+                    {language.toUpperCase()}
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                  <AnimatePresence>
+                    {isLangOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute left-1/2 top-6 z-50 w-40 -translate-x-1/2 overflow-hidden rounded-sm bg-white p-2 shadow-lg"
+                      >
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                          <button
+                            key={lang}
+                            onClick={() => { setLanguage(lang as Language); setIsLangOpen(false); }}
+                            className={`block w-full rounded-sm px-4 py-3 text-left text-xs tracking-wide transition ${
+                              lang === language ? 'bg-zinc-100 font-medium text-black' : 'text-zinc-600 hover:bg-zinc-50 hover:text-black'
+                            }`}
+                          >
+                            {LANGUAGE_LABELS[lang]}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
             {/* Right - Contact, Invest & Icons */}
             <div className="flex items-center justify-end gap-4 md:gap-6">
               <div className="hidden items-center gap-6 lg:flex">
-                <NavLink onClick={() => setIsContactOpen(true)}>Contact Us</NavLink>
-                <NavLink onClick={() => navigateTo('invest')}>Invest</NavLink>
+                <NavLink onClick={() => setIsContactOpen(true)}>{t('nav.contactUs')}</NavLink>
+                <NavLink onClick={() => navigateTo('invest')}>{t('nav.invest')}</NavLink>
               </div>
               {/* User menu */}
               <div ref={userMenuRef} className="relative">
@@ -167,14 +215,14 @@ export function Navigation() {
                         className="flex w-full items-center gap-2 px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50 hover:text-black"
                       >
                         <LayoutDashboard className="h-3.5 w-3.5" />
-                        My Account
+                        {t('nav.myAccount')}
                       </button>
                       <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50 hover:text-black"
                       >
                         <LogOut className="h-3.5 w-3.5" />
-                        Sign out
+                        {t('nav.signOut')}
                       </button>
                     </motion.div>
                   )}

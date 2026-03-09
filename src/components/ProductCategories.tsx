@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useState, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
+import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
 
 const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace('/api', '');
@@ -27,6 +28,7 @@ interface PaginatedCategories {
 
 export function ProductCategories() {
   const { navigateTo } = useRouter();
+  const { t } = useI18n();
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,8 +49,8 @@ export function ProductCategories() {
           transition={{ duration: 0.6 }}
           className="mb-16 text-center"
         >
-          <h2 className="mb-4 text-black">Explore Our Collections</h2>
-          <p className="text-zinc-600">Curated pieces that define modern luxury</p>
+          <h2 className="mb-4 text-black">{t('categories.title')}</h2>
+          <p className="text-zinc-600">{t('categories.subtitle')}</p>
         </motion.div>
 
         {isLoading ? (
@@ -68,7 +70,7 @@ export function ProductCategories() {
             animate={{ opacity: 1 }}
             className="py-16 text-center text-sm text-zinc-400"
           >
-            Collections coming soon.
+            {t('categories.empty')}
           </motion.p>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-3">

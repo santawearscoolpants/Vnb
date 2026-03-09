@@ -3,9 +3,11 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
 
 export function Newsletter() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -14,10 +16,10 @@ export function Newsletter() {
     setLoading(true);
     try {
       await api.subscribeNewsletter(email);
-      toast.success('Thank you for subscribing! Check your email for your 10% off code.');
+      toast.success(t('newsletter.success'));
       setEmail('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to subscribe. Please try again.');
+      toast.error(error.message || t('newsletter.error'));
     } finally {
       setLoading(false);
     }
@@ -32,16 +34,15 @@ export function Newsletter() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="mb-4 text-white">Join the Vines & Branches Circle</h2>
+          <h2 className="mb-4 text-white">{t('newsletter.title')}</h2>
           <p className="mb-12 text-white/70">
-            Be the first to discover new collections, exclusive offers, and styling tips.
-            Subscribe to our newsletter and receive 10% off your first purchase.
+            {t('newsletter.subtitle')}
           </p>
 
           <form onSubmit={handleSubmit} className="mx-auto flex max-w-md gap-4">
             <Input
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('newsletter.placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -53,12 +54,12 @@ export function Newsletter() {
               className="bg-white text-black hover:bg-white/90"
               disabled={loading}
             >
-              {loading ? 'Subscribing...' : 'Subscribe'}
+              {loading ? t('newsletter.subscribing') : t('newsletter.subscribe')}
             </Button>
           </form>
 
           <p className="mt-6 text-xs text-white/50">
-            By subscribing, you agree to our Privacy Policy and consent to receive updates.
+            {t('newsletter.consent')}
           </p>
         </motion.div>
       </div>

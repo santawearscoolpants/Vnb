@@ -3,6 +3,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
+import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
 
@@ -29,6 +30,7 @@ interface PaginatedProducts {
 
 export function SandalsSection() {
   const { navigateTo } = useRouter();
+  const { t } = useI18n();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,8 +54,8 @@ export function SandalsSection() {
           transition={{ duration: 0.6 }}
           className="mb-16 text-center"
         >
-          <p className="mb-4 text-xs tracking-[0.2em] text-zinc-500">NEW</p>
-          <h2 className="mb-8 text-black">Featured Collection</h2>
+          <p className="mb-4 text-xs tracking-[0.2em] text-zinc-500">{t('featured.label')}</p>
+          <h2 className="mb-8 text-black">{t('featured.title')}</h2>
         </motion.div>
 
         {isLoading ? (
@@ -93,13 +95,13 @@ export function SandalsSection() {
               onClick={() => navigateTo('category', { categoryId: 'women' })}
               className="border border-black bg-transparent px-8 py-3 text-sm transition-colors hover:bg-black hover:text-white"
             >
-              Shop Women's
+              {t('featured.shopWomen')}
             </button>
             <button
               onClick={() => navigateTo('category', { categoryId: 'men' })}
               className="border border-black bg-transparent px-8 py-3 text-sm transition-colors hover:bg-black hover:text-white"
             >
-              Shop Men's
+              {t('featured.shopMen')}
             </button>
           </motion.div>
         )}

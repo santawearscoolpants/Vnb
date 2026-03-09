@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Globe, X } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { useI18n } from '../i18n/I18nContext';
 import { CURRENCY_LABELS, COUNTRY_CURRENCY_MAP } from '../utils/currency';
 import type { CurrencyCode } from '../utils/currency';
 
@@ -21,6 +22,7 @@ function currencySymbol(code: CurrencyCode) {
 
 export function CurrencyPrompt() {
   const { suggestedCurrency, detectedCountry, acceptSuggestion, dismissSuggestion } = useCurrency();
+  const { t } = useI18n();
 
   if (!suggestedCurrency || !detectedCountry) return null;
 
@@ -54,10 +56,10 @@ export function CurrencyPrompt() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium text-black">
-                Visiting from {countryName}?
+                {t('currency.visiting', { country: countryName })}
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                Switch prices to {symbol} ({suggestedCurrency}) for a localised experience.
+                {t('currency.switchTo', { symbol, code: suggestedCurrency })}
               </p>
 
               <div className="mt-3 flex gap-2">
@@ -65,13 +67,13 @@ export function CurrencyPrompt() {
                   onClick={acceptSuggestion}
                   className="rounded-sm bg-black px-4 py-1.5 text-xs font-medium text-white transition hover:bg-zinc-800"
                 >
-                  Switch to {symbol}
+                  {t('currency.switchBtn', { symbol })}
                 </button>
                 <button
                   onClick={dismissSuggestion}
                   className="rounded-sm border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
                 >
-                  Keep GH₵
+                  {t('currency.keepGHS')}
                 </button>
               </div>
             </div>

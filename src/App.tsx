@@ -5,6 +5,7 @@ import { RouterProvider, useRouter } from './context/RouterContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { CurrencyProvider } from './context/CurrencyContext';
+import { I18nProvider } from './i18n/I18nContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
@@ -75,11 +76,13 @@ export default function App() {
   return (
     <RouterProvider>
       <AuthProvider>
-        <CurrencyProvider>
-          <CartProvider>
-            <AppContent />
-          </CartProvider>
-        </CurrencyProvider>
+        <I18nProvider>
+          <CurrencyProvider>
+            <CartProvider>
+              <AppContent />
+            </CartProvider>
+          </CurrencyProvider>
+        </I18nProvider>
       </AuthProvider>
     </RouterProvider>
   );

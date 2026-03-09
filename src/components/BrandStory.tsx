@@ -1,25 +1,28 @@
 import { motion } from 'motion/react';
 import { Award, Sparkles, Heart } from 'lucide-react';
-
-const values = [
-  {
-    icon: Award,
-    title: 'Premium Quality',
-    description: 'Only the finest materials and craftsmanship make it into our collection.'
-  },
-  {
-    icon: Sparkles,
-    title: 'Timeless Design',
-    description: 'Classic pieces that transcend trends and remain elegant for years to come.'
-  },
-  {
-    icon: Heart,
-    title: 'Sustainable Luxury',
-    description: 'We believe in creating beautiful products responsibly and ethically.'
-  }
-];
+import { useI18n } from '../i18n/I18nContext';
 
 export function BrandStory() {
+  const { t } = useI18n();
+
+  const values = [
+    {
+      icon: Award,
+      title: t('brand.quality'),
+      description: t('brand.qualityDesc'),
+    },
+    {
+      icon: Sparkles,
+      title: t('brand.design'),
+      description: t('brand.designDesc'),
+    },
+    {
+      icon: Heart,
+      title: t('brand.sustainable'),
+      description: t('brand.sustainableDesc'),
+    },
+  ];
+
   return (
     <section className="bg-white px-4 py-24 md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -31,11 +34,9 @@ export function BrandStory() {
           transition={{ duration: 0.6 }}
           className="mb-20 text-center"
         >
-          <h2 className="mb-6 text-black">Our Philosophy</h2>
+          <h2 className="mb-6 text-black">{t('brand.title')}</h2>
           <p className="mx-auto max-w-3xl text-zinc-600">
-            VNB was born from a passion for creating exceptional fashion pieces that
-            celebrate individuality and refinement. Every item we create is a testament
-            to our dedication to excellence and timeless style.
+            {t('brand.description')}
           </p>
         </motion.div>
 

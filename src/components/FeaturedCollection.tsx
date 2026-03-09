@@ -4,10 +4,12 @@ import { Button } from './ui/button';
 import { useRef } from 'react';
 import logo from "../assets/logo.png";
 import { useRouter } from '../context/RouterContext';
+import { useI18n } from '../i18n/I18nContext';
 
 export function FeaturedCollection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { navigateTo } = useRouter();
+  const { t } = useI18n();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start']
@@ -44,27 +46,23 @@ export function FeaturedCollection() {
               transition={{ duration: 0.6 }}
             >
               <p className="mb-4 text-sm tracking-[0.3em] text-white/60">
-                SPRING/SUMMER 2026
+                {t('collection.season')}
               </p>
               <h2 className="mb-6 text-white">
-                The Art of Luxury
+                {t('collection.title')}
               </h2>
               <p className="mb-8 text-white/80">
-                This season, we present a carefully curated collection that embodies
-                sophistication and timeless design. Each piece tells a story of
-                craftsmanship, attention to detail, and unwavering commitment to quality.
+                {t('collection.p1')}
               </p>
               <p className="mb-12 text-white/80">
-                From hand-stitched leather goods to precision-cut garments, every item
-                in our collection represents the pinnacle of luxury fashion. Experience
-                the difference that true craftsmanship makes.
+                {t('collection.p2')}
               </p>
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/90"
                 onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                View Collection
+                {t('collection.cta')}
               </Button>
             </motion.div>
           </motion.div>
