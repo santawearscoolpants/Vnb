@@ -21,10 +21,15 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { PaymentCallbackPage } from './pages/PaymentCallbackPage';
 import { Toaster } from './components/ui/sonner';
 import { usePageMeta, PAGE_META } from './hooks/usePageMeta';
+import { initGA, trackPageView } from './utils/analytics';
+import { useEffect } from 'react';
 
 function AppContent() {
   const { currentPage } = useRouter();
   usePageMeta(PAGE_META[currentPage] || PAGE_META.home);
+
+  useEffect(() => { initGA(); }, []);
+  useEffect(() => { trackPageView(currentPage); }, [currentPage]);
 
   const renderPage = () => {
     switch (currentPage) {

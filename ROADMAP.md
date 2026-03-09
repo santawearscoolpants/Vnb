@@ -68,9 +68,9 @@
 - [x] Lazy-load images across site — `ImageWithFallback` now uses `loading="lazy"`, `decoding="async"`, and animated skeleton placeholders
 
 ### Analytics & Operations
-- [ ] Add analytics (Google Analytics or Plausible)
-- [ ] Confirm Django admin covers product/order management, or build admin UI
-- [ ] Transactional emails: order confirmation, shipping updates, welcome email on account creation
+- [x] Add analytics — GA4 integration with page-view tracking per route (`VITE_GA_MEASUREMENT_ID` env var)
+- [x] Confirm Django admin covers product/order management — all models fully registered with fieldsets, inlines, filters, and search
+- [x] Transactional emails — order confirmation, shipping update, and welcome email on account creation
 
 ---
 

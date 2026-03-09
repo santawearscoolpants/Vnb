@@ -15,6 +15,7 @@ from .serializers import (
     CartSerializer, OrderSerializer, OrderCreateSerializer
 )
 from .paystack import PaystackError, initialize_transaction, verify_transaction
+from .emails import send_order_confirmation
 
 
 def get_or_create_cart_for_request(request):
@@ -113,6 +114,8 @@ def create_order_from_payment_attempt(payment_attempt: PaymentAttempt, user=None
         payment_attempt.order = order
         payment_attempt.status = 'success'
         payment_attempt.save(update_fields=['order', 'status', 'updated_at'])
+
+        send_order_confirmation(order)
 
         return order
 

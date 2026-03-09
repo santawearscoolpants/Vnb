@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserProfile
+from .emails import send_welcome_email
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -40,4 +41,5 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', '')
         )
         UserProfile.objects.create(user=user, **profile_data)
+        send_welcome_email(user)
         return user
