@@ -118,6 +118,7 @@ function ProductCard({
   index: number;
   navigateTo: (page: string, params?: Record<string, string>) => void;
 }) {
+  const { formatPrice } = useCurrency();
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
