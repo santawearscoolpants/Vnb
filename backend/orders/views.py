@@ -323,6 +323,7 @@ class PaymentInitializeView(APIView):
         )
 
         try:
+            cancel_action = f'{settings.FRONTEND_URL}?payment_callback=1&status=cancelled'
             paystack_data = initialize_transaction(
                 reference=reference,
                 email=payment_attempt.email,
@@ -331,6 +332,7 @@ class PaymentInitializeView(APIView):
                 metadata={
                     'source': 'vnb-checkout',
                     'payment_attempt_id': payment_attempt.id,
+                    'cancel_action': cancel_action,
                 },
             )
         except PaystackError as exc:
@@ -354,7 +356,7 @@ class PaymentVerifyView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        reference = request.query_params.get('reference')
+        reference = request.query_params.get('reference') or request.query_params.get('trxref')
         if not reference:
             return Response({'error': 'Missing payment reference'}, status=status.HTTP_400_BAD_REQUEST)
 

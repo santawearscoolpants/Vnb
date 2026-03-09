@@ -19,11 +19,13 @@ const RouterContext = createContext<RouterContextType | undefined>(undefined);
 
 function getInitialRoute() {
   const params = new URLSearchParams(window.location.search);
+  const callbackReference = params.get('reference') || params.get('trxref');
 
-  if (params.get('payment_callback') === '1' || params.get('reference')) {
+  if (params.get('payment_callback') === '1' || callbackReference) {
     const extra: Record<string, string> = {};
-    const reference = params.get('reference');
-    if (reference) extra.reference = reference;
+    if (callbackReference) extra.reference = callbackReference;
+    const status = params.get('status');
+    if (status) extra.status = status;
     return {
       currentPage: 'payment-callback',
       pageParams: extra,

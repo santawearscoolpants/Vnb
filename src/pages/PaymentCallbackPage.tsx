@@ -18,32 +18,56 @@ export function PaymentCallbackPage() {
   const [message, setMessage] = useState('Confirming your payment with Paystack…');
 
   useEffect(() => {
-    const reference = pageParams.reference;
+    const qs = new URLSearchParams(window.location.search);
+    const reference = pageParams.reference || qs.get('reference') || qs.get('trxref') || '';
+    const paystackStatus = pageParams.status || qs.get('status') || '';
     if (!reference) {
       setStatus('error');
       setMessage('We could not find a payment reference to verify.');
+      return;
+    }
+    if (paystackStatus === 'cancelled') {
+      setStatus('error');
+      setMessage('Payment was cancelled before completion. You can try again.');
       return;
     }
 
     let cancelled = false;
 
     async function verify() {
-      try {
-        const result = await api.verifyPayment(reference);
-        if (cancelled) return;
+      // Paystack verification can be briefly eventual-consistent right after redirect.
+      // Retry a few times before failing hard.
+      const MAX_RETRIES = 5;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+        try {
+          const result = await api.verifyPayment(reference);
+          if (cancelled) return;
 
-        sessionStorage.removeItem(CHECKOUT_FORM_STORAGE_KEY);
-        clearPaymentQuery();
-        navigateTo('order-confirmation', {
-          orderNumber: result.order.order_number,
-          orderTotal: String(result.order.total),
-          email: result.order.email,
-          currency: result.order.payment_currency || 'USD',
-        });
-      } catch (error: any) {
-        if (cancelled) return;
-        setStatus('error');
-        setMessage(error?.message || 'We could not verify your payment. Please try again.');
+          sessionStorage.removeItem(CHECKOUT_FORM_STORAGE_KEY);
+          clearPaymentQuery();
+          navigateTo('order-confirmation', {
+            orderNumber: result.order.order_number,
+            orderTotal: String(result.order.total),
+            email: result.order.email,
+            currency: result.order.payment_currency || 'USD',
+          });
+          return;
+        } catch (error: any) {
+          if (cancelled) return;
+          const errMsg = (error?.message || '').toLowerCase();
+          const isRetriable =
+            errMsg.includes('not been completed') ||
+            errMsg.includes('pending') ||
+            errMsg.includes('could not verify');
+
+          if (!isRetriable || attempt === MAX_RETRIES) {
+            setStatus('error');
+            setMessage(error?.message || 'We could not verify your payment. Please try again.');
+            return;
+          }
+          setMessage(`Confirming your payment with Paystack… (${attempt}/${MAX_RETRIES})`);
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+        }
       }
     }
 
@@ -52,7 +76,7 @@ export function PaymentCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [navigateTo, pageParams.reference]);
+  }, [navigateTo, pageParams.reference, pageParams.status]);
 
   return (
     <div className="min-h-screen bg-zinc-50 pt-20">
