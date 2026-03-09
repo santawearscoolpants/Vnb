@@ -16,6 +16,10 @@ def _headers():
     return {
         'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        # Cloudflare can reject requests without a normal client signature.
+        # Adding a user-agent avoids false-positive 1010 blocks in test mode.
+        'User-Agent': 'VNB-Backend/1.0 (+https://localhost)',
     }
 
 
@@ -45,7 +49,7 @@ def _request_json(method: str, path: str, payload: dict | None = None):
             message = parsed.get('message') or parsed.get('error') or details
         except json.JSONDecodeError:
             message = details or exc.reason
-        raise PaystackError(message)
+        raise PaystackError(f'Paystack HTTP {exc.code}: {message}')
     except error.URLError as exc:
         raise PaystackError(f'Could not reach Paystack: {exc.reason}')
 
