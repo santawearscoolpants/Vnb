@@ -32,6 +32,14 @@ export function FooterNew() {
     { label: t('footer.careers'), href: '#' },
     { label: t('footer.foundation'), href: '#' },
   ];
+
+  const legalLinks = [
+    { label: 'Sitemap', href: '#' },
+    { label: 'Legal Notices', href: '#' },
+    { label: 'Privacy Policy', href: '#' },
+    { label: 'Accessibility', href: '#' },
+  ];
+
   const [email, setEmail] = useState('');
 
   const handleSubscribe = (e: React.FormEvent) => {
