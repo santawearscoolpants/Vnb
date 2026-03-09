@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
+import { formatMoney } from '../utils/currency';
 
 const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace('/api', '');
 
@@ -161,9 +162,7 @@ function ProductCard({
 
       <div className="mt-4 text-left">
         <h4 className="mb-1 text-black">{product.name}</h4>
-        <p className="text-xs text-zinc-600">
-          ${Number(product.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-        </p>
+        <p className="text-xs text-zinc-600">{formatMoney(product.price)}</p>
       </div>
     </motion.div>
   );

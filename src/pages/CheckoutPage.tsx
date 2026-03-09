@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'sonner';
 import logo from '../assets/logo.png';
+import { formatMoney } from '../utils/currency';
 
 const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:8000';
 const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
@@ -362,7 +363,7 @@ export function CheckoutPage() {
                           <div className="mt-1 flex justify-between">
                             <span className="text-xs text-zinc-500">Qty {item.quantity}</span>
                             <span className="text-xs font-medium text-black">
-                              ${Number(item.subtotal ?? (Number(item.product_detail?.price ?? 0) * item.quantity)).toFixed(2)}
+                              {formatMoney(item.subtotal ?? (Number(item.product_detail?.price ?? 0) * item.quantity))}
                             </span>
                           </div>
                         </div>
@@ -374,7 +375,7 @@ export function CheckoutPage() {
                 <div className="mt-4 space-y-2 border-t border-zinc-100 pt-4">
                   <div className="flex justify-between text-xs text-zinc-600">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatMoney(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-zinc-600">
                     <span>Shipping</span>
@@ -382,11 +383,11 @@ export function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-xs text-zinc-600">
                     <span>Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatMoney(tax)}</span>
                   </div>
                   <div className="flex justify-between border-t border-zinc-200 pt-2 text-sm font-medium text-black">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatMoney(total)}</span>
                   </div>
                 </div>
               </motion.div>

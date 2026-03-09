@@ -3,20 +3,14 @@ import { CheckCircle, ShoppingBag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useRouter } from '../context/RouterContext';
 import logo from '../assets/logo.png';
+import { formatMoney as formatCurrency, getCurrencyCode } from '../utils/currency';
 
 export function OrderConfirmationPage() {
   const { navigateTo, pageParams } = useRouter();
   const orderNumber = pageParams?.orderNumber ?? '';
   const orderTotal = pageParams?.orderTotal ?? '';
   const email = pageParams?.email ?? '';
-  const currency = pageParams?.currency ?? 'USD';
-
-  function formatMoney(amount: string) {
-    const value = Number(amount);
-    if (!Number.isFinite(value)) return amount;
-    if (currency === 'USD') return `$${value.toFixed(2)}`;
-    return `${currency} ${value.toFixed(2)}`;
-  }
+  const currency = pageParams?.currency ?? getCurrencyCode();
 
   return (
     <div className="min-h-screen bg-zinc-50 pt-20">
@@ -74,7 +68,7 @@ export function OrderConfirmationPage() {
             {orderTotal && (
               <div className="flex justify-between border-t border-zinc-200 pt-3">
                 <span className="text-xs text-zinc-500 uppercase tracking-widest">Total charged</span>
-                <span className="text-sm font-medium text-black">{formatMoney(orderTotal)}</span>
+                <span className="text-sm font-medium text-black">{formatCurrency(orderTotal, currency)}</span>
               </div>
             )}
             {email && (
