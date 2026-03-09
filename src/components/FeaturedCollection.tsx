@@ -76,7 +76,7 @@ export function FeaturedCollection() {
         viewport={{ once: true }}
         className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
       >
-        <img src={logo} alt="" className="h-[300px] w-auto brightness-0 invert opacity-50" />
+        <img src={logo} alt="" className="h-[300px] w-auto brightness-0 invert opacity-50" loading="lazy" decoding="async" />
       </motion.div>
     </section>
   );

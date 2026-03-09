@@ -1,0 +1,93 @@
+import { useEffect } from 'react';
+
+interface PageMeta {
+  title?: string;
+  description?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogType?: string;
+}
+
+const BRAND = 'Vines & Branches';
+const DEFAULT_DESCRIPTION = 'African luxury fashion — premium handcrafted pieces from Ghana to the world.';
+const DEFAULT_OG_IMAGE = '/src/assets/logo.png';
+
+function setMeta(name: string, content: string, attribute = 'name') {
+  let el = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attribute, name);
+    document.head.appendChild(el);
+  }
+  el.content = content;
+}
+
+export function usePageMeta(meta: PageMeta) {
+  useEffect(() => {
+    const title = meta.title ? `${meta.title} | ${BRAND}` : BRAND;
+    document.title = title;
+
+    setMeta('description', meta.description || DEFAULT_DESCRIPTION);
+
+    setMeta('og:title', meta.ogTitle || meta.title || BRAND, 'property');
+    setMeta('og:description', meta.ogDescription || meta.description || DEFAULT_DESCRIPTION, 'property');
+    setMeta('og:image', meta.ogImage || DEFAULT_OG_IMAGE, 'property');
+    setMeta('og:type', meta.ogType || 'website', 'property');
+    setMeta('og:site_name', BRAND, 'property');
+
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', meta.ogTitle || meta.title || BRAND);
+    setMeta('twitter:description', meta.ogDescription || meta.description || DEFAULT_DESCRIPTION);
+    setMeta('twitter:image', meta.ogImage || DEFAULT_OG_IMAGE);
+  }, [meta.title, meta.description, meta.ogTitle, meta.ogDescription, meta.ogImage, meta.ogType]);
+}
+
+export const PAGE_META: Record<string, PageMeta> = {
+  home: {
+    title: 'Home',
+    description: 'Discover African luxury fashion at Vines & Branches — handcrafted pieces, premium quality, timeless design.',
+  },
+  category: {
+    title: 'Collections',
+    description: 'Browse our curated luxury fashion collections — women\'s, men\'s, and accessories.',
+    ogType: 'product.group',
+  },
+  product: {
+    title: 'Product',
+    description: 'Premium handcrafted luxury fashion from Vines & Branches.',
+    ogType: 'product',
+  },
+  cart: {
+    title: 'Shopping Bag',
+    description: 'Review your shopping bag and proceed to checkout.',
+  },
+  checkout: {
+    title: 'Checkout',
+    description: 'Complete your order securely at Vines & Branches.',
+  },
+  'order-confirmation': {
+    title: 'Order Confirmed',
+    description: 'Your order has been placed successfully.',
+  },
+  invest: {
+    title: 'Invest',
+    description: 'Invest in the future of African luxury fashion — explore investment opportunities with Vines & Branches.',
+  },
+  account: {
+    title: 'Sign In',
+    description: 'Sign in to your Vines & Branches account.',
+  },
+  'create-account': {
+    title: 'Create Account',
+    description: 'Create your Vines & Branches account to start shopping.',
+  },
+  'account-dashboard': {
+    title: 'My Account',
+    description: 'Manage your orders, addresses, and profile settings.',
+  },
+  'forgot-password': {
+    title: 'Reset Password',
+    description: 'Reset your Vines & Branches account password.',
+  },
+};

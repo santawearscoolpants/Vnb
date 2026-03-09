@@ -64,9 +64,8 @@
 - [x] Multi-language support — EN/FR with i18n context, translation dictionary, and navbar language selector
 
 ### SEO & Performance
-- [ ] Add per-page meta tags and Open Graph tags (currently a SPA with no per-route meta)
-- [ ] Consider SSR (Next.js or Vite SSR) for product and category page SEO
-- [ ] Lazy-load images across site — no loading states on most image components
+- [x] Add per-page meta tags and Open Graph tags — `usePageMeta` hook updates title, description, OG & Twitter cards per route
+- [x] Lazy-load images across site — `ImageWithFallback` now uses `loading="lazy"`, `decoding="async"`, and animated skeleton placeholders
 
 ### Analytics & Operations
 - [ ] Add analytics (Google Analytics or Plausible)

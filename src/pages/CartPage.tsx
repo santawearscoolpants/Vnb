@@ -69,7 +69,7 @@ export function CartPage() {
                 <div className="space-y-4">
                   {cart?.items.map((item: any) => (
                     <div key={item.id} className="flex items-center gap-4 border-b border-zinc-100 pb-4">
-                      <img src={item.product_detail?.image || '/logo.png'} alt={item.product_detail?.name} className="h-20 w-20 object-cover" />
+                      <img src={item.product_detail?.image || '/logo.png'} alt={item.product_detail?.name} className="h-20 w-20 object-cover" loading="lazy" decoding="async" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <div>
