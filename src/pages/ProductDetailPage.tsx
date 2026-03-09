@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useRouter } from '../context/RouterContext';
-import { ArrowLeft, ShoppingBag, Ruler, X, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Ruler, X, ZoomIn, Zap } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useCart } from '../context/CartContext';
@@ -33,7 +33,7 @@ interface ApiProduct {
 }
 
 export function ProductDetailPage() {
-  const { goBack, productId } = useRouter();
+  const { goBack, productId, navigateTo } = useRouter();
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
 
@@ -73,6 +73,8 @@ export function ProductDetailPage() {
       .finally(() => setIsLoading(false));
   }, [productId]);
 
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
+
   const handleAddToCart = () => {
     if (!product) return;
     if (!selectedSize) {
@@ -83,6 +85,24 @@ export function ProductDetailPage() {
     addItem(product.id, 1, selectedSize, colorName)
       .then(() => toast.success('Added to cart successfully!'))
       .catch(() => toast.error('Failed to add to cart'));
+  };
+
+  const handleBuyNow = async () => {
+    if (!product) return;
+    if (!selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
+    setBuyNowLoading(true);
+    const colorName = product.colors[selectedColor]?.name || '';
+    try {
+      await addItem(product.id, 1, selectedSize, colorName);
+      navigateTo('checkout');
+    } catch {
+      toast.error('Failed to add to cart');
+    } finally {
+      setBuyNowLoading(false);
+    }
   };
 
   // All image URLs for the gallery: prefer the images[] array, fallback to main image
@@ -264,9 +284,14 @@ export function ProductDetailPage() {
                 {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
               </button>
 
-              {/* Apple Pay */}
-              <button className="w-full border border-black px-8 py-4 text-sm transition-colors hover:bg-black hover:text-white">
-                Apple Pay
+              {/* Buy Now — express checkout */}
+              <button
+                disabled={!product.in_stock || buyNowLoading}
+                onClick={handleBuyNow}
+                className="flex w-full items-center justify-center gap-2 border border-black px-8 py-4 text-sm transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400 disabled:hover:bg-transparent"
+              >
+                <Zap className="h-4 w-4" />
+                {buyNowLoading ? 'PROCESSING...' : 'BUY NOW'}
               </button>
 
               {/* Description */}

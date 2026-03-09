@@ -53,7 +53,7 @@
 
 ### Payments
 - [x] Integrate payment processor (Stripe or Paystack — Paystack recommended for African market) into `CheckoutPage`
-- [ ] Make Apple Pay button on `ProductDetailPage` functional (currently a placeholder)
+- [x] Make Apple Pay button on `ProductDetailPage` functional — replaced with express "Buy Now" (add to cart + checkout)
 
 ### Investor Page
 - [x] Replace placeholder metrics (350% growth, 50K customers, 15 markets) with real figures before going public
