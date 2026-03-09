@@ -134,7 +134,7 @@ FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
 PAYSTACK_CURRENCY = config('PAYSTACK_CURRENCY', default='USD')
-PAYSTACK_CHANNELS = config('PAYSTACK_CHANNELS', default='card', cast=Csv())
+PAYSTACK_CHANNELS = config('PAYSTACK_CHANNELS', default='card,mobile_money,bank_transfer', cast=Csv())
 PAYSTACK_BASE_URL = config('PAYSTACK_BASE_URL', default='https://api.paystack.co')
 PAYSTACK_CALLBACK_URL = config('PAYSTACK_CALLBACK_URL', default=f'{FRONTEND_URL}?payment_callback=1')
 
