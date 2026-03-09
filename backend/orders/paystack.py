@@ -59,7 +59,15 @@ def _request_json(method: str, path: str, payload: dict | None = None):
     return body['data']
 
 
-def initialize_transaction(*, reference: str, email: str, amount: Decimal, callback_url: str, metadata: dict | None = None):
+def initialize_transaction(
+    *,
+    reference: str,
+    email: str,
+    amount: Decimal,
+    callback_url: str,
+    metadata: dict | None = None,
+    channels: list[str] | None = None,
+):
     payload = {
         'reference': reference,
         'email': email,
@@ -69,6 +77,8 @@ def initialize_transaction(*, reference: str, email: str, amount: Decimal, callb
     }
     if metadata:
         payload['metadata'] = metadata
+    if channels:
+        payload['channels'] = channels
     return _request_json('POST', '/transaction/initialize', payload)
 
 

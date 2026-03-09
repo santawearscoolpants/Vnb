@@ -331,9 +331,10 @@ class PaymentInitializeView(APIView):
                 callback_url=settings.PAYSTACK_CALLBACK_URL,
                 metadata={
                     'source': 'vnb-checkout',
-                    'payment_attempt_id': payment_attempt.id,
+                    'payment_attempt_id': str(payment_attempt.id),
                     'cancel_action': cancel_action,
                 },
+                channels=list(getattr(settings, 'PAYSTACK_CHANNELS', []) or []),
             )
         except PaystackError as exc:
             payment_attempt.status = 'failed'
