@@ -56,11 +56,11 @@
 - [ ] Make Apple Pay button on `ProductDetailPage` functional (currently a placeholder)
 
 ### Investor Page
-- [ ] Replace placeholder metrics (350% growth, 50K customers, 15 markets) with real figures before going public
-- [ ] Build downloadable investor deck — "Download Investor Deck" button currently does nothing
+- [x] Replace placeholder metrics (350% growth, 50K customers, 15 markets) with real figures before going public
+- [x] Build downloadable investor deck — "Download Investor Deck" button currently does nothing
 
 ### Internationalisation
-- [ ] Currency switcher — all prices currently in `$`; add GHS/NGN support for African market
+- [x] Currency switcher — geo-detection, prompt, navbar selector, exchange-rate conversion (GHS/USD/NGN/GBP/EUR/KES)
 - [ ] Multi-language support if targeting Francophone Africa
 
 ### SEO & Performance

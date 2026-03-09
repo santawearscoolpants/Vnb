@@ -3,7 +3,7 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
-import { formatMoney } from '../utils/currency';
+import { useCurrency } from '../context/CurrencyContext';
 
 interface SearchDialogProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const { navigateTo } = useRouter();
+  const { formatPrice } = useCurrency();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -187,7 +188,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                                 )}
                               </div>
                               <p className="mb-0.5 text-xs font-medium text-white">{product.name}</p>
-                              <p className="text-xs text-white/60">{formatMoney(product.price)}</p>
+                              <p className="text-xs text-white/60">{formatPrice(product.price)}</p>
                             </button>
                           );
                         })}

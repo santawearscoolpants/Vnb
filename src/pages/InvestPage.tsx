@@ -7,52 +7,53 @@ import { toast } from 'sonner';
 import logo from "../assets/logo.png";
 import api from '../services/api';
 import { CONTACT_EMAILS } from '../constants/contact';
+import { generateInvestorDeck } from '../utils/investorDeck';
 
 const investmentTiers = [
   {
     name: 'Seed',
-    amount: '$50,000',
-    equity: '2-5%',
+    amount: 'GHS 50,000',
+    equity: '2–5%',
     benefits: [
       'Quarterly financial reports',
       'Investor newsletter',
       'Exclusive product previews',
-      'Annual investor meeting access'
-    ]
+      'Annual investor meeting access',
+    ],
   },
   {
     name: 'Growth',
-    amount: '$250,000',
-    equity: '5-10%',
+    amount: 'GHS 250,000',
+    equity: '5–10%',
     benefits: [
       'All Seed benefits',
       'Board observer seat',
       'Quarterly strategy calls',
       'VIP event invitations',
-      'Product co-creation opportunities'
+      'Product co-creation opportunities',
     ],
-    featured: true
+    featured: true,
   },
   {
     name: 'Strategic',
-    amount: '$1,000,000+',
-    equity: '10-20%',
+    amount: 'GHS 1,000,000+',
+    equity: '10–20%',
     benefits: [
       'All Growth benefits',
       'Board seat',
       'Monthly executive briefings',
       'Strategic planning input',
       'Global expansion partnership',
-      'Licensing opportunities'
-    ]
-  }
+      'Licensing opportunities',
+    ],
+  },
 ];
 
 const metrics = [
-  { label: 'Revenue Growth', value: '350%', icon: TrendingUp },
-  { label: 'Active Customers', value: '50K+', icon: Users },
-  { label: 'Markets', value: '15', icon: Globe },
-  { label: 'Awards', value: '8', icon: Award }
+  { label: 'Year Founded', value: '2024', icon: Award },
+  { label: 'Product Lines', value: '4', icon: TrendingUp },
+  { label: 'Registered Customers', value: '500+', icon: Users },
+  { label: 'Target Markets', value: '3', icon: Globe },
 ];
 
 export function InvestPage() {
@@ -180,28 +181,28 @@ export function InvestPage() {
             {[
               {
                 title: 'Market Opportunity',
-                description: 'Africa\'s luxury goods market is projected to reach $8.5 billion by 2025, with Ghana positioned as a key gateway.'
+                description: 'Africa\'s luxury goods market is projected to exceed $8 billion by 2027, with Ghana positioned as a key gateway to the continent.',
               },
               {
-                title: 'Proven Track Record',
-                description: '350% revenue growth year-over-year with expanding margins and a loyal customer base of over 50,000.'
+                title: 'Early-Stage Momentum',
+                description: 'Launched in 2024 with growing traction — 500+ registered customers, repeat purchase rate climbing, and strong social engagement.',
               },
               {
                 title: 'Unique Positioning',
-                description: 'First luxury brand authentically rooted in African craftsmanship with global appeal and distribution.'
+                description: 'A luxury brand authentically rooted in African craftsmanship with global appeal — no direct local competitor at this quality tier.',
               },
               {
                 title: 'Scalable Model',
-                description: 'Omnichannel approach combining e-commerce, flagship stores, and strategic retail partnerships.'
+                description: 'Omnichannel approach combining e-commerce, flagship retail, and strategic partnerships across Ghana, Nigeria, and the diaspora.',
               },
               {
-                title: 'Strong Leadership',
-                description: 'Experienced management team with backgrounds from LVMH, Kering, and leading African businesses.'
+                title: 'Founding Team',
+                description: 'Passionate founders with deep knowledge of African fashion, supply-chain logistics, and digital commerce.',
               },
               {
                 title: 'Sustainability Focus',
-                description: 'Ethical sourcing and production practices appeal to conscious luxury consumers worldwide.'
-              }
+                description: 'Ethical sourcing and local production appeal to the growing market of conscious luxury consumers worldwide.',
+              },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -357,10 +358,10 @@ export function InvestPage() {
                     required
                     className="w-full rounded-sm border border-zinc-300 px-4 py-3 text-black outline-none transition-colors focus:border-black"
                   >
-                    <option value="">Select an amount</option>
-                    <option value="seed">Seed ($50,000)</option>
-                    <option value="growth">Growth ($250,000)</option>
-                    <option value="strategic">Strategic ($1M+)</option>
+                    <option value="">Select a tier</option>
+                    <option value="seed">Seed (GHS 50,000)</option>
+                    <option value="growth">Growth (GHS 250,000)</option>
+                    <option value="strategic">Strategic (GHS 1M+)</option>
                     <option value="custom">Custom Amount</option>
                   </select>
                 </div>
@@ -422,6 +423,10 @@ export function InvestPage() {
                 size="lg"
                 variant="outline"
                 className="border-white text-white hover:bg-white/10"
+                onClick={() => {
+                  generateInvestorDeck();
+                  toast.success('Investor deck downloaded!');
+                }}
               >
                 Download Investor Deck
               </Button>

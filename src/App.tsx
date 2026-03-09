@@ -1,8 +1,10 @@
 import { Navigation } from './components/Navigation';
 import { FooterNew } from './components/FooterNew';
+import { CurrencyPrompt } from './components/CurrencyPrompt';
 import { RouterProvider, useRouter } from './context/RouterContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CategoryPage } from './pages/CategoryPage';
@@ -63,6 +65,7 @@ function AppContent() {
       <Navigation />
       {renderPage()}
       {showFooter && <FooterNew />}
+      <CurrencyPrompt />
       <Toaster />
     </div>
   );
@@ -72,9 +75,11 @@ export default function App() {
   return (
     <RouterProvider>
       <AuthProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
+        <CurrencyProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </CurrencyProvider>
       </AuthProvider>
     </RouterProvider>
   );

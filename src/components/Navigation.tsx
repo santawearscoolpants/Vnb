@@ -1,8 +1,11 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Menu, Search, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { ShoppingBag, Menu, Search, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { SUPPORTED_CURRENCIES } from '../utils/currency';
+import type { CurrencyCode } from '../utils/currency';
 import logo from "../assets/logo.png";
 import { useRouter } from '../context/RouterContext';
 import { MenuSidebar } from './MenuSidebar';
@@ -16,10 +19,13 @@ export function Navigation() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const currencyMenuRef = useRef<HTMLDivElement>(null);
   const { navigateTo, currentPage } = useRouter();
   const { cart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { currency, setCurrency } = useCurrency();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -27,11 +33,13 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (currencyMenuRef.current && !currencyMenuRef.current.contains(e.target as Node)) {
+        setIsCurrencyOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -85,7 +93,38 @@ export function Navigation() {
               >
                 <img src={logo} alt="Vines & Branches" className="h-12 w-auto brightness-0 invert" />
               </motion.button>
-              <span className="text-xs tracking-wider text-white/70">GHANA</span>
+              <div ref={currencyMenuRef} className="relative">
+                <button
+                  onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+                  className="flex items-center gap-1 text-xs tracking-wider text-white/70 transition hover:text-white"
+                >
+                  {currency}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                <AnimatePresence>
+                  {isCurrencyOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.12 }}
+                      className="absolute left-1/2 top-6 z-50 -translate-x-1/2 overflow-hidden rounded-sm bg-white shadow-lg"
+                    >
+                      {SUPPORTED_CURRENCIES.map((code) => (
+                        <button
+                          key={code}
+                          onClick={() => { setCurrency(code as CurrencyCode); setIsCurrencyOpen(false); }}
+                          className={`block w-full whitespace-nowrap px-5 py-2 text-left text-xs transition ${
+                            code === currency ? 'bg-zinc-100 font-medium text-black' : 'text-zinc-600 hover:bg-zinc-50 hover:text-black'
+                          }`}
+                        >
+                          {code}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Right - Contact, Invest & Icons */}

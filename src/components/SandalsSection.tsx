@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
-import { formatMoney } from '../utils/currency';
+import { useCurrency } from '../context/CurrencyContext';
 
 const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace('/api', '');
 
@@ -29,6 +29,7 @@ interface PaginatedProducts {
 
 export function SandalsSection() {
   const { navigateTo } = useRouter();
+  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -162,7 +163,7 @@ function ProductCard({
 
       <div className="mt-4 text-left">
         <h4 className="mb-1 text-black">{product.name}</h4>
-        <p className="text-xs text-zinc-600">{formatMoney(product.price)}</p>
+        <p className="text-xs text-zinc-600">{formatPrice(product.price)}</p>
       </div>
     </motion.div>
   );

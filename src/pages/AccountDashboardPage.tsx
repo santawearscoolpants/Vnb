@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
 import { toast } from 'sonner';
-import { formatMoney } from '../utils/currency';
+import { useCurrency } from '../context/CurrencyContext';
 
 type Tab = 'orders' | 'addresses' | 'payments' | 'profile';
 
@@ -61,6 +61,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 export function AccountDashboardPage() {
   const { user, logout } = useAuth();
   const { navigateTo, goBack } = useRouter();
+  const { formatPrice } = useCurrency();
   const [tab, setTab] = useState<Tab>('orders');
 
   useEffect(() => {
@@ -232,7 +233,7 @@ function OrderCard({ order }: { order: Order }) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-black">{formatMoney(order.total)}</span>
+          <span className="text-sm font-medium text-black">{formatPrice(order.total)}</span>
           {expanded
             ? <ChevronUp className="h-4 w-4 text-zinc-400" />
             : <ChevronDown className="h-4 w-4 text-zinc-400" />
@@ -261,19 +262,19 @@ function OrderCard({ order }: { order: Order }) {
                         {' · '}Qty {item.quantity}
                       </p>
                     </div>
-                    <span className="text-zinc-700">{formatMoney(item.subtotal)}</span>
+                    <span className="text-zinc-700">{formatPrice(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
               <div className="space-y-1 border-t border-zinc-100 pt-3 text-xs text-zinc-500">
-                <div className="flex justify-between"><span>Subtotal</span><span>{formatMoney(order.subtotal)}</span></div>
+                <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(order.subtotal)}</span></div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>{Number(order.shipping) === 0 ? 'Free' : formatMoney(order.shipping)}</span>
+                  <span>{Number(order.shipping) === 0 ? 'Free' : formatPrice(order.shipping)}</span>
                 </div>
-                <div className="flex justify-between"><span>Tax</span><span>{formatMoney(order.tax)}</span></div>
+                <div className="flex justify-between"><span>Tax</span><span>{formatPrice(order.tax)}</span></div>
                 <div className="flex justify-between border-t border-zinc-200 pt-2 text-sm font-medium text-black">
-                  <span>Total</span><span>{formatMoney(order.total)}</span>
+                  <span>Total</span><span>{formatPrice(order.total)}</span>
                 </div>
               </div>
               <p className="mt-3 text-xs text-zinc-400">

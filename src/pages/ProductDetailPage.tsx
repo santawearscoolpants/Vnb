@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
-import { formatMoney } from '../utils/currency';
+import { useCurrency } from '../context/CurrencyContext';
 
 const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api')
   .replace('/api', '');
@@ -35,6 +35,7 @@ interface ApiProduct {
 export function ProductDetailPage() {
   const { goBack, productId } = useRouter();
   const { addItem } = useCart();
+  const { formatPrice } = useCurrency();
 
   const [product, setProduct] = useState<ApiProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -185,7 +186,7 @@ export function ProductDetailPage() {
             <div className="space-y-8">
               <div>
                 <h1 className="mb-2">{product.name}</h1>
-                <p className="text-sm text-zinc-600">{formatMoney(product.price)}</p>
+                <p className="text-sm text-zinc-600">{formatPrice(product.price)}</p>
                 {/* Stock / availability */}
                 {!product.in_stock && (
                   <p className="mt-1 text-sm font-medium text-red-600">Out of stock</p>

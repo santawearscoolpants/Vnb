@@ -5,10 +5,11 @@ import { useRouter } from '../context/RouterContext';
 import logo from "../assets/logo.png";
 import { useCart } from '../context/CartContext';
 import { ArrowRight } from 'lucide-react';
-import { formatMoney } from '../utils/currency';
+import { useCurrency } from '../context/CurrencyContext';
 export function CartPage() {
   const { goBack, navigateTo } = useRouter();
   const { cart, loading, updateItem, removeItem, clear } = useCart();
+  const { formatPrice } = useCurrency();
   const isEmpty = !(cart && cart.item_count && cart.item_count > 0);
 
   return (
@@ -75,7 +76,7 @@ export function CartPage() {
                             <div className="text-sm font-medium text-black">{item.product_detail?.name || 'Product'}</div>
                             <div className="text-xs text-zinc-600">{item.size ? `Size: ${item.size}` : ''} {item.color ? ` • ${item.color}` : ''}</div>
                           </div>
-                          <div className="text-sm text-black">{formatMoney(item.product_detail?.price || 0)}</div>
+                          <div className="text-sm text-black">{formatPrice(item.product_detail?.price || 0)}</div>
                         </div>
                         <div className="mt-3 flex items-center gap-3">
                           <button onClick={() => updateItem(item.id, item.quantity - 1)} className="px-3 py-1 border">-</button>
@@ -104,7 +105,7 @@ export function CartPage() {
                 <div className="space-y-2 border-b border-zinc-100 pb-4">
                   <div className="flex justify-between text-xs text-zinc-700">
                     <span>Subtotal</span>
-                    <span>{formatMoney(cart?.total ?? 0)}</span>
+                    <span>{formatPrice(cart?.total ?? 0)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-zinc-700">
                     <span>Shipping</span>
@@ -112,12 +113,12 @@ export function CartPage() {
                   </div>
                   <div className="flex justify-between text-xs text-zinc-700">
                     <span>Tax (8%)</span>
-                    <span>{formatMoney(Number(cart?.total ?? 0) * 0.08)}</span>
+                    <span>{formatPrice(Number(cart?.total ?? 0) * 0.08)}</span>
                   </div>
                 </div>
                 <div className="mt-4 flex justify-between text-sm font-medium text-black">
                   <span>Total</span>
-                  <span>{formatMoney(Number(cart?.total ?? 0) * 1.08)}</span>
+                  <span>{formatPrice(Number(cart?.total ?? 0) * 1.08)}</span>
                 </div>
                 <Button
                   onClick={() => navigateTo('checkout')}
