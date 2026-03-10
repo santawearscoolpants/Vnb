@@ -22,22 +22,22 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 - [ ] Shows validation errors for invalid email format
 - [ ] Shows validation errors for weak passwords
 - [ ] Duplicate email returns appropriate error message
-- [ ] Welcome email is sent on successful registration
-- [ ] User is automatically logged in after registration
+- [ ] Supabase confirmation/welcome email is sent on successful registration
+- [ ] If email confirmation is required, user can only sign in after confirming email
+- [ ] If email confirmation is disabled, user can sign in immediately after registration
 - [ ] Auth state persists on page refresh
 
 ### Login (`/account`)
-- [ ] Email check returns correct state (existing vs new user)
 - [ ] Correct password logs in successfully
-- [ ] Incorrect password shows error (without revealing if email exists)
-- [ ] Auth token is stored and used for subsequent API calls
+- [ ] Incorrect password shows generic error (no user enumeration)
+- [ ] Supabase session is stored and used for subsequent auth-protected API calls
 - [ ] Session persists across page refresh
 - [ ] Logout clears session and redirects appropriately
 
 ### Password Reset
 - [ ] "Forgot password" link navigates to reset page
 - [ ] Email is sent with reset link
-- [ ] Reset link works and allows setting new password
+- [ ] Reset link redirects to `?page=reset-password` and allows setting new password
 - [ ] Expired/used reset links are rejected
 - [ ] Can log in with new password after reset
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { supabase, mapSupabaseUser, type AppUser } from '../lib/supabase';
+import { getSupabaseClient, isSupabaseConfigured, mapSupabaseUser, type AppUser } from '../lib/supabase';
 
 interface AuthContextType {
   user: AppUser | null;
@@ -16,9 +16,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const client = getSupabaseClient();
     let isMounted = true;
 
-    supabase.auth.getUser()
+    client.auth.getUser()
       .then(({ data, error }) => {
         if (!isMounted) return;
         if (error || !data.user) {
@@ -31,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isMounted) setIsLoading(false);
       });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
       setUser(session?.user ? mapSupabaseUser(session.user) : null);
     });
@@ -43,14 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const client = getSupabaseClient();
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) throw error;
     if (!data.user) throw new Error('Unable to sign in.');
     setUser(mapSupabaseUser(data.user));
   }, []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    const client = getSupabaseClient();
+    await client.auth.signOut();
     setUser(null);
   }, []);
 

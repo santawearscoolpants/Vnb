@@ -1,4 +1,4 @@
-import { mapSupabaseUser, supabase } from '../lib/supabase';
+import { getSupabaseClient, mapSupabaseUser } from '../lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -143,7 +143,8 @@ class ApiService {
     last_name: string;
     profile?: any;
   }) {
-    return supabase.auth.signUp({
+    const client = getSupabaseClient();
+    return client.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -157,7 +158,7 @@ class ApiService {
 
       // If session exists immediately (email-confirmation disabled), store profile too.
       if (authData.user && authData.session && data.profile) {
-        await supabase.from('user_profiles').upsert({
+        await client.from('user_profiles').upsert({
           user_id: authData.user.id,
           title: data.profile.title || '',
           phone: data.profile.phone || '',
@@ -170,14 +171,16 @@ class ApiService {
   }
 
   login(email: string, password: string) {
-    return supabase.auth.signInWithPassword({ email, password }).then(({ data, error }) => {
+    const client = getSupabaseClient();
+    return client.auth.signInWithPassword({ email, password }).then(({ data, error }) => {
       if (error) throw error;
       return data;
     });
   }
 
   logout() {
-    return supabase.auth.signOut().then(({ error }) => {
+    const client = getSupabaseClient();
+    return client.auth.signOut().then(({ error }) => {
       if (error) throw error;
       return { message: 'Logout successful' };
     });
@@ -190,7 +193,8 @@ class ApiService {
   }
 
   requestPasswordReset(email: string) {
-    return supabase.auth.resetPasswordForEmail(email, {
+    const client = getSupabaseClient();
+    return client.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}?page=reset-password`,
     }).then(({ error }) => {
       if (error) throw error;
@@ -199,14 +203,16 @@ class ApiService {
   }
 
   resetPassword(email: string, token: string, newPassword: string) {
-    return supabase.auth.updateUser({ password: newPassword }).then(({ error }) => {
+    const client = getSupabaseClient();
+    return client.auth.updateUser({ password: newPassword }).then(({ error }) => {
       if (error) throw error;
       return { message: 'Password reset successfully. You can now sign in.' };
     });
   }
 
   getCurrentUser() {
-    return supabase.auth.getUser().then(({ data, error }) => {
+    const client = getSupabaseClient();
+    return client.auth.getUser().then(({ data, error }) => {
       if (error) throw error;
       if (!data.user) throw new Error('Not authenticated');
       return mapSupabaseUser(data.user);
@@ -214,7 +220,8 @@ class ApiService {
   }
 
   updateProfile(data: { first_name?: string; last_name?: string; profile?: Record<string, any> }) {
-    return supabase.auth.getUser().then(async ({ data: userData, error }) => {
+    const client = getSupabaseClient();
+    return client.auth.getUser().then(async ({ data: userData, error }) => {
       if (error) throw error;
       if (!userData.user) throw new Error('Not authenticated');
 
@@ -225,11 +232,11 @@ class ApiService {
         last_name: data.last_name ?? user.user_metadata?.last_name ?? '',
       };
 
-      const { error: updateAuthError } = await supabase.auth.updateUser({ data: metadata });
+      const { error: updateAuthError } = await client.auth.updateUser({ data: metadata });
       if (updateAuthError) throw updateAuthError;
 
       if (data.profile) {
-        const { error: profileError } = await supabase.from('user_profiles').upsert({
+        const { error: profileError } = await client.from('user_profiles').upsert({
           user_id: user.id,
           title: data.profile.title || '',
           phone: data.profile.phone || '',
@@ -299,11 +306,12 @@ class ApiService {
   }
 
   getOrders() {
-    return supabase.auth.getUser().then(async ({ data, error }) => {
+    const client = getSupabaseClient();
+    return client.auth.getUser().then(async ({ data, error }) => {
       if (error) throw error;
       if (!data.user) return [];
 
-      const { data: orders, error: ordersError } = await supabase
+      const { data: orders, error: ordersError } = await client
         .from('orders')
         .select('*')
         .eq('user_id', data.user.id)
