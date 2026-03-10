@@ -11,33 +11,33 @@ export function FooterNew() {
   const { t } = useI18n();
 
   const helpLinks = [
-    { label: t('footer.faqs'), href: '#' },
-    { label: t('footer.productCare'), href: '#' },
-    { label: t('footer.stores'), href: '#' },
+    { label: t('footer.faqs') },
+    { label: t('footer.productCare') },
+    { label: t('footer.stores') },
   ];
 
   const servicesLinks = [
-    { label: t('footer.repairs'), href: '#' },
-    { label: t('footer.personalization'), href: '#' },
-    { label: t('footer.artOfGifting'), href: '#' },
-    { label: t('footer.downloadApps'), href: '#' },
+    { label: t('footer.repairs') },
+    { label: t('footer.personalization') },
+    { label: t('footer.artOfGifting') },
+    { label: t('footer.downloadApps') },
   ];
 
   const aboutLinks = [
-    { label: t('footer.fashionShows'), href: '#' },
-    { label: t('footer.artsCulture'), href: '#' },
-    { label: t('footer.laMaison'), href: '#' },
-    { label: t('footer.sustainability'), href: '#' },
-    { label: t('footer.latestNews'), href: '#' },
-    { label: t('footer.careers'), href: '#' },
-    { label: t('footer.foundation'), href: '#' },
+    { label: t('footer.fashionShows') },
+    { label: t('footer.artsCulture') },
+    { label: t('footer.laMaison') },
+    { label: t('footer.sustainability') },
+    { label: t('footer.latestNews') },
+    { label: t('footer.careers') },
+    { label: t('footer.foundation') },
   ];
 
   const legalLinks = [
-    { label: 'Sitemap', href: '#' },
-    { label: 'Legal Notices', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Accessibility', href: '#' },
+    { label: 'Sitemap' },
+    { label: 'Legal Notices' },
+    { label: 'Privacy Policy' },
+    { label: 'Accessibility' },
   ];
 
   const [email, setEmail] = useState('');
@@ -71,20 +71,25 @@ export function FooterNew() {
                 +1 866 VUITTON
               </a>
               , or you may also{' '}
-              <a href="#" className="underline hover:text-black">
+              <button
+                type="button"
+                onClick={() => toast.info('Live chat will be available soon.')}
+                className="underline hover:text-black"
+              >
                 chat with us
-              </a>
+              </button>
               .
             </p>
             <ul className="space-y-2">
               {helpLinks.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-xs text-zinc-700 transition-colors hover:text-black"
+                  <button
+                    type="button"
+                    onClick={() => toast.info('This page will be available soon.')}
+                    className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -96,12 +101,13 @@ export function FooterNew() {
             <ul className="space-y-2">
               {servicesLinks.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-xs text-zinc-700 transition-colors hover:text-black"
+                  <button
+                    type="button"
+                    onClick={() => toast.info('This service will be available soon.')}
+                    className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -113,12 +119,13 @@ export function FooterNew() {
             <ul className="space-y-2">
               {aboutLinks.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-xs text-zinc-700 transition-colors hover:text-black"
+                  <button
+                    type="button"
+                    onClick={() => toast.info('This page will be available soon.')}
+                    className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -128,15 +135,23 @@ export function FooterNew() {
           <div>
             <h4 className="mb-4 text-xs tracking-wider text-black">{t('footer.emailSignup')}</h4>
             <p className="mb-4 text-xs text-zinc-700">
-              <a href="#" className="underline hover:text-black">
+              <button
+                type="button"
+                onClick={() => toast.info('Email/SMS sign-up details coming soon.')}
+                className="underline hover:text-black"
+              >
                 {t('newsletter.subscribe')}
-              </a>{' '}
+              </button>{' '}
               {t('footer.emailSignupText')}
             </p>
             <p className="text-xs text-zinc-700">
-              <a href="#" className="underline hover:text-black">
+              <button
+                type="button"
+                onClick={() => toast.info('Social channels will be linked soon.')}
+                className="underline hover:text-black"
+              >
                 {t('footer.followUs')}
-              </a>
+              </button>
             </p>
           </div>
         </div>
@@ -167,14 +182,15 @@ export function FooterNew() {
 
         {/* Bottom Legal Links */}
         <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-zinc-200 pt-8">
-          {legalLinks.map((link, index) => (
-            <a
+          {legalLinks.map((link) => (
+            <button
               key={link.label}
-              href={link.href}
+              type="button"
+              onClick={() => toast.info('Legal information pages will be available soon.')}
               className="text-xs text-zinc-600 transition-colors hover:text-black"
             >
               {link.label}
-            </a>
+            </button>
           ))}
         </div>
 

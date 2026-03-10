@@ -44,10 +44,10 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.8 }}
           className="mb-6 tracking-[0.2em] text-white/80"
-          style={{ 
-            fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Libre Baskerville', serif", 
+          style={{
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
             fontSize: 'clamp(24px, 5vw, 40px)',
-            lineHeight: '1.2'
+            lineHeight: '1.2',
           }}
         >
           {t('hero.tagline')}

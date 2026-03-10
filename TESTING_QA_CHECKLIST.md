@@ -18,24 +18,24 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 ## 1. Authentication
 
 ### Registration (`/create-account`)
-- [ ] Can create account with valid email and password
-- [ ] Shows validation errors for invalid email format
-- [ ] Shows validation errors for weak passwords
-- [ ] Duplicate email returns appropriate error message
+- [x] Can create account with valid email and password
+- [x] Shows validation errors for invalid email format
+- [x] Shows validation errors for weak passwords
+- [x] Duplicate email returns appropriate error message
 - [ ] Supabase confirmation/welcome email is sent on successful registration
 - [ ] If email confirmation is required, user can only sign in after confirming email
 - [ ] If email confirmation is disabled, user can sign in immediately after registration
-- [ ] Auth state persists on page refresh
+- [x] Auth state persists on page refresh
 
 ### Login (`/account`)
-- [ ] Correct password logs in successfully
-- [ ] Incorrect password shows generic error (no user enumeration)
-- [ ] Supabase session is stored and used for subsequent auth-protected API calls
-- [ ] Session persists across page refresh
-- [ ] Logout clears session and redirects appropriately
+- [x] Correct password logs in successfully
+- [x] Incorrect password shows generic error (no user enumeration)
+- [x] Supabase session is stored and used for subsequent auth-protected API calls
+- [x] Session persists across page refresh
+- [x] Logout clears session and redirects appropriately
 
 ### Password Reset
-- [ ] "Forgot password" link navigates to reset page
+- [x] "Forgot password" link navigates to reset page
 - [ ] Email is sent with reset link
 - [ ] Reset link redirects to `?page=reset-password` and allows setting new password
 - [ ] Expired/used reset links are rejected
