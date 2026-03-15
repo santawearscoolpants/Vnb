@@ -45,6 +45,7 @@
           <button class="tab" data-tab="categories">Categories</button>
           <button class="tab" data-tab="products">Products</button>
           <button class="tab" data-tab="orders">Orders</button>
+          <button class="tab" data-tab="payments">Payments</button>
           <button class="tab" data-tab="contact">Contact</button>
           <button class="tab" data-tab="invest">Invest</button>
           <button class="tab" data-tab="newsletter">Newsletter</button>
@@ -65,6 +66,19 @@
               <label class="full">Description <textarea name="description"></textarea></label>
               <label><input name="is_active" type="checkbox" checked /> Active</label>
               <button type="submit" class="primary">Create category</button>
+            </form>
+          </div>
+          <div class="card hidden" id="editCategoryCard">
+            <h3>Edit category</h3>
+            <form id="editCategoryForm" class="grid three">
+              <input type="hidden" name="id" id="editCategoryId" />
+              <label>Name <input name="name" id="editCategoryName" required /></label>
+              <label>Slug <input name="slug" id="editCategorySlug" required /></label>
+              <label>Image URL <input name="image_url" id="editCategoryImageUrl" /></label>
+              <label class="full">Description <textarea name="description" id="editCategoryDescription"></textarea></label>
+              <label><input name="is_active" type="checkbox" id="editCategoryIsActive" /> Active</label>
+              <button type="submit" class="primary">Update category</button>
+              <button type="button" class="cancelEditCategory">Cancel</button>
             </form>
           </div>
           <div class="card">
@@ -92,6 +106,24 @@
               <button type="submit" class="primary">Create product</button>
             </form>
           </div>
+          <div class="card hidden" id="editProductCard">
+            <h3>Edit product</h3>
+            <form id="editProductForm" class="grid three">
+              <input type="hidden" name="id" id="editProductId" />
+              <label>Name <input name="name" id="editProductName" required /></label>
+              <label>Slug <input name="slug" id="editProductSlug" required /></label>
+              <label>SKU <input name="sku" id="editProductSku" /></label>
+              <label>Category <select name="category_id" id="editProductCategoryId" required></select></label>
+              <label>Price (GHS) <input name="price" id="editProductPrice" type="number" step="0.01" min="0" required /></label>
+              <label>Stock <input name="stock_quantity" id="editProductStock" type="number" min="0" required /></label>
+              <label>Image URL <input name="image_url" id="editProductImageUrl" /></label>
+              <label><input name="is_active" type="checkbox" id="editProductIsActive" /> Active</label>
+              <label><input name="is_featured" type="checkbox" id="editProductIsFeatured" /> Featured</label>
+              <label class="full">Description <textarea name="description" id="editProductDescription" required></textarea></label>
+              <button type="submit" class="primary">Update product</button>
+              <button type="button" class="cancelEditProduct">Cancel</button>
+            </form>
+          </div>
           <div class="card">
             <h3>Products</h3>
             <div id="productsTable"></div>
@@ -102,6 +134,13 @@
           <div class="card">
             <h3>Orders</h3>
             <div id="ordersTable"></div>
+          </div>
+        </section>
+
+        <section id="payments" class="panel">
+          <div class="card">
+            <h3>Payment attempts</h3>
+            <div id="paymentsTable"></div>
           </div>
         </section>
 
@@ -127,6 +166,17 @@
         </section>
       </section>
     </main>
+
+    <div id="detailModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-dismiss="modal"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="detailModalTitle">Detail</h3>
+          <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">&times;</button>
+        </div>
+        <div id="detailModalBody" class="modal-body"></div>
+      </div>
+    </div>
 
     <script type="module" src="./app.js"></script>
   </body>

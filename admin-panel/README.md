@@ -6,20 +6,18 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 
 - Email/password admin login via Supabase Auth
 - Admin-only access check via `admin_users` table
-- CRUD for:
-  - categories
-  - products
-- Operations management for:
-  - orders (status + payment status)
-  - contact messages (mark read/unread)
-  - investment inquiries (mark contacted)
-  - newsletter subscribers (activate/deactivate)
+- **Categories:** create, list, edit (name, slug, description, image_url, is_active), activate/deactivate, delete
+- **Products:** create, list, edit (name, slug, sku, category, price, stock, image_url, description, is_active, is_featured), activate/deactivate, feature/unfeature, delete
+- **Orders:** list, edit status + payment status, **View** (order items + shipping address)
+- **Payment attempts:** read-only list (reference, email, total, currency, status, Paystack status)
+- **Contact messages:** list (with phone), **View** (full message), mark read/unread
+- **Investment inquiries:** list (with phone), **View** (full message), mark contacted
+- **Newsletter:** list, activate/deactivate
 
 ## 1) Set up Supabase schema
 
 1. Open Supabase project
-2. SQL Editor
-3. Run `supabase/schema.sql`
+2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`
 
 ## 2) Create admin user
 
@@ -72,6 +70,34 @@ If you want historical data from Django:
    - newsletters, contact_messages, investment_inquiries
    - orders, order_items, payment_attempts
 3. Keep IDs where possible to preserve relationships
+
+## Testing the admin panel locally
+
+1. Copy `config.example.js` to `config.js` and add your Supabase URL + anon key.
+2. Serve the folder (e.g. `npx serve -p 3333` in `admin-panel/`).
+3. Open `http://localhost:3333`, sign in with an admin user (one that exists in `admin_users`).
+4. Test each tab: Dashboard, Categories (create/edit), Products (create/edit), Orders (View + Save), Payments, Contact (View), Invest (View), Newsletter.
+
+### Inputs to test
+
+- **Login:** email (required), password (required).
+- **Create category:** name, slug (required), image_url, description, Active checkbox.
+- **Create product:** name, slug, SKU, category (required), price, stock, image_url, Active, Featured, description (required).
+- **Edit category / Edit product:** same fields; **Update** saves, **Cancel** hides the form.
+- **Orders:** change status and payment dropdowns, click **Save**.
+- **Contact / Invest:** click **View** to open the full message in a modal; **Mark read** / **Mark contacted** toggles.
+- **Modal:** click backdrop or × to close.
+
+## Common errors and what to do
+
+| What you see | What to do |
+|--------------|------------|
+| **Missing config** | Copy `config.example.js` to `config.js` and set `SUPABASE_URL` and `SUPABASE_ANON_KEY`. |
+| **You are not in admin_users** | In Supabase SQL Editor: `insert into public.admin_users (user_id) values ('your-auth-user-uuid');` (get UUID from Auth → Users). |
+| **Permission denied** or **RLS** on a table | In Supabase, ensure RLS policies allow `admin_users` (e.g. `is_admin(auth.uid())`) to SELECT/INSERT/UPDATE/DELETE on that table. Run `supabase/02_rls.sql` if you haven’t. |
+| **payment_attempts** or other table not found | Run the full Supabase schema (`01_core.sql` then `02_rls.sql`). Table names must match: `payment_attempts`, `order_items`, `contact_messages`, `investment_inquiries`, `newsletters`. |
+| **Categories/Products dropdown empty** | Create at least one category first; the product form needs a category. |
+| **Edit category/product form doesn’t open** | Ensure the Edit button’s row has a valid `id`; check browser console for JS errors. |
 
 ## Security notes
 

@@ -108,7 +108,7 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 - [x] Successful payment redirects to confirmation page
 - [x] Failed/cancelled payment shows error message
 - [x] Order is created in the backend database
-
+adm
 ### Order Confirmation (`/order-confirmation`)
 - [x] Order details display correctly (order number, items, total)
 - [x] Order confirmation email is sent to the customer
@@ -222,10 +222,12 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 
 ## 11. Newsletter
 
-- [ ] Email input validates format
-- [ ] Successful subscription shows confirmation toast
-- [ ] Duplicate subscription is handled gracefully
-- [ ] Subscription appears in Django admin
+**Where to find it:** Homepage — scroll to the newsletter section (“Join the Vines & Branches Circle”). The footer “Subscribe” link is a placeholder; use the homepage form to test.
+
+- [x] Email input validates format
+- [x] Successful subscription shows confirmation toast
+- [x] Duplicate subscription is handled gracefully (API error shown via toast)
+- [ ] Subscription appears in backend (Django admin or Supabase — verify after submitting)
 
 ---
 
