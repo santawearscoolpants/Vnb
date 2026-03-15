@@ -105,7 +105,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: menuItems.length * 0.05, duration: 0.3 }}
-                    onClick={() => { onOpenContact?.(); onClose(); }}
+                    onClick={() => { navigateTo('contact'); onClose(); }}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
                     <span className="text-sm">Contact Us</span>

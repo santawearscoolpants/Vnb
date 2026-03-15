@@ -210,11 +210,13 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 
 ## 10. Contact Page (`/contact`)
 
-- [ ] Contact form loads with all fields
-- [ ] Form validates required fields
-- [ ] Successful submission shows confirmation
-- [ ] Message appears in Django admin (`ContactMessages`)
-- [ ] Contact information (address, phone, email, hours) is displayed
+**Where to find it:** Click **Contact Us** in the main navigation (top right), or open the hamburger menu → **Contact Us**, or go to `?page=contact`.
+
+- [x] Contact form loads with all fields
+- [x] Form validates required fields
+- [x] Successful submission shows confirmation
+- [ ] Message appears in backend (Django admin `ContactMessages` or Supabase — verify after submitting)
+- [x] Contact information (address, phone, email, hours) is displayed
 
 ---
 
