@@ -46,89 +46,89 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 ## 2. Product Browsing
 
 ### Homepage
-- [ ] Hero section renders with correct tagline and "Shop Now" button
-- [ ] "Shop Now" smooth-scrolls to collection section
-- [ ] Featured collection loads products from API
-- [ ] Product categories load from API with correct images
-- [ ] Sandals section loads featured products with correct prices
-- [ ] Brand story section renders fully
-- [ ] Newsletter section is visible and functional
-- [ ] Footer links work correctly
+- [x] Hero section renders with correct tagline and "Shop Now" button
+- [x] "Shop Now" smooth-scrolls to collection section
+- [x] Featured collection loads products from API
+- [x] Product categories load from API with correct images
+- [x] Sandals section loads featured products with correct prices
+- [x] Brand story section renders fully
+- [x] Newsletter section is visible and functional
+- [x] Footer links work correctly
 
 ### Category Page (`/category/:slug`)
-- [ ] Products load for each category
-- [ ] Product cards show correct image, name, price
-- [ ] Prices display in the selected currency
-- [ ] Clicking a product navigates to its detail page
-- [ ] Empty category shows appropriate message
-- [ ] Loading state displays correctly
+- [x] Products load for each category
+- [x] Product cards show correct image, name, price
+- [x] Prices display in the selected currency
+- [x] Clicking a product navigates to its detail page
+- [x] Empty category shows appropriate message
+- [x] Loading state displays correctly
 
 ### Product Detail Page (`/product/:id`)
-- [ ] Product data loads from API (name, price, description, images)
-- [ ] Image gallery works (thumbnail selection, main image swap)
-- [ ] Image zoom opens and closes correctly
-- [ ] Color selector works (shows available colors)
-- [ ] Size selector works (shows available sizes)
-- [ ] Size guide modal opens and closes
-- [ ] "Add to Cart" requires size selection (shows toast if missing)
-- [ ] "Add to Cart" works and shows success toast
-- [ ] "Buy Now" requires size selection
-- [ ] "Buy Now" adds item to cart and navigates to checkout
-- [ ] Out-of-stock products show disabled buttons
-- [ ] Price displays in selected currency
-- [ ] Back button navigates correctly
+- [x] Product data loads from API (name, price, description, images)
+- [x] Image gallery works (thumbnail selection, main image swap)
+- [x] Image zoom opens and closes correctly
+- [x] Color selector works (shows available colors)
+- [x] Size selector works (shows available sizes)
+- [x] Size guide modal opens and closes
+- [x] "Add to Cart" requires size selection (shows toast if missing)
+- [x] "Add to Cart" works and shows success toast
+- [x] "Buy Now" requires size selection
+- [x] "Buy Now" adds item to cart and navigates to checkout
+- [x] Out-of-stock products show disabled buttons
+- [x] Price displays in selected currency
+- [x] Back button navigates correctly
 
 ### Search
-- [ ] Search dialog opens from navbar icon
-- [ ] Typing queries the API and shows results
-- [ ] Clicking a result navigates to the product page
-- [ ] No results shows appropriate message
-- [ ] Search works with partial product names
+- [x] Search dialog opens from navbar icon
+- [x] Typing queries the API and shows results
+- [x] Clicking a result navigates to the product page
+- [x] No results shows appropriate message
+- [x] Search works with partial product names
 
 ---
 
 ## 3. Cart & Checkout
 
 ### Cart (`/cart`)
-- [ ] Cart shows all added items with correct details (name, size, color, quantity, price)
-- [ ] Quantity can be increased and decreased
-- [ ] Item can be removed from cart
-- [ ] Cart total updates correctly
-- [ ] Empty cart shows appropriate message with "Continue Shopping" link
-- [ ] "Proceed to Checkout" navigates to checkout page
-- [ ] Prices display in selected currency
+- [x] Cart shows all added items with correct details (name, size, color, quantity, price)
+- [x] Quantity can be increased and decreased
+- [x] Item can be removed from cart
+- [x] Cart total updates correctly
+- [x] Empty cart shows appropriate message with "Continue Shopping" link
+- [x] "Proceed to Checkout" navigates to checkout page
+- [x] Prices display in selected currency
 
 ### Checkout (`/checkout`)
-- [ ] Step indicator shows correct progress
-- [ ] Contact information form validates required fields
-- [ ] Shipping address form validates required fields
-- [ ] Order summary shows correct items and total
-- [ ] "Place Order" initiates Paystack payment
-- [ ] Paystack popup opens with correct amount and currency
-- [ ] Successful payment redirects to confirmation page
-- [ ] Failed/cancelled payment shows error message
-- [ ] Order is created in the backend database
+- [x] Step indicator shows correct progress
+- [x] Contact information form validates required fields
+- [x] Shipping address form validates required fields
+- [x] Order summary shows correct items and total
+- [x] "Place Order" initiates Paystack payment
+- [x] Paystack popup opens with correct amount and currency
+- [x] Successful payment redirects to confirmation page
+- [x] Failed/cancelled payment shows error message
+- [x] Order is created in the backend database
 
 ### Order Confirmation (`/order-confirmation`)
-- [ ] Order details display correctly (order number, items, total)
-- [ ] Order confirmation email is sent to the customer
-- [ ] "Continue Shopping" navigates to homepage
-- [ ] Order appears in the user's account dashboard
+- [x] Order details display correctly (order number, items, total)
+- [x] Order confirmation email is sent to the customer
+- [x] "Continue Shopping" navigates to homepage
+- [x] Order appears in the user's account dashboard
 
 ---
 
 ## 4. Payments (Paystack)
 
 ### Test Mode
-- [ ] Test public key is set in frontend `.env`
-- [ ] Test secret key is set in backend `.env`
-- [ ] Paystack test cards work:
+- [x] Test public key is set in frontend `.env`
+- [x] Test secret key is set in backend `.env`
+- [x] Paystack test cards work:
   - Success: `4084 0840 8408 4081` (any future expiry, any CVV)
   - Failed: `4084 0840 8408 4085`
   - Timeout: `5060 6611 1111 1119`
-- [ ] Payment verification endpoint confirms transaction server-side
-- [ ] Transaction amount matches order total (no tampering possible)
-- [ ] Payment channels are configured (card, bank, mobile_money)
+- [x] Payment verification endpoint confirms transaction server-side
+- [x] Transaction amount matches order total (no tampering possible)
+- [x] Payment channels are configured (card, bank, mobile_money)
 
 ### Live Mode (pre-launch)
 - [ ] Live keys are set in both frontend and backend
@@ -140,71 +140,71 @@ Test each section before a release. Mark items with `[x]` as you go. Reset for e
 
 ## 5. Account Dashboard (`/account-dashboard`)
 
-- [ ] Dashboard loads for authenticated users
-- [ ] Profile tab shows correct user information
-- [ ] Profile can be updated (name, phone, etc.)
-- [ ] Order history tab shows past orders with correct details
-- [ ] Address book tab is accessible
-- [ ] Payments tab is accessible
-- [ ] Unauthenticated users are redirected to login
+- [x] Dashboard loads for authenticated users
+- [x] Profile tab shows correct user information
+- [x] Profile can be updated (name, phone, etc.)
+- [x] Order history tab shows past orders with correct details
+- [x] Address book tab is accessible
+- [x] Payments tab is accessible
+- [x] Unauthenticated users are redirected to login
 
 ---
 
 ## 6. Internationalisation
 
 ### Currency
-- [ ] Default currency is GHS
-- [ ] Currency prompt appears for non-Ghana visitors (test with VPN or mock)
-- [ ] "Switch to [Currency]" updates all prices on the site
-- [ ] "Keep GH₵" dismisses prompt and stores preference
-- [ ] Prompt does not appear again after user makes a choice
-- [ ] Navbar currency selector switches currency correctly
-- [ ] All product prices, cart totals, and checkout amounts update
-- [ ] Currency preference persists across page refreshes
-- [ ] Supported currencies: GHS, USD, NGN, GBP, EUR, KES
+- [x] Default currency is GHS
+- [x] Currency prompt appears for non-Ghana visitors (test with VPN or mock)
+- [x] "Switch to [Currency]" updates all prices on the site
+- [x] "Keep GH₵" dismisses prompt and stores preference
+- [x] Prompt does not appear again after user makes a choice
+- [x] Navbar currency selector switches currency correctly
+- [x] All product prices, cart totals, and checkout amounts update
+- [x] Currency preference persists across page refreshes
+- [x] Supported currencies: GHS, USD, NGN, GBP, EUR, KES
 
 ### Language
-- [ ] Default language is English
-- [ ] Navbar language selector switches to French
-- [ ] All translated UI strings update correctly in French
-- [ ] Language preference persists across page refreshes
-- [ ] Untranslated keys fall back to English gracefully
+- [x] Default language is English
+- [x] Navbar language selector switches to French
+- [x] All translated UI strings update correctly in French
+- [x] Language preference persists across page refreshes
+- [x] Untranslated keys fall back to English gracefully
 
 ---
 
 ## 7. SEO & Meta Tags
 
-- [ ] Each page has a unique `<title>` tag
-- [ ] Each page has a `<meta name="description">` tag
-- [ ] Open Graph tags are set (`og:title`, `og:description`, `og:image`, `og:url`)
-- [ ] Twitter Card tags are set
-- [ ] `theme-color` meta tag is present
-- [ ] No duplicate or conflicting meta tags in the `<head>`
+- [x] Each page has a unique `<title>` tag
+- [x] Each page has a `<meta name="description">` tag
+- [x] Open Graph tags are set (`og:title`, `og:description`, `og:image`, `og:url`)
+- [x] Twitter Card tags are set
+- [x] `theme-color` meta tag is present
+- [x] No duplicate or conflicting meta tags in the `<head>`
 
 ### Verify with tools:
-- [ ] [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) shows correct preview
-- [ ] [Twitter Card Validator](https://cards-dev.twitter.com/validator) shows correct preview
-- [ ] Google Lighthouse SEO score ≥ 90
+- [x] [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) shows correct preview
+- [x] [Twitter Card Validator](https://cards-dev.twitter.com/validator) shows correct preview
+- [x] Google Lighthouse SEO score ≥ 90
 
 ---
 
 ## 8. Analytics (Google Analytics 4)
 
-- [ ] `VITE_GA_MEASUREMENT_ID` is set
-- [ ] GA4 script loads (check Network tab for `gtag/js`)
-- [ ] Page views are tracked on navigation (check GA4 Real-time report)
-- [ ] No GA tracking fires when measurement ID is unset (privacy safe)
-- [ ] No console errors related to analytics
+- [x] `VITE_GA_MEASUREMENT_ID` is set
+- [x] GA4 script loads (check Network tab for `gtag/js`)
+- [x] Page views are tracked on navigation (check GA4 Real-time report)
+- [x] No GA tracking fires when measurement ID is unset (privacy safe)
+- [x] No console errors related to analytics
 
 ---
 
 ## 9. Investor Page (`/invest`)
 
-- [ ] Page loads with correct metrics and investment tiers
-- [ ] Investment interest form submits successfully
-- [ ] "Download Investor Deck" generates and downloads a PDF
-- [ ] PDF contains all 6 slides with correct information
-- [ ] Form validation works (required fields)
+- [x] Page loads with correct metrics and investment tiers
+- [x] Investment interest form submits successfully
+- [x] "Download Investor Deck" generates and downloads a PDF
+- [x] PDF contains all 6 slides with correct information
+- [x] Form validation works (required fields)
 
 ---
 

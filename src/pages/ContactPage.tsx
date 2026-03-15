@@ -145,7 +145,7 @@ export function ContactPage() {
               className="rounded-sm bg-white p-8 shadow-sm"
             >
               <h3 className="mb-6 text-black">{t('contact.sendMessage')}</h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form id="contact-form" onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm text-zinc-700">
                     {t('contact.fullName')} *

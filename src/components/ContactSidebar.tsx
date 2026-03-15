@@ -16,6 +16,12 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
   const handleLinkClick = () => {
     onClose();
     navigateTo('contact');
+    // Scroll to contact form once the contact page is visible
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
   };
 
   return (
@@ -101,22 +107,18 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
                   <h3 className="mb-4 text-sm text-zinc-900">{t('contactSidebar.needHelp')}</h3>
                   <nav className="space-y-1">
                     <button
+                      type="button"
                       onClick={handleLinkClick}
                       className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
                     >
                       {t('contactSidebar.faq')}
                     </button>
                     <button
+                      type="button"
                       onClick={handleLinkClick}
                       className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
                     >
                       {t('contactSidebar.careServices')}
-                    </button>
-                    <button
-                      onClick={handleLinkClick}
-                      className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
-                    >
-                      {t('contactSidebar.findStore')}
                     </button>
                   </nav>
                 </div>
