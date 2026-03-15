@@ -19,6 +19,9 @@ import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { PaymentCallbackPage } from './pages/PaymentCallbackPage';
+import { ContactPage } from './pages/ContactPage';
+import { FAQPage } from './pages/FAQPage';
+import { CareServicesPage } from './pages/CareServicesPage';
 import { Toaster } from './components/ui/sonner';
 import { usePageMeta, PAGE_META } from './hooks/usePageMeta';
 import { initGA, trackPageView } from './utils/analytics';
@@ -59,6 +62,12 @@ function AppContent() {
         return <ResetPasswordPage />;
       case 'payment-callback':
         return <PaymentCallbackPage />;
+      case 'contact':
+        return <ContactPage />;
+      case 'faq':
+        return <FAQPage />;
+      case 'care-services':
+        return <CareServicesPage />;
       default:
         return <HomePage />;
     }

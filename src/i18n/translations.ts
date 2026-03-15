@@ -169,6 +169,36 @@ const en = {
   'contactSidebar.faq': 'FAQ',
   'contactSidebar.careServices': 'Care Services',
   'contactSidebar.findStore': 'Find a Store',
+
+  // FAQ Page
+  'faq.heading': 'Frequently Asked Questions',
+  'faq.subtitle': 'Quick answers to common questions about orders, shipping, and our products.',
+  'faq.q1': 'How can I track my order?',
+  'faq.a1': 'Once your order ships, we will send you an email with a tracking link. You can also sign in to your account and view order status under My Account.',
+  'faq.q2': 'What is your return policy?',
+  'faq.a2': 'We offer a 30-day return policy for unused items in original packaging. Initiate a return from your account or contact our customer care team.',
+  'faq.q3': 'Do you ship internationally?',
+  'faq.a3': 'Yes. We ship to many countries. Shipping costs and delivery times depend on your location and are shown at checkout.',
+  'faq.q4': 'How do I care for leather products?',
+  'faq.a4': 'Keep leather away from direct heat and moisture. Wipe with a soft, dry cloth. For detailed care, see our Care Services page.',
+  'faq.q5': 'Can I change or cancel my order?',
+  'faq.a5': 'Contact us as soon as possible. We process orders quickly; if it has not yet shipped, we may be able to update or cancel it.',
+  'faq.q6': 'How do I contact customer care?',
+  'faq.a6': 'Use the Contact Us page or email us directly. Our team typically responds within one business day.',
+  'faq.moreHelp': 'Need more help? Email us at',
+
+  // Care Services Page
+  'careServices.heading': 'Care Services',
+  'careServices.subtitle': 'How to care for your Vines & Branches pieces so they last.',
+  'careServices.intro': 'Proper care keeps your items looking their best. Follow these guidelines for storage, cleaning, and repairs.',
+  'careServices.storageTitle': 'Storage',
+  'careServices.storageBody': 'Store items in a cool, dry place away from direct sunlight. Use dust bags or breathable fabric covers for leather and accessories. Avoid plastic, which can trap moisture.',
+  'careServices.cleaningTitle': 'Cleaning',
+  'careServices.cleaningBody': 'For most fabrics, spot clean with a damp cloth and mild soap. Leather should be wiped with a soft, dry cloth; avoid harsh chemicals. Check individual product care labels when provided.',
+  'careServices.leatherTitle': 'Leather care',
+  'careServices.leatherBody': 'Leather benefits from occasional conditioning with a product suited to its type. Keep it away from water and heat. If it gets wet, let it air-dry naturally away from direct heat.',
+  'careServices.repairsTitle': 'Repairs and restoration',
+  'careServices.repairsBody': 'We offer repair and restoration services for our products. Contact our team with your order details and a description of the issue; we will guide you through the process.',
 } as const;
 
 const fr: Record<keyof typeof en, string> = {
@@ -334,6 +364,36 @@ const fr: Record<keyof typeof en, string> = {
   'contactSidebar.faq': 'FAQ',
   'contactSidebar.careServices': "Services d'Entretien",
   'contactSidebar.findStore': 'Trouver une Boutique',
+
+  // FAQ Page
+  'faq.heading': 'Questions Fréquentes',
+  'faq.subtitle': 'Réponses rapides aux questions courantes sur les commandes, la livraison et nos produits.',
+  'faq.q1': 'Comment suivre ma commande ?',
+  'faq.a1': "Une fois votre commande expédiée, nous vous enverrons un e-mail avec un lien de suivi. Vous pouvez aussi vous connecter à votre compte et consulter le statut sous Mon Compte.",
+  'faq.q2': "Quelle est votre politique de retour ?",
+  'faq.a2': "Nous offrons un retour sous 30 jours pour les articles non utilisés dans leur emballage d'origine. Initiez un retour depuis votre compte ou contactez notre service client.",
+  'faq.q3': 'Livrez-vous à l\'international ?',
+  'faq.a3': "Oui. Nous livrons dans de nombreux pays. Les frais et délais dépendent de votre lieu et sont indiqués à la caisse.",
+  'faq.q4': 'Comment entretenir les articles en cuir ?',
+  'faq.a4': "Évitez la chaleur et l'humidité directes. Nettoyez avec un chiffon doux et sec. Pour plus de détails, consultez notre page Services d'Entretien.",
+  'faq.q5': 'Puis-je modifier ou annuler ma commande ?',
+  'faq.a5': "Contactez-nous dès que possible. Nous traitons les commandes rapidement ; si elle n'a pas encore été expédiée, nous pourrons peut-être la modifier ou l'annuler.",
+  'faq.q6': 'Comment contacter le service client ?',
+  'faq.a6': "Utilisez la page Nous Contacter ou envoyez-nous un e-mail. Notre équipe répond généralement sous un jour ouvrable.",
+  'faq.moreHelp': "Besoin d'aide ? Écrivez-nous à",
+
+  // Care Services Page
+  'careServices.heading': "Services d'Entretien",
+  'careServices.subtitle': 'Comment prendre soin de vos pièces Vines & Branches pour qu\'elles durent.',
+  'careServices.intro': "Un bon entretien garde vos articles comme neufs. Suivez ces conseils pour le stockage, le nettoyage et les réparations.",
+  'careServices.storageTitle': 'Stockage',
+  'careServices.storageBody': "Conservez les articles dans un endroit frais et sec, à l'abri du soleil. Utilisez des pochettes ou housses en tissu pour le cuir et les accessoires. Évitez le plastique qui retient l'humidité.",
+  'careServices.cleaningTitle': 'Nettoyage',
+  'careServices.cleaningBody': "Pour la plupart des tissus, nettoyez à la tâche avec un chiffon humide et un savon doux. Le cuir se nettoie avec un chiffon doux et sec ; évitez les produits agressifs. Consultez les étiquettes d'entretien des produits.",
+  'careServices.leatherTitle': 'Entretien du cuir',
+  'careServices.leatherBody': "Le cuir bénéficie d'un conditionnement occasionnel adapté à son type. Évitez l'eau et la chaleur. En cas de mouillage, laissez sécher à l'air, loin d'une source de chaleur.",
+  'careServices.repairsTitle': 'Réparations et restauration',
+  'careServices.repairsBody': "Nous proposons des services de réparation et restauration pour nos produits. Contactez notre équipe avec les détails de votre commande et une description du problème ; nous vous guiderons.",
 };
 
 export const translations: Record<Language, Record<string, string>> = { en, fr };

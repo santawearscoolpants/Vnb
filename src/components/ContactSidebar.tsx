@@ -13,15 +13,14 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
   const { t } = useI18n();
   const { navigateTo } = useRouter();
 
-  const handleLinkClick = () => {
+  const handleFaqClick = () => {
     onClose();
-    navigateTo('contact');
-    // Scroll to contact form once the contact page is visible
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
+    navigateTo('faq');
+  };
+
+  const handleCareServicesClick = () => {
+    onClose();
+    navigateTo('care-services');
   };
 
   return (
@@ -108,14 +107,14 @@ export function ContactSidebar({ isOpen, onClose }: ContactSidebarProps) {
                   <nav className="space-y-1">
                     <button
                       type="button"
-                      onClick={handleLinkClick}
+                      onClick={handleFaqClick}
                       className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
                     >
                       {t('contactSidebar.faq')}
                     </button>
                     <button
                       type="button"
-                      onClick={handleLinkClick}
+                      onClick={handleCareServicesClick}
                       className="block w-full border-b border-zinc-100 py-3 text-left text-sm text-zinc-900 transition-colors hover:text-zinc-600"
                     >
                       {t('contactSidebar.careServices')}

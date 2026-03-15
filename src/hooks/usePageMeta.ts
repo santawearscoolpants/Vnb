@@ -90,4 +90,16 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: 'Reset Password',
     description: 'Reset your Vines & Branches account password.',
   },
+  contact: {
+    title: 'Contact Us',
+    description: 'Get in touch with Vines & Branches — phone, email, and contact form.',
+  },
+  faq: {
+    title: 'FAQ',
+    description: 'Frequently asked questions about orders, shipping, returns, and product care.',
+  },
+  'care-services': {
+    title: 'Care Services',
+    description: 'How to care for your Vines & Branches pieces — storage, cleaning, leather care, and repairs.',
+  },
 };

@@ -4,15 +4,17 @@ import { Input } from './ui/input';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '../i18n/I18nContext';
+import { useRouter } from '../context/RouterContext';
 import logo from "../assets/logo.png";
 import { CONTACT_EMAILS } from '../constants/contact';
 
 export function FooterNew() {
   const { t } = useI18n();
+  const { navigateTo } = useRouter();
 
-  const helpLinks = [
-    { label: t('footer.faqs') },
-    { label: t('footer.productCare') },
+  const helpLinks: { label: string; page?: string }[] = [
+    { label: t('footer.faqs'), page: 'faq' },
+    { label: t('footer.productCare'), page: 'care-services' },
     { label: t('footer.stores') },
   ];
 
@@ -85,7 +87,7 @@ export function FooterNew() {
                 <li key={link.label}>
                   <button
                     type="button"
-                    onClick={() => toast.info('This page will be available soon.')}
+                    onClick={() => link.page ? navigateTo(link.page) : toast.info('This page will be available soon.')}
                     className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
