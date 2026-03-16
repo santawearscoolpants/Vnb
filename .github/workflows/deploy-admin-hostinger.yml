@@ -1,0 +1,30 @@
+# Deploys admin-panel/ to Hostinger public_html/admin/ on push to main (when admin-panel changes) or manual run.
+name: Deploy Admin Panel to Hostinger (FTP)
+
+on:
+  push:
+    branches: [main]
+    paths: ['admin-panel/**']
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-admin-hostinger
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.vnbway.com
+          username: ${{ secrets.ADMIN_HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.ADMIN_HOSTINGER_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: admin-panel/
+          server-dir: public_html/admin/

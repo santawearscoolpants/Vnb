@@ -45,7 +45,18 @@ window.VNB_ADMIN_CONFIG = {
 };
 ```
 
-## 4) Deploy to `admin.vnbway.com`
+## 4) Deploy via GitHub Actions (optional)
+
+A workflow at the repo root (`.github/workflows/deploy-admin-hostinger.yml`) deploys `admin-panel/` to Hostinger on push to `main` when files under `admin-panel/` change, or when run manually. It deploys the folder as-is, including your existing `config.js` (Supabase URL and anon key).
+
+**Secrets to set in the repo (Settings → Secrets and variables → Actions):**
+
+| Secret | Description |
+|--------|-------------|
+| `ADMIN_HOSTINGER_FTP_USERNAME` | FTP username for Hostinger |
+| `ADMIN_HOSTINGER_FTP_PASSWORD` | FTP password for Hostinger |
+
+## 5) Deploy to `admin.vnbway.com` (manual)
 
 Since this is static HTML/CSS/JS, you can host it on:
 - Hostinger static hosting
@@ -60,7 +71,7 @@ Add a DNS record:
 Result:
 - `https://admin.vnbway.com`
 
-## 5) Migrate existing Django data
+## 6) Migrate existing Django data
 
 If you want historical data from Django:
 
