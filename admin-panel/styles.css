@@ -205,6 +205,50 @@ th {
   color: var(--muted);
 }
 
+.card-divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+.inline-title {
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0.35rem;
+  color: var(--muted);
+}
+
+.inline-list {
+  margin-bottom: 0.5rem;
+}
+
+.inline-list table {
+  font-size: 0.8rem;
+}
+
+.inline-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.inline-add input[type="text"],
+.inline-add input[type="number"] {
+  max-width: 140px;
+}
+
+.inline-add .full-width {
+  max-width: 220px;
+}
+
+.inline-add label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .hidden {
   display: none !important;
 }

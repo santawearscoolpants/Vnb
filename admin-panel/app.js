@@ -37,6 +37,73 @@ function hideDetailModal() {
   if (ui.detailModal) ui.detailModal.classList.add('hidden');
 }
 
+async function renderProductInlines(productId) {
+  if (!productId) return;
+  const pid = Number(productId);
+  const { data: product, error } = await supabase
+    .from('products')
+    .select('*, product_images(*), product_colors(*), product_sizes(*), product_details(*)')
+    .eq('id', pid)
+    .single();
+  if (error || !product) return;
+
+  const images = (product.product_images || []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const colors = product.product_colors || [];
+  const sizes = product.product_sizes || [];
+  const details = (product.product_details || []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const imgList = $('productImagesList');
+  if (imgList) {
+    imgList.innerHTML = images.length === 0 ? '<p class="muted">No images. Add one below.</p>' : `
+      <table><thead><tr><th>Preview</th><th>Alt</th><th>Primary</th><th>Order</th><th></th></tr></thead><tbody>
+      ${images.map((i) => `<tr>
+        <td><img src="${escapeHtml(i.image_url)}" alt="" style="max-height:36px;max-width:60px;object-fit:contain;" onerror="this.style.display='none'" /></td>
+        <td>${escapeHtml(i.alt_text || '')}</td>
+        <td>${i.is_primary ? 'Yes' : 'No'}</td>
+        <td>${i.order ?? 0}</td>
+        <td><button type="button" data-action="delete-product-image" data-id="${i.id}">Delete</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  const colList = $('productColorsList');
+  if (colList) {
+    colList.innerHTML = colors.length === 0 ? '<p class="muted">No colors. Add one below.</p>' : `
+      <table><thead><tr><th>Name</th><th>Hex</th><th>Available</th><th></th></tr></thead><tbody>
+      ${colors.map((c) => `<tr>
+        <td>${escapeHtml(c.name)}</td>
+        <td><span style="display:inline-block;width:14px;height:14px;background:${escapeHtml(c.hex_code)};border:1px solid var(--border);"></span> ${escapeHtml(c.hex_code)}</td>
+        <td>${c.is_available !== false ? 'Yes' : 'No'}</td>
+        <td><button type="button" data-action="delete-product-color" data-id="${c.id}">Delete</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  const szList = $('productSizesList');
+  if (szList) {
+    szList.innerHTML = sizes.length === 0 ? '<p class="muted">No sizes. Add one below.</p>' : `
+      <table><thead><tr><th>Size</th><th>Available</th><th></th></tr></thead><tbody>
+      ${sizes.map((s) => `<tr>
+        <td>${escapeHtml(s.size)}</td>
+        <td>${s.is_available !== false ? 'Yes' : 'No'}</td>
+        <td><button type="button" data-action="delete-product-size" data-id="${s.id}">Delete</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+
+  const detList = $('productDetailsList');
+  if (detList) {
+    detList.innerHTML = details.length === 0 ? '<p class="muted">No details. Add one below.</p>' : `
+      <table><thead><tr><th>Detail</th><th>Order</th><th></th></tr></thead><tbody>
+      ${details.map((d) => `<tr>
+        <td>${escapeHtml(d.detail)}</td>
+        <td>${d.order ?? 0}</td>
+        <td><button type="button" data-action="delete-product-detail" data-id="${d.id}">Delete</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+}
+
 let supabase = null;
 let activeUser = null;
 
@@ -482,7 +549,7 @@ async function handleTableActions(event) {
         break;
       }
       case 'edit-product': {
-        const { data: prod } = await supabase.from('products').select('*').eq('id', id).single();
+        const { data: prod } = await supabase.from('products').select('*, product_images(*), product_colors(*), product_sizes(*), product_details(*)').eq('id', id).single();
         if (!prod || !ui.editProductForm) break;
         $('editProductId').value = prod.id;
         $('editProductName').value = prod.name || '';
@@ -496,14 +563,30 @@ async function handleTableActions(event) {
         $('editProductIsFeatured').checked = !!prod.is_featured;
         $('editProductDescription').value = prod.description || '';
         $('editProductCard').classList.remove('hidden');
+        await renderProductInlines(prod.id);
         break;
       }
+      case 'delete-product-image':
+        await supabase.from('product_images').delete().eq('id', id);
+        await renderProductInlines(Number($('editProductId')?.value));
+        break;
+      case 'delete-product-color':
+        await supabase.from('product_colors').delete().eq('id', id);
+        await renderProductInlines(Number($('editProductId')?.value));
+        break;
+      case 'delete-product-size':
+        await supabase.from('product_sizes').delete().eq('id', id);
+        await renderProductInlines(Number($('editProductId')?.value));
+        break;
+      case 'delete-product-detail':
+        await supabase.from('product_details').delete().eq('id', id);
+        await renderProductInlines(Number($('editProductId')?.value));
+        break;
       default:
         break;
     }
-    if (action !== 'view-contact' && action !== 'view-invest' && action !== 'view-order' && action !== 'edit-category' && action !== 'edit-product') {
-      await refreshAll();
-    }
+    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
+    if (!skipRefresh) await refreshAll();
   } catch (error) {
     showError(error.message || 'Action failed.');
   }
@@ -632,6 +715,70 @@ function wireForms() {
   }
   document.querySelector('.cancelEditProduct')?.addEventListener('click', () => {
     $('editProductCard').classList.add('hidden');
+  });
+
+  $('addProductImage')?.addEventListener('click', async () => {
+    const productId = Number($('editProductId')?.value);
+    if (!productId) return showError('Save the product first, then add images.');
+    const image_url = String($('newImageUrl')?.value || '').trim();
+    if (!image_url) return showError('Enter an image URL.');
+    const { error } = await supabase.from('product_images').insert({
+      product_id: productId,
+      image_url,
+      alt_text: String($('newImageAlt')?.value || '').trim(),
+      is_primary: $('newImagePrimary')?.checked ?? false,
+      order: Number($('newImageOrder')?.value) || 0,
+    });
+    if (error) return showError(error.message);
+    $('newImageUrl').value = ''; $('newImageAlt').value = ''; $('newImagePrimary').checked = false; $('newImageOrder').value = '0';
+    await renderProductInlines(productId);
+  });
+
+  $('addProductColor')?.addEventListener('click', async () => {
+    const productId = Number($('editProductId')?.value);
+    if (!productId) return showError('Save the product first, then add colors.');
+    const name = String($('newColorName')?.value || '').trim();
+    if (!name) return showError('Enter a color name.');
+    const hex_code = String($('newColorHex')?.value || '').trim() || '#000000';
+    const { error } = await supabase.from('product_colors').insert({
+      product_id: productId,
+      name,
+      hex_code,
+      is_available: $('newColorAvailable')?.checked !== false,
+    });
+    if (error) return showError(error.message);
+    $('newColorName').value = ''; $('newColorHex').value = ''; $('newColorAvailable').checked = true;
+    await renderProductInlines(productId);
+  });
+
+  $('addProductSize')?.addEventListener('click', async () => {
+    const productId = Number($('editProductId')?.value);
+    if (!productId) return showError('Save the product first, then add sizes.');
+    const size = String($('newSizeName')?.value || '').trim();
+    if (!size) return showError('Enter a size.');
+    const { error } = await supabase.from('product_sizes').insert({
+      product_id: productId,
+      size,
+      is_available: $('newSizeAvailable')?.checked !== false,
+    });
+    if (error) return showError(error.message);
+    $('newSizeName').value = ''; $('newSizeAvailable').checked = true;
+    await renderProductInlines(productId);
+  });
+
+  $('addProductDetail')?.addEventListener('click', async () => {
+    const productId = Number($('editProductId')?.value);
+    if (!productId) return showError('Save the product first, then add details.');
+    const detail = String($('newDetailText')?.value || '').trim();
+    if (!detail) return showError('Enter detail text.');
+    const { error } = await supabase.from('product_details').insert({
+      product_id: productId,
+      detail,
+      order: Number($('newDetailOrder')?.value) || 0,
+    });
+    if (error) return showError(error.message);
+    $('newDetailText').value = ''; $('newDetailOrder').value = '0';
+    await renderProductInlines(productId);
   });
 
   document.querySelectorAll('[data-dismiss="modal"]').forEach((el) => el.addEventListener('click', hideDetailModal));

@@ -123,6 +123,38 @@
               <button type="submit" class="primary">Update product</button>
               <button type="button" class="cancelEditProduct">Cancel</button>
             </form>
+            <hr class="card-divider" />
+            <h4 class="inline-title">Images</h4>
+            <div id="productImagesList" class="inline-list"></div>
+            <div class="inline-add">
+              <input type="text" id="newImageUrl" placeholder="Image URL" />
+              <input type="text" id="newImageAlt" placeholder="Alt text" />
+              <label><input type="checkbox" id="newImagePrimary" /> Primary</label>
+              <input type="number" id="newImageOrder" placeholder="Order" value="0" min="0" />
+              <button type="button" id="addProductImage">Add image</button>
+            </div>
+            <h4 class="inline-title">Colors</h4>
+            <div id="productColorsList" class="inline-list"></div>
+            <div class="inline-add">
+              <input type="text" id="newColorName" placeholder="Name" />
+              <input type="text" id="newColorHex" placeholder="Hex (e.g. #000)" />
+              <label><input type="checkbox" id="newColorAvailable" checked /> Available</label>
+              <button type="button" id="addProductColor">Add color</button>
+            </div>
+            <h4 class="inline-title">Sizes</h4>
+            <div id="productSizesList" class="inline-list"></div>
+            <div class="inline-add">
+              <input type="text" id="newSizeName" placeholder="Size (e.g. M)" />
+              <label><input type="checkbox" id="newSizeAvailable" checked /> Available</label>
+              <button type="button" id="addProductSize">Add size</button>
+            </div>
+            <h4 class="inline-title">Details (bullet points)</h4>
+            <div id="productDetailsList" class="inline-list"></div>
+            <div class="inline-add">
+              <input type="text" id="newDetailText" placeholder="Detail text" class="full-width" />
+              <input type="number" id="newDetailOrder" placeholder="Order" value="0" min="0" />
+              <button type="button" id="addProductDetail">Add detail</button>
+            </div>
           </div>
           <div class="card">
             <h3>Products</h3>
