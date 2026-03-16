@@ -18,13 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy via FTP
+      - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftp.vnbway.com
           username: ${{ secrets.ADMIN_HOSTINGER_FTP_USERNAME }}
           password: ${{ secrets.ADMIN_HOSTINGER_FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           port: 21
           local-dir: admin-panel/
           server-dir: public_html/admin/
