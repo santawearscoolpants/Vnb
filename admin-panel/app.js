@@ -735,13 +735,47 @@ function wireForms() {
       const categoryId = Number(data.get('category_id'));
       const price = Number(data.get('price'));
       const stockQuantity = Number(data.get('stock_quantity'));
+      const desc = String(data.get('description') || '').trim();
 
-      if (!name) return showError('Please enter a product name.');
-      if (!slug) return showError('Please enter a slug.');
-      if (!categoryId || categoryId <= 0) return showError('Please select a category. If the list is empty, create a category first.');
-      if (Number.isNaN(price) || price < 0) return showError('Please enter a valid price.');
-      if (Number.isNaN(stockQuantity) || stockQuantity < 0) return showError('Please enter a valid stock quantity.');
-      if (!String(data.get('description')).trim()) return showError('Please enter a description.');
+      console.log('[admin] create product form values', {
+        name,
+        slug,
+        categoryId,
+        price,
+        stockQuantity,
+        hasDescription: !!desc,
+      });
+
+      if (!name) {
+        console.warn('[admin] create product validation: missing name');
+        showError('Please enter a product name.');
+        return;
+      }
+      if (!slug) {
+        console.warn('[admin] create product validation: missing slug');
+        showError('Please enter a slug.');
+        return;
+      }
+      if (!categoryId || categoryId <= 0) {
+        console.warn('[admin] create product validation: invalid categoryId', categoryId);
+        showError('Please select a category. If the list is empty, create a category first.');
+        return;
+      }
+      if (Number.isNaN(price) || price < 0) {
+        console.warn('[admin] create product validation: invalid price', price);
+        showError('Please enter a valid price.');
+        return;
+      }
+      if (Number.isNaN(stockQuantity) || stockQuantity < 0) {
+        console.warn('[admin] create product validation: invalid stock', stockQuantity);
+        showError('Please enter a valid stock quantity.');
+        return;
+      }
+      if (!desc) {
+        console.warn('[admin] create product validation: missing description');
+        showError('Please enter a description.');
+        return;
+      }
 
       const payload = {
         name,
@@ -753,7 +787,7 @@ function wireForms() {
         image_url: String(data.get('image_url') || '').trim() || null,
         is_active: data.get('is_active') === 'on',
         is_featured: data.get('is_featured') === 'on',
-        description: String(data.get('description') || '').trim(),
+        description: desc,
       };
       const { error: insertError } = await supabase.from('products').insert(payload);
       if (insertError) {
@@ -835,10 +869,11 @@ function wireForms() {
       $('editProductIsFeatured').checked = payload.is_featured;
       $('editProductDescription').value = payload.description;
       $('editProductCard').classList.remove('hidden');
+      console.log('[admin] create product success', productId);
       await renderProductInlines(productId);
     } catch (err) {
-      showError(err?.message || 'Failed to create product.');
-      console.error('Create product error:', err);
+      console.error('[admin] create product unexpected error', err);
+      showError(err?.message || 'Failed to create product. See console for details.');
     }
   });
 
