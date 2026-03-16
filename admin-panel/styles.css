@@ -249,11 +249,6 @@ th {
   gap: 0.35rem;
 }
 
-#editProductCard .card {
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
 .hidden {
   display: none !important;
 }

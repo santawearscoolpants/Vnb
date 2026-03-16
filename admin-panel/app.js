@@ -1,5 +1,3 @@
-///admin panel
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const $ = (id) => document.getElementById(id);
@@ -19,8 +17,6 @@ const ui = {
   productsTable: $('productsTable'),
   ordersTable: $('ordersTable'),
   paymentsTable: $('paymentsTable'),
-  cartsTable: $('cartsTable'),
-  usersTable: $('usersTable'),
   contactTable: $('contactTable'),
   investTable: $('investTable'),
   newsletterTable: $('newsletterTable'),
@@ -173,8 +169,6 @@ async function loadStats() {
     ['categories', 'Categories'],
     ['orders', 'Orders'],
     ['payment_attempts', 'Payments'],
-    ['carts', 'Carts'],
-    ['user_profiles', 'Users'],
     ['contact_messages', 'Contact'],
     ['investment_inquiries', 'Invest'],
     ['newsletters', 'Newsletter'],
@@ -182,16 +176,12 @@ async function loadStats() {
 
   const cards = await Promise.all(
     tables.map(async ([table, label]) => {
-      try {
-        const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
-        if (error) return `<article class="stat"><p>${label}</p><h4>—</h4></article>`;
-        return `<article class="stat"><p>${label}</p><h4>${count ?? 0}</h4></article>`;
-      } catch {
-        return `<article class="stat"><p>${label}</p><h4>—</h4></article>`;
-      }
+      const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      return `<article class="stat"><p>${label}</p><h4>${count ?? 0}</h4></article>`;
     })
   );
-  if (ui.statsGrid) ui.statsGrid.innerHTML = cards.join('');
+  ui.statsGrid.innerHTML = cards.join('');
 }
 
 async function loadCategories() {
@@ -362,84 +352,6 @@ async function loadPayments() {
   `;
 }
 
-async function loadCarts() {
-  if (!ui.cartsTable) return;
-  const { data: carts, error } = await supabase
-    .from('carts')
-    .select('id, user_id, session_key, created_at, cart_items(id)')
-    .order('created_at', { ascending: false })
-    .limit(200);
-  if (error) {
-    ui.cartsTable.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
-    return;
-  }
-  const list = carts || [];
-  ui.cartsTable.innerHTML = `
-    <table>
-      <thead><tr><th>Cart ID</th><th>User / Session</th><th>Items</th><th>Created</th><th>Actions</th></tr></thead>
-      <tbody>
-        ${list
-          .map(
-            (c) => {
-              const itemCount = c.cart_items?.length ?? 0;
-              const userOrSession = c.user_id ? String(c.user_id).slice(0, 8) + '…' : (c.session_key || '—');
-              return `
-          <tr>
-            <td>${c.id}</td>
-            <td>${escapeHtml(userOrSession)}</td>
-            <td>${itemCount}</td>
-            <td>${new Date(c.created_at).toLocaleString()}</td>
-            <td><button type="button" data-action="view-cart" data-id="${c.id}">View items</button></td>
-          </tr>`;
-            }
-          )
-          .join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-async function loadUsers() {
-  if (!ui.usersTable) return;
-  try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('id, user_id, phone, city, state, location, newsletter_subscribed, created_at')
-      .order('created_at', { ascending: false })
-      .limit(200);
-    if (error) {
-      ui.usersTable.innerHTML = `<p class="muted">Error: ${escapeHtml(error.message)}. Check RLS allows admin to read user_profiles.</p>`;
-      return;
-    }
-    const list = data || [];
-    if (list.length === 0) {
-      ui.usersTable.innerHTML = '<p class="muted">No profiles yet. User profiles are created when users sign up on the main site. You can also view all users (with email) in Supabase Dashboard → Authentication → Users.</p>';
-      return;
-    }
-    ui.usersTable.innerHTML = `
-      <table>
-        <thead><tr><th>User ID</th><th>Phone</th><th>Location</th><th>Newsletter</th><th>Created</th></tr></thead>
-        <tbody>
-          ${list
-            .map(
-              (u) => `
-            <tr>
-              <td><code>${escapeHtml(String(u.user_id).slice(0, 8))}…</code></td>
-              <td>${escapeHtml(u.phone || '-')}</td>
-              <td>${escapeHtml([u.city, u.state, u.location].filter(Boolean).join(', ') || '-')}</td>
-              <td>${u.newsletter_subscribed ? 'Yes' : 'No'}</td>
-              <td>${new Date(u.created_at).toLocaleString()}</td>
-            </tr>`
-            )
-            .join('')}
-        </tbody>
-      </table>
-    `;
-  } catch (err) {
-    ui.usersTable.innerHTML = `<p class="muted">Could not load users: ${escapeHtml(err?.message || 'Unknown error')}.</p>`;
-  }
-}
-
 async function loadContact() {
   const { data, error } = await supabase
     .from('contact_messages')
@@ -544,8 +456,6 @@ async function refreshAll() {
     loadProducts(),
     loadOrders(),
     loadPayments(),
-    loadCarts(),
-    loadUsers(),
     loadContact(),
     loadInvest(),
     loadNewsletter(),
@@ -626,12 +536,6 @@ async function handleTableActions(event) {
         );
         break;
       }
-      case 'view-cart': {
-        const { data: items } = await supabase.from('cart_items').select('*, products(name)').eq('cart_id', id);
-        const rows = (items || []).map((i) => `${escapeHtml(i.products?.name || 'Product')} × ${i.quantity} (${i.size || '-'} / ${i.color || '-'})`).join('\n');
-        showDetailModal(`Cart #${id}`, `<p><strong>Items:</strong></p><pre>${rows || 'Empty cart.'}</pre>`);
-        break;
-      }
       case 'edit-category': {
         const { data: cat } = await supabase.from('categories').select('*').eq('id', id).single();
         if (!cat || !ui.editCategoryForm) break;
@@ -681,7 +585,7 @@ async function handleTableActions(event) {
       default:
         break;
     }
-    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'view-cart', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
+    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
     if (!skipRefresh) await refreshAll();
   } catch (error) {
     showError(error.message || 'Action failed.');
@@ -728,54 +632,19 @@ function wireForms() {
   ui.createProductForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
-      console.log('[admin] create product submit');
       const data = new FormData(ui.createProductForm);
       const name = String(data.get('name')).trim();
       const slug = String(data.get('slug')).trim();
       const categoryId = Number(data.get('category_id'));
       const price = Number(data.get('price'));
       const stockQuantity = Number(data.get('stock_quantity'));
-      const desc = String(data.get('description') || '').trim();
 
-      console.log('[admin] create product form values', {
-        name,
-        slug,
-        categoryId,
-        price,
-        stockQuantity,
-        hasDescription: !!desc,
-      });
-
-      if (!name) {
-        console.warn('[admin] create product validation: missing name');
-        showError('Please enter a product name.');
-        return;
-      }
-      if (!slug) {
-        console.warn('[admin] create product validation: missing slug');
-        showError('Please enter a slug.');
-        return;
-      }
-      if (!categoryId || categoryId <= 0) {
-        console.warn('[admin] create product validation: invalid categoryId', categoryId);
-        showError('Please select a category. If the list is empty, create a category first.');
-        return;
-      }
-      if (Number.isNaN(price) || price < 0) {
-        console.warn('[admin] create product validation: invalid price', price);
-        showError('Please enter a valid price.');
-        return;
-      }
-      if (Number.isNaN(stockQuantity) || stockQuantity < 0) {
-        console.warn('[admin] create product validation: invalid stock', stockQuantity);
-        showError('Please enter a valid stock quantity.');
-        return;
-      }
-      if (!desc) {
-        console.warn('[admin] create product validation: missing description');
-        showError('Please enter a description.');
-        return;
-      }
+      if (!name) return showError('Please enter a product name.');
+      if (!slug) return showError('Please enter a slug.');
+      if (!categoryId || categoryId <= 0) return showError('Please select a category. If the list is empty, create a category first.');
+      if (Number.isNaN(price) || price < 0) return showError('Please enter a valid price.');
+      if (Number.isNaN(stockQuantity) || stockQuantity < 0) return showError('Please enter a valid stock quantity.');
+      if (!String(data.get('description')).trim()) return showError('Please enter a description.');
 
       const payload = {
         name,
@@ -787,93 +656,15 @@ function wireForms() {
         image_url: String(data.get('image_url') || '').trim() || null,
         is_active: data.get('is_active') === 'on',
         is_featured: data.get('is_featured') === 'on',
-        description: desc,
+        description: String(data.get('description') || '').trim(),
       };
-      const { error: insertError } = await supabase.from('products').insert(payload);
-      if (insertError) {
-        console.error('[admin] product insert error', insertError);
-        return showError(insertError.message);
-      }
-
-      // Fetch the product we just created by slug to get its id
-      const { data: foundRows, error: findError } = await supabase
-        .from('products')
-        .select('id')
-        .eq('slug', slug)
-        .order('id', { ascending: false })
-        .limit(1);
-      if (findError) {
-        console.error('[admin] product fetch-after-insert error', findError);
-        return showError(findError.message);
-      }
-      const productId = foundRows?.[0]?.id;
-      if (!productId) {
-        console.error('[admin] product created but no id found for slug', slug);
-        return showError('Product created but could not get ID. Check the Products tab to confirm it exists.');
-      }
-
-      const imageUrlMain = String(data.get('image_url') || '').trim();
-      const imageUrlsText = String(data.get('image_urls') || '').trim();
-      const imageUrls = [imageUrlMain, ...imageUrlsText.split(/\n/).map((s) => s.trim())].filter(Boolean);
-      for (let i = 0; i < imageUrls.length; i++) {
-        const { error } = await supabase.from('product_images').insert({
-          product_id: productId,
-          image_url: imageUrls[i],
-          alt_text: '',
-          is_primary: i === 0,
-          order: i,
-        });
-        if (error) return showError(error.message);
-      }
-
-      const colorsText = String(data.get('colors') || '').trim();
-      const colorLines = colorsText.split(/\n/).map((s) => s.trim()).filter(Boolean);
-      for (const line of colorLines) {
-        const [namePart, hexPart] = line.split(/[,;\t]/).map((s) => s.trim());
-        if (namePart) {
-          const { error } = await supabase
-            .from('product_colors')
-            .insert({ product_id: productId, name: namePart, hex_code: hexPart || '#000000', is_available: true });
-          if (error) return showError(error.message);
-        }
-      }
-
-      const sizesText = String(data.get('sizes') || '').trim();
-      const sizes = sizesText.split(/[,;]/).map((s) => s.trim()).filter(Boolean);
-      for (const size of sizes) {
-        const { error } = await supabase.from('product_sizes').insert({ product_id: productId, size, is_available: true });
-        if (error) return showError(error.message);
-      }
-
-      const detailsText = String(data.get('details') || '').trim();
-      const detailLines = detailsText.split(/\n/).map((s) => s.trim()).filter(Boolean);
-      for (let i = 0; i < detailLines.length; i++) {
-        const { error } = await supabase
-          .from('product_details')
-          .insert({ product_id: productId, detail: detailLines[i], order: i });
-        if (error) return showError(error.message);
-      }
-
+      const { error } = await supabase.from('products').insert(payload);
+      if (error) return showError(error.message);
       ui.createProductForm.reset();
       await refreshAll();
-
-      $('editProductId').value = productId;
-      $('editProductName').value = name;
-      $('editProductSlug').value = slug;
-      $('editProductSku').value = payload.sku || '';
-      $('editProductCategoryId').value = categoryId;
-      $('editProductPrice').value = price;
-      $('editProductStock').value = stockQuantity;
-      $('editProductImageUrl').value = imageUrlMain || '';
-      $('editProductIsActive').checked = payload.is_active;
-      $('editProductIsFeatured').checked = payload.is_featured;
-      $('editProductDescription').value = payload.description;
-      $('editProductCard').classList.remove('hidden');
-      console.log('[admin] create product success', productId);
-      await renderProductInlines(productId);
     } catch (err) {
-      console.error('[admin] create product unexpected error', err);
-      showError(err?.message || 'Failed to create product. See console for details.');
+      showError(err?.message || 'Failed to create product.');
+      console.error('Create product error:', err);
     }
   });
 

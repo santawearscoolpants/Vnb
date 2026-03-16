@@ -27,4 +27,4 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: admin-panel/
-          server-dir: /
+          server-dir: admin/

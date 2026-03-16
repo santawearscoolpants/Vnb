@@ -46,8 +46,6 @@
           <button class="tab" data-tab="products">Products</button>
           <button class="tab" data-tab="orders">Orders</button>
           <button class="tab" data-tab="payments">Payments</button>
-          <button class="tab" data-tab="carts">Carts</button>
-          <button class="tab" data-tab="users">Users</button>
           <button class="tab" data-tab="contact">Contact</button>
           <button class="tab" data-tab="invest">Invest</button>
           <button class="tab" data-tab="newsletter">Newsletter</button>
@@ -101,21 +99,15 @@
               </label>
               <label>Price (GHS) <input name="price" type="number" step="0.01" min="0" required /></label>
               <label>Stock qty <input name="stock_quantity" type="number" min="0" value="0" required /></label>
-              <label>Image URL <input name="image_url" placeholder="Main image (optional)" /></label>
+              <label>Image URL <input name="image_url" /></label>
               <label><input name="is_active" type="checkbox" checked /> Active</label>
               <label><input name="is_featured" type="checkbox" /> Featured</label>
               <label class="full">Description <textarea name="description" required></textarea></label>
-              <hr class="card-divider" />
-              <label class="full">Extra image URLs <textarea name="image_urls" rows="2" placeholder="One URL per line (optional)"></textarea></label>
-              <label class="full">Colors <textarea name="colors" rows="2" placeholder="One per line: Name,#hex (e.g. Black,#000000)"></textarea></label>
-              <label class="full">Sizes <input name="sizes" placeholder="Comma-separated (e.g. S, M, L)" /></label>
-              <label class="full">Detail bullets <textarea name="details" rows="3" placeholder="One bullet per line (optional)"></textarea></label>
               <button type="submit" class="primary">Create product</button>
             </form>
           </div>
           <div class="card hidden" id="editProductCard">
             <h3>Edit product</h3>
-            <p class="muted" style="margin-top: 0;">Update basic fields below, then manage images, colors, sizes and detail bullets in the sections underneath.</p>
             <form id="editProductForm" class="grid three">
               <input type="hidden" name="id" id="editProductId" />
               <label>Name <input name="name" id="editProductName" required /></label>
@@ -132,8 +124,6 @@
               <button type="button" class="cancelEditProduct">Cancel</button>
             </form>
             <hr class="card-divider" />
-            <h4 class="inline-title">Images, colors, sizes &amp; details</h4>
-            <p class="muted" style="margin: 0 0 0.5rem 0; font-size: 0.85rem;">Add or remove product images, color options, size options, and detail bullet points. These appear on the main site product page.</p>
             <h4 class="inline-title">Images</h4>
             <div id="productImagesList" class="inline-list"></div>
             <div class="inline-add">
@@ -183,21 +173,6 @@
           <div class="card">
             <h3>Payment attempts</h3>
             <div id="paymentsTable"></div>
-          </div>
-        </section>
-
-        <section id="carts" class="panel">
-          <div class="card">
-            <h3>Carts</h3>
-            <div id="cartsTable"></div>
-          </div>
-        </section>
-
-        <section id="users" class="panel">
-          <div class="card">
-            <h3>User profiles</h3>
-            <p class="muted" style="margin-top: 0;">Profiles from sign-ups. Full user list with email is in Supabase Dashboard → Authentication → Users.</p>
-            <div id="usersTable"></div>
           </div>
         </section>
 
