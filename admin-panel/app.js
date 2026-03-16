@@ -543,25 +543,46 @@ function wireForms() {
     await refreshAll();
   });
 
-  ui.createProductForm.addEventListener('submit', async (event) => {
+  if (!ui.createProductForm) {
+    console.error('Create product form not found');
+  }
+  ui.createProductForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const data = new FormData(ui.createProductForm);
-    const payload = {
-      name: String(data.get('name')).trim(),
-      slug: String(data.get('slug')).trim(),
-      sku: String(data.get('sku') || '').trim() || null,
-      category_id: Number(data.get('category_id')),
-      price: Number(data.get('price')),
-      stock_quantity: Number(data.get('stock_quantity')),
-      image_url: String(data.get('image_url') || '').trim() || null,
-      is_active: data.get('is_active') === 'on',
-      is_featured: data.get('is_featured') === 'on',
-      description: String(data.get('description') || '').trim(),
-    };
-    const { error } = await supabase.from('products').insert(payload);
-    if (error) return showError(error.message);
-    ui.createProductForm.reset();
-    await refreshAll();
+    try {
+      const data = new FormData(ui.createProductForm);
+      const name = String(data.get('name')).trim();
+      const slug = String(data.get('slug')).trim();
+      const categoryId = Number(data.get('category_id'));
+      const price = Number(data.get('price'));
+      const stockQuantity = Number(data.get('stock_quantity'));
+
+      if (!name) return showError('Please enter a product name.');
+      if (!slug) return showError('Please enter a slug.');
+      if (!categoryId || categoryId <= 0) return showError('Please select a category. If the list is empty, create a category first.');
+      if (Number.isNaN(price) || price < 0) return showError('Please enter a valid price.');
+      if (Number.isNaN(stockQuantity) || stockQuantity < 0) return showError('Please enter a valid stock quantity.');
+      if (!String(data.get('description')).trim()) return showError('Please enter a description.');
+
+      const payload = {
+        name,
+        slug,
+        sku: String(data.get('sku') || '').trim() || null,
+        category_id: categoryId,
+        price,
+        stock_quantity: stockQuantity,
+        image_url: String(data.get('image_url') || '').trim() || null,
+        is_active: data.get('is_active') === 'on',
+        is_featured: data.get('is_featured') === 'on',
+        description: String(data.get('description') || '').trim(),
+      };
+      const { error } = await supabase.from('products').insert(payload);
+      if (error) return showError(error.message);
+      ui.createProductForm.reset();
+      await refreshAll();
+    } catch (err) {
+      showError(err?.message || 'Failed to create product.');
+      console.error('Create product error:', err);
+    }
   });
 
   document.body.addEventListener('click', handleTableActions);

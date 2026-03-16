@@ -1,4 +1,4 @@
-import { getSupabaseClient, mapSupabaseUser } from '../lib/supabase';
+import { getSupabaseClient, isSupabaseConfigured, mapSupabaseUser } from '../lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -92,23 +92,142 @@ class ApiService {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 
-  getCategories() {
+  async getCategories() {
+    if (isSupabaseConfigured) {
+      const client = getSupabaseClient();
+      const { data, error } = await client
+        .from('categories')
+        .select('id,name,slug,description,image_url')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw new Error(error.message);
+      const list = (data || []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description || '',
+        image: c.image_url || '',
+        product_count: 0,
+      }));
+      return { results: list };
+    }
     return this.get('/store/categories/');
   }
 
-  getCategory(slug: string) {
+  async getCategory(slug: string) {
+    if (isSupabaseConfigured) {
+      const client = getSupabaseClient();
+      const { data, error } = await client.from('categories').select('*').eq('slug', slug).eq('is_active', true).single();
+      if (error || !data) throw new Error(error?.message || 'Category not found');
+      return {
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        description: data.description || '',
+        image: data.image_url || '',
+        product_count: 0,
+      };
+    }
     return this.get(`/store/categories/${slug}/`);
   }
 
-  getProducts(params?: { category__slug?: string; is_featured?: boolean; search?: string }) {
+  async getProducts(params?: { category__slug?: string; is_featured?: boolean; search?: string }) {
+    if (isSupabaseConfigured) {
+      const client = getSupabaseClient();
+      let q = client.from('products').select('id,name,slug,price,image_url,stock_quantity').eq('is_active', true);
+      if (params?.category__slug) {
+        const { data: cat } = await client.from('categories').select('id').eq('slug', params.category__slug).single();
+        if (cat) q = q.eq('category_id', cat.id);
+      }
+      if (params?.is_featured) q = q.eq('is_featured', true);
+      if (params?.search?.trim()) {
+        const term = `%${params.search.trim()}%`;
+        q = q.or(`name.ilike.${term},description.ilike.${term}`);
+      }
+      const { data, error } = await q.order('created_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      const list = (data || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: String(p.price),
+        image: p.image_url || '',
+        in_stock: (p.stock_quantity ?? 0) > 0,
+      }));
+      return { results: list };
+    }
     return this.get('/store/products/', { params: params as any });
   }
 
-  getProduct(slug: string) {
+  async getProduct(slug: string) {
+    if (isSupabaseConfigured) {
+      const client = getSupabaseClient();
+      const { data: product, error } = await client
+        .from('products')
+        .select('*, product_images(*), product_colors(*), product_sizes(*), product_details(*)')
+        .eq('slug', slug)
+        .single();
+      if (error || !product) throw new Error(error?.message || 'Product not found');
+      const images = (product.product_images || []).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+      const primaryImage = images.find((i: any) => i.is_primary) || images[0];
+      return {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description || '',
+        price: String(product.price),
+        image: primaryImage?.image_url || product.image_url || '',
+        in_stock: (product.stock_quantity ?? 0) > 0,
+        stock_quantity: product.stock_quantity ?? 0,
+        images: images.map((i: any) => ({
+          id: i.id,
+          image: i.image_url,
+          alt_text: i.alt_text || '',
+          is_primary: !!i.is_primary,
+          order: i.order ?? 0,
+        })),
+        colors: (product.product_colors || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          hex_code: c.hex_code || '',
+          is_available: c.is_available !== false,
+        })),
+        sizes: (product.product_sizes || []).map((s: any) => ({
+          id: s.id,
+          size: s.size,
+          is_available: s.is_available !== false,
+        })),
+        details: (product.product_details || []).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0)).map((d: any) => ({
+          id: d.id,
+          detail: d.detail,
+          order: d.order ?? 0,
+        })),
+      };
+    }
     return this.get(`/store/products/${slug}/`);
   }
 
-  getFeaturedProducts() {
+  async getFeaturedProducts() {
+    if (isSupabaseConfigured) {
+      const client = getSupabaseClient();
+      const { data, error } = await client
+        .from('products')
+        .select('id,name,slug,price,image_url,stock_quantity')
+        .eq('is_active', true)
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) throw new Error(error.message);
+      const list = (data || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: String(p.price),
+        image: p.image_url || '',
+        in_stock: (p.stock_quantity ?? 0) > 0,
+      }));
+      return { results: list };
+    }
     return this.get('/store/products/featured/');
   }
 
