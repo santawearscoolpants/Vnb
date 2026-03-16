@@ -726,6 +726,7 @@ function wireForms() {
   ui.createProductForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
+      console.log('[admin] create product submit');
       const data = new FormData(ui.createProductForm);
       const name = String(data.get('name')).trim();
       const slug = String(data.get('slug')).trim();
@@ -752,41 +753,54 @@ function wireForms() {
         is_featured: data.get('is_featured') === 'on',
         description: String(data.get('description') || '').trim(),
       };
-      const { data: inserted, error } = await supabase.from('products').insert(payload).select('id').single();
-      if (error) return showError(error.message);
-      const productId = inserted?.id;
+      const { data: insertedRows, error: insertError } = await supabase
+        .from('products')
+        .insert(payload)
+        .select('id');
+      if (insertError) return showError(insertError.message);
+      const productId = insertedRows?.[0]?.id;
       if (!productId) return showError('Product created but could not get ID.');
 
       const imageUrlMain = String(data.get('image_url') || '').trim();
       const imageUrlsText = String(data.get('image_urls') || '').trim();
       const imageUrls = [imageUrlMain, ...imageUrlsText.split(/\n/).map((s) => s.trim())].filter(Boolean);
       for (let i = 0; i < imageUrls.length; i++) {
-        await supabase.from('product_images').insert({
+        const { error } = await supabase.from('product_images').insert({
           product_id: productId,
           image_url: imageUrls[i],
           alt_text: '',
           is_primary: i === 0,
           order: i,
         });
+        if (error) return showError(error.message);
       }
 
       const colorsText = String(data.get('colors') || '').trim();
       const colorLines = colorsText.split(/\n/).map((s) => s.trim()).filter(Boolean);
       for (const line of colorLines) {
         const [namePart, hexPart] = line.split(/[,;\t]/).map((s) => s.trim());
-        if (namePart) await supabase.from('product_colors').insert({ product_id: productId, name: namePart, hex_code: hexPart || '#000000', is_available: true });
+        if (namePart) {
+          const { error } = await supabase
+            .from('product_colors')
+            .insert({ product_id: productId, name: namePart, hex_code: hexPart || '#000000', is_available: true });
+          if (error) return showError(error.message);
+        }
       }
 
       const sizesText = String(data.get('sizes') || '').trim();
       const sizes = sizesText.split(/[,;]/).map((s) => s.trim()).filter(Boolean);
       for (const size of sizes) {
-        await supabase.from('product_sizes').insert({ product_id: productId, size, is_available: true });
+        const { error } = await supabase.from('product_sizes').insert({ product_id: productId, size, is_available: true });
+        if (error) return showError(error.message);
       }
 
       const detailsText = String(data.get('details') || '').trim();
       const detailLines = detailsText.split(/\n/).map((s) => s.trim()).filter(Boolean);
       for (let i = 0; i < detailLines.length; i++) {
-        await supabase.from('product_details').insert({ product_id: productId, detail: detailLines[i], order: i });
+        const { error } = await supabase
+          .from('product_details')
+          .insert({ product_id: productId, detail: detailLines[i], order: i });
+        if (error) return showError(error.message);
       }
 
       ui.createProductForm.reset();
