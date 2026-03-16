@@ -10,6 +10,8 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 - **Products:** create, list, edit (name, slug, sku, category, price, stock, image_url, description, is_active, is_featured), and in **Edit product**: manage **images** (add/delete, alt text, primary, order), **colors** (name, hex, available), **sizes** (size, available), **details** (bullet points with order); activate/deactivate, feature/unfeature, delete
 - **Orders:** list, edit status + payment status, **View** (order items + shipping address)
 - **Payment attempts:** read-only list (reference, email, total, currency, status, Paystack status)
+- **Carts:** list (cart ID, user/session, item count, created), **View items** (cart items with product name)
+- **User profiles:** read-only list (user id, phone, location, newsletter, created). For full user list with email use Supabase Dashboard → Authentication → Users.
 - **Contact messages:** list (with phone), **View** (full message), mark read/unread
 - **Investment inquiries:** list (with phone), **View** (full message), mark contacted
 - **Newsletter:** list, activate/deactivate

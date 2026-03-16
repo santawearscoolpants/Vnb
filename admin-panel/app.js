@@ -17,6 +17,8 @@ const ui = {
   productsTable: $('productsTable'),
   ordersTable: $('ordersTable'),
   paymentsTable: $('paymentsTable'),
+  cartsTable: $('cartsTable'),
+  usersTable: $('usersTable'),
   contactTable: $('contactTable'),
   investTable: $('investTable'),
   newsletterTable: $('newsletterTable'),
@@ -169,6 +171,8 @@ async function loadStats() {
     ['categories', 'Categories'],
     ['orders', 'Orders'],
     ['payment_attempts', 'Payments'],
+    ['carts', 'Carts'],
+    ['user_profiles', 'Users'],
     ['contact_messages', 'Contact'],
     ['investment_inquiries', 'Invest'],
     ['newsletters', 'Newsletter'],
@@ -352,6 +356,76 @@ async function loadPayments() {
   `;
 }
 
+async function loadCarts() {
+  if (!ui.cartsTable) return;
+  const { data: carts, error } = await supabase
+    .from('carts')
+    .select('id, user_id, session_key, created_at, cart_items(id)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) {
+    ui.cartsTable.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  const list = carts || [];
+  ui.cartsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Cart ID</th><th>User / Session</th><th>Items</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${list
+          .map(
+            (c) => {
+              const itemCount = c.cart_items?.length ?? 0;
+              const userOrSession = c.user_id ? String(c.user_id).slice(0, 8) + '…' : (c.session_key || '—');
+              return `
+          <tr>
+            <td>${c.id}</td>
+            <td>${escapeHtml(userOrSession)}</td>
+            <td>${itemCount}</td>
+            <td>${new Date(c.created_at).toLocaleString()}</td>
+            <td><button type="button" data-action="view-cart" data-id="${c.id}">View items</button></td>
+          </tr>`;
+            }
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadUsers() {
+  if (!ui.usersTable) return;
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('id, user_id, phone, city, state, location, newsletter_subscribed, created_at')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) {
+    ui.usersTable.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  const list = data || [];
+  ui.usersTable.innerHTML = `
+    <table>
+      <thead><tr><th>User ID</th><th>Phone</th><th>Location</th><th>Newsletter</th><th>Created</th></tr></thead>
+      <tbody>
+        ${list
+          .map(
+            (u) => `
+          <tr>
+            <td><code>${escapeHtml(String(u.user_id).slice(0, 8))}…</code></td>
+            <td>${escapeHtml(u.phone || '-')}</td>
+            <td>${escapeHtml([u.city, u.state, u.location].filter(Boolean).join(', ') || '-')}</td>
+            <td>${u.newsletter_subscribed ? 'Yes' : 'No'}</td>
+            <td>${new Date(u.created_at).toLocaleString()}</td>
+          </tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 async function loadContact() {
   const { data, error } = await supabase
     .from('contact_messages')
@@ -456,6 +530,8 @@ async function refreshAll() {
     loadProducts(),
     loadOrders(),
     loadPayments(),
+    loadCarts(),
+    loadUsers(),
     loadContact(),
     loadInvest(),
     loadNewsletter(),
@@ -536,6 +612,12 @@ async function handleTableActions(event) {
         );
         break;
       }
+      case 'view-cart': {
+        const { data: items } = await supabase.from('cart_items').select('*, products(name)').eq('cart_id', id);
+        const rows = (items || []).map((i) => `${escapeHtml(i.products?.name || 'Product')} × ${i.quantity} (${i.size || '-'} / ${i.color || '-'})`).join('\n');
+        showDetailModal(`Cart #${id}`, `<p><strong>Items:</strong></p><pre>${rows || 'Empty cart.'}</pre>`);
+        break;
+      }
       case 'edit-category': {
         const { data: cat } = await supabase.from('categories').select('*').eq('id', id).single();
         if (!cat || !ui.editCategoryForm) break;
@@ -585,7 +667,7 @@ async function handleTableActions(event) {
       default:
         break;
     }
-    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
+    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'view-cart', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
     if (!skipRefresh) await refreshAll();
   } catch (error) {
     showError(error.message || 'Action failed.');
