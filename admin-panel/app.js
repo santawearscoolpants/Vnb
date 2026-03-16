@@ -755,13 +755,28 @@ function wireForms() {
         is_featured: data.get('is_featured') === 'on',
         description: String(data.get('description') || '').trim(),
       };
-      const { data: insertedRows, error: insertError } = await supabase
+      const { error: insertError } = await supabase.from('products').insert(payload);
+      if (insertError) {
+        console.error('[admin] product insert error', insertError);
+        return showError(insertError.message);
+      }
+
+      // Fetch the product we just created by slug to get its id
+      const { data: foundRows, error: findError } = await supabase
         .from('products')
-        .insert(payload)
-        .select('id');
-      if (insertError) return showError(insertError.message);
-      const productId = insertedRows?.[0]?.id;
-      if (!productId) return showError('Product created but could not get ID.');
+        .select('id')
+        .eq('slug', slug)
+        .order('id', { ascending: false })
+        .limit(1);
+      if (findError) {
+        console.error('[admin] product fetch-after-insert error', findError);
+        return showError(findError.message);
+      }
+      const productId = foundRows?.[0]?.id;
+      if (!productId) {
+        console.error('[admin] product created but no id found for slug', slug);
+        return showError('Product created but could not get ID. Check the Products tab to confirm it exists.');
+      }
 
       const imageUrlMain = String(data.get('image_url') || '').trim();
       const imageUrlsText = String(data.get('image_urls') || '').trim();
