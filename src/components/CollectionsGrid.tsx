@@ -38,7 +38,7 @@ export function CollectionsGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.04 }}
-              className="group"
+              className="group flex flex-col items-center"
             >
               <div className="aspect-square overflow-hidden bg-zinc-100">
                 <ImageWithFallback
@@ -47,7 +47,7 @@ export function CollectionsGrid() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-[10px] font-medium tracking-[0.25em] text-zinc-500">
+              <p className="mt-4 pb-4 text-center text-[10px] font-medium tracking-[0.25em] text-zinc-500 leading-none">
                 {img.label}
               </p>
             </motion.div>
