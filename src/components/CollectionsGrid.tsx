@@ -29,7 +29,7 @@ export function CollectionsGrid() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-4 gap-x-2 gap-y-6"
+          className="grid grid-cols-4 gap-x-4 gap-y-10"
         >
           {COLLECTIONS.map((img, idx) => (
             <motion.div
@@ -47,7 +47,7 @@ export function CollectionsGrid() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-2 text-[10px] font-medium tracking-[0.25em] text-zinc-500">
+              <p className="mt-3 text-[10px] font-medium tracking-[0.25em] text-zinc-500">
                 {img.label}
               </p>
             </motion.div>
