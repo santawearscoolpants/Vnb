@@ -29,7 +29,7 @@ export function CollectionsGrid() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 gap-4 sm:grid-cols-4 md:gap-6"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-2"
         >
           {COLLECTIONS.map((img, idx) => (
             <motion.div
@@ -43,7 +43,7 @@ export function CollectionsGrid() {
               <ImageWithFallback
                 src={img.src}
                 alt={img.alt}
-                className="h-[180px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] md:h-[220px]"
+                className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-[1.01] sm:h-24 md:h-28"
               />
             </motion.div>
           ))}
