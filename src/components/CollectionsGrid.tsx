@@ -11,13 +11,13 @@ import watchImg from '../assets/collection/watch.jpg';
 
 const COLLECTIONS = [
   { src: bagImg, alt: 'Bag', label: 'BAGS' },
-  { src: braceletImg, alt: 'Bracelet', label: 'BRACELETS' },
+  { src: braceletImg, alt: 'Bracelet', label: 'JEWELLERY' },
   { src: cologneImg, alt: 'Cologne', label: 'FRAGRANCE' },
-  { src: kaftanImg, alt: 'Kaftan', label: 'WOMENS SILK' },
-  { src: poloImg, alt: 'Polo', label: 'READY TO WEAR' },
+  { src: kaftanImg, alt: 'Kaftan', label: 'KAFTAN' },
+  { src: poloImg, alt: 'Polo', label: 'SHIRTS' },
   { src: shoeImg, alt: 'Shoes', label: 'SHOES' },
-  { src: suitImg, alt: 'Suit', label: 'TIES' },
-  { src: watchImg, alt: 'Watch', label: 'HATS' },
+  { src: suitImg, alt: 'Suit', label: 'SUITS' },
+  { src: watchImg, alt: 'Watch', label: 'WATCH' },
 ];
 
 export function CollectionsGrid() {
@@ -29,7 +29,7 @@ export function CollectionsGrid() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4 md:gap-x-6"
+          className="grid grid-cols-4 gap-x-2 gap-y-6"
         >
           {COLLECTIONS.map((img, idx) => (
             <motion.div
@@ -47,7 +47,7 @@ export function CollectionsGrid() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-[10px] font-medium tracking-[0.25em] text-zinc-500">
+              <p className="mt-2 text-[10px] font-medium tracking-[0.25em] text-zinc-500">
                 {img.label}
               </p>
             </motion.div>
