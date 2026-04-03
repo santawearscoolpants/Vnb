@@ -46,6 +46,7 @@ Run, in order:
 1. `supabase/01_core.sql`
 2. `supabase/02_rls.sql`
 3. `supabase/03_checkout.sql`
+4. `supabase/04_affiliates.sql`
 
 Then import your existing product/order/customer data.
 

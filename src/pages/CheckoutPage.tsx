@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import logo from '../assets/logo.png';
 import { useCurrency } from '../context/CurrencyContext';
 import { resolveMediaUrl } from '../utils/media';
+import { getStoredStewardReferralCode } from '../utils/referrals';
 const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
 
 const COUNTRIES = [
@@ -124,6 +125,7 @@ export function CheckoutPage() {
           size: item.size || '',
           color: item.color || '',
         })),
+        referral_code: getStoredStewardReferralCode() || undefined,
       });
 
       window.location.assign(payment.authorization_url);

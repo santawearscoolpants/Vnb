@@ -26,6 +26,70 @@ export interface CheckoutCartItemInput {
   color?: string;
 }
 
+export interface StewardMilestone {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  measurement_window: string;
+  required_successful_orders: number;
+  reward_type: string;
+  reward_value: string;
+}
+
+export interface StewardDashboardData {
+  steward: {
+    user_id: string;
+    display_name: string;
+    status: string;
+    commission_tier: string;
+    commission_rate: number;
+    course_status: string;
+    joined_at: string;
+    activated_at: string | null;
+  } | null;
+  referralCodes: Array<{
+    id: number;
+    code: string;
+    status: string;
+    is_primary: boolean;
+  }>;
+  commissions: Array<{
+    id: number;
+    referral_code: string;
+    basis_amount: number;
+    commission_rate: number;
+    commission_amount: number;
+    status: string;
+    created_at: string;
+    order_number: string;
+  }>;
+  payouts: Array<{
+    id: number;
+    period_start: string;
+    period_end: string;
+    total_amount: number;
+    gross_commission: number;
+    adjustments: number;
+    status: string;
+    scheduled_for: string | null;
+    paid_at: string | null;
+  }>;
+  milestoneAwards: Array<{
+    id: number;
+    reward_status: string;
+    reference_period_start: string | null;
+    reference_period_end: string | null;
+    earned_at: string;
+    issued_at: string | null;
+    milestone: {
+      name: string;
+      reward_type: string;
+      reward_value: string;
+    } | null;
+  }>;
+}
+
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
   authenticated?: boolean;
@@ -326,6 +390,51 @@ class ApiService {
     return { message: 'Thank you for your interest! Our investment team will contact you within 48 hours.' };
   }
 
+  async submitAffiliateWaitlist(data: {
+    full_name: string;
+    email: string;
+    phone?: string;
+    location?: string;
+    background?: string;
+    message?: string;
+  }) {
+    const client = requireSupabase();
+    const { error } = await client.from('steward_waitlist').insert({
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone || '',
+      location: data.location || '',
+      background: data.background || '',
+      message: data.message || '',
+    });
+    if (error && error.code !== '23505') throw new Error(error.message);
+    return {
+      message: error?.code === '23505'
+        ? 'You are already on the VNB Steward waitlist.'
+        : 'You have joined the VNB Steward waitlist.',
+    };
+  }
+
+  async getActiveStewardMilestones(): Promise<StewardMilestone[]> {
+    const client = requireSupabase();
+    const { data, error } = await client
+      .from('steward_milestone_definitions')
+      .select('id,slug,name,description,measurement_window,required_successful_orders,reward_type,reward_value')
+      .eq('is_active', true)
+      .order('required_successful_orders', { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data || []).map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description || '',
+      measurement_window: row.measurement_window,
+      required_successful_orders: row.required_successful_orders,
+      reward_type: row.reward_type,
+      reward_value: row.reward_value || '',
+    }));
+  }
+
   async register(data: {
     email: string;
     password: string;
@@ -487,6 +596,7 @@ class ApiService {
     country: string;
     notes?: string;
     items: CheckoutCartItemInput[];
+    referral_code?: string;
   }) {
     return this.initializePayment(data);
   }
@@ -529,6 +639,116 @@ class ApiService {
     return (data || []).map(toOrderListItem);
   }
 
+  async getStewardDashboard(): Promise<StewardDashboardData> {
+    const client = requireSupabase();
+    const { data: authData, error: authError } = await client.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Not authenticated');
+
+    const userId = authData.user.id;
+
+    const [
+      stewardResult,
+      codesResult,
+      commissionsResult,
+      payoutsResult,
+      awardsResult,
+    ] = await Promise.all([
+      client
+        .from('vnb_stewards')
+        .select('user_id,display_name,status,commission_tier,commission_rate,course_status,joined_at,activated_at')
+        .eq('user_id', userId)
+        .maybeSingle(),
+      client
+        .from('steward_referral_codes')
+        .select('id,code,status,is_primary')
+        .eq('steward_id', userId)
+        .order('is_primary', { ascending: false })
+        .order('created_at', { ascending: true }),
+      client
+        .from('steward_commissions')
+        .select('id,referral_code,basis_amount,commission_rate,commission_amount,status,created_at,orders(order_number)')
+        .eq('steward_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      client
+        .from('steward_payouts')
+        .select('id,period_start,period_end,total_amount,gross_commission,adjustments,status,scheduled_for,paid_at')
+        .eq('steward_id', userId)
+        .order('period_end', { ascending: false })
+        .limit(12),
+      client
+        .from('steward_milestone_awards')
+        .select('id,reward_status,reference_period_start,reference_period_end,earned_at,issued_at,steward_milestone_definitions(name,reward_type,reward_value)')
+        .eq('steward_id', userId)
+        .order('earned_at', { ascending: false })
+        .limit(12),
+    ]);
+
+    if (stewardResult.error) throw new Error(stewardResult.error.message);
+    if (codesResult.error) throw new Error(codesResult.error.message);
+    if (commissionsResult.error) throw new Error(commissionsResult.error.message);
+    if (payoutsResult.error) throw new Error(payoutsResult.error.message);
+    if (awardsResult.error) throw new Error(awardsResult.error.message);
+
+    return {
+      steward: stewardResult.data
+        ? {
+            user_id: stewardResult.data.user_id,
+            display_name: stewardResult.data.display_name || '',
+            status: stewardResult.data.status,
+            commission_tier: stewardResult.data.commission_tier,
+            commission_rate: Number(stewardResult.data.commission_rate || 0),
+            course_status: stewardResult.data.course_status,
+            joined_at: stewardResult.data.joined_at,
+            activated_at: stewardResult.data.activated_at,
+          }
+        : null,
+      referralCodes: (codesResult.data || []).map((row) => ({
+        id: row.id,
+        code: row.code,
+        status: row.status,
+        is_primary: !!row.is_primary,
+      })),
+      commissions: (commissionsResult.data || []).map((row: any) => ({
+        id: row.id,
+        referral_code: row.referral_code || '',
+        basis_amount: Number(row.basis_amount || 0),
+        commission_rate: Number(row.commission_rate || 0),
+        commission_amount: Number(row.commission_amount || 0),
+        status: row.status,
+        created_at: row.created_at,
+        order_number: row.orders?.order_number || '',
+      })),
+      payouts: (payoutsResult.data || []).map((row) => ({
+        id: row.id,
+        period_start: row.period_start,
+        period_end: row.period_end,
+        total_amount: Number(row.total_amount || 0),
+        gross_commission: Number(row.gross_commission || 0),
+        adjustments: Number(row.adjustments || 0),
+        status: row.status,
+        scheduled_for: row.scheduled_for,
+        paid_at: row.paid_at,
+      })),
+      milestoneAwards: (awardsResult.data || []).map((row: any) => ({
+        id: row.id,
+        reward_status: row.reward_status,
+        reference_period_start: row.reference_period_start,
+        reference_period_end: row.reference_period_end,
+        earned_at: row.earned_at,
+        issued_at: row.issued_at,
+        milestone: row.steward_milestone_definitions
+          ? {
+              name: row.steward_milestone_definitions.name,
+              reward_type: row.steward_milestone_definitions.reward_type,
+              reward_value: row.steward_milestone_definitions.reward_value || '',
+            }
+          : null,
+      })),
+    };
+  }
+
   async initializePayment(data: {
     email: string;
     first_name: string;
@@ -541,6 +761,7 @@ class ApiService {
     country: string;
     notes?: string;
     items: CheckoutCartItemInput[];
+    referral_code?: string;
   }) {
     return this.request<PaymentInitializationResponse>('/checkout/init', {
       method: 'POST',

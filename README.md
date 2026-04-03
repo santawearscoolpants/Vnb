@@ -62,6 +62,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 - [SUPABASE_MIGRATION.md](SUPABASE_MIGRATION.md)
 - [ROADMAP.md](ROADMAP.md)
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
+- [affiliate.md](affiliate.md)
 - [cloudflare/worker/README.md](cloudflare/worker/README.md)
 - [admin-panel/README.md](admin-panel/README.md)
 

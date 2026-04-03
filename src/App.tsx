@@ -22,9 +22,11 @@ import { PaymentCallbackPage } from './pages/PaymentCallbackPage';
 import { ContactPage } from './pages/ContactPage';
 import { FAQPage } from './pages/FAQPage';
 import { CareServicesPage } from './pages/CareServicesPage';
+import { StewardsPage } from './pages/StewardsPage';
 import { Toaster } from './components/ui/sonner';
 import { usePageMeta, PAGE_META } from './hooks/usePageMeta';
 import { initGA, trackPageView } from './utils/analytics';
+import { captureStewardReferralFromUrl } from './utils/referrals';
 import { useEffect } from 'react';
 
 function AppContent() {
@@ -32,6 +34,7 @@ function AppContent() {
   usePageMeta(PAGE_META[currentPage] || PAGE_META.home);
 
   useEffect(() => { initGA(); }, []);
+  useEffect(() => { captureStewardReferralFromUrl(); }, []);
   useEffect(() => { trackPageView(currentPage); }, [currentPage]);
 
   const renderPage = () => {
@@ -68,6 +71,8 @@ function AppContent() {
         return <FAQPage />;
       case 'care-services':
         return <CareServicesPage />;
+      case 'stewards':
+        return <StewardsPage />;
       default:
         return <HomePage />;
     }

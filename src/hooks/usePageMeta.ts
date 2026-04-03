@@ -102,4 +102,8 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: 'Care Services',
     description: 'How to care for your Vines & Branches pieces — storage, cleaning, leather care, and repairs.',
   },
+  stewards: {
+    title: 'VNB Stewards',
+    description: 'Join the VNB Steward community program, earn commission on verified referred orders, and unlock milestone rewards.',
+  },
 };

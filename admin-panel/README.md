@@ -18,6 +18,7 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 
 1. Open Supabase project
 2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`, then `supabase/03_checkout.sql`
+3. Run `supabase/04_affiliates.sql` if you want the VNB Steward module enabled
 
 ## 2) Create admin user
 
@@ -84,6 +85,20 @@ If you want historical data from your previous backend/export:
    - newsletters, contact_messages, investment_inquiries
    - orders, order_items, payment_attempts
 3. Keep IDs where possible to preserve relationships
+
+## VNB Steward module
+
+The affiliate/community promotion program now has schema support for:
+
+- steward waitlist entries
+- steward profiles
+- referral codes
+- commission ledger records
+- payout batches
+- milestone definitions and awards
+- reward ledger records
+
+The admin panel does not yet expose steward management UI. For now, those records are managed in Supabase until dedicated admin screens are built.
 
 ## Testing the admin panel locally
 

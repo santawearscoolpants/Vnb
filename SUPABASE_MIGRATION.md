@@ -6,6 +6,7 @@ This repo now includes:
 - `supabase/01_core.sql` -> core tables/functions/triggers (run first)
 - `supabase/02_rls.sql` -> RLS + policies, rerun-safe with `drop policy if exists`
 - `supabase/03_checkout.sql` -> payment finalization RPC for Worker-driven checkout
+- `supabase/04_affiliates.sql` -> VNB Steward waitlist, referral, commission, payout, and milestone module
 - `admin-panel/` -> deployable admin website for `admin.vnbway.com`
 
 ## Immediate goal achieved
@@ -19,10 +20,11 @@ Use the admin site + Supabase dashboard for auth/user management.
 2. Run `supabase/01_core.sql`
 3. Run `supabase/02_rls.sql`
 4. Run `supabase/03_checkout.sql`
-5. Create an auth admin user
-6. Insert that user into `public.admin_users`
-7. Configure and deploy `admin-panel/` to `admin.vnbway.com`
-8. Import your legacy catalog/order/customer data into Supabase tables
+5. Run `supabase/04_affiliates.sql`
+6. Create an auth admin user
+7. Insert that user into `public.admin_users`
+8. Configure and deploy `admin-panel/` to `admin.vnbway.com`
+9. Import your legacy catalog/order/customer data into Supabase tables
 
 ## Data import order
 
@@ -42,6 +44,7 @@ Your customer frontend now uses:
 
 - direct Supabase queries for catalog/auth/profile/forms/orders
 - a Cloudflare Worker for checkout/payment/media secure actions
+- steward referral capture via URL + checkout attribution
 
 Recommended order:
 

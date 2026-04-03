@@ -20,6 +20,14 @@ type CheckoutItem = {
   color?: string;
 };
 
+type ResolvedStewardReferral = {
+  steward_id: string;
+  code: string;
+  display_name: string;
+  commission_tier: string;
+  commission_rate: string | number;
+};
+
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 const TAX_RATE = 0.08;
 
@@ -89,6 +97,10 @@ function slugifyFilename(name: string) {
     .replace(/[^a-z0-9.\-_]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+function normalizeReferralCode(code: string) {
+  return code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
 }
 
 async function supabaseRequest<T>(env: Env, path: string, init: RequestInit = {}) {
@@ -238,6 +250,18 @@ async function isAdmin(env: Env, userId: string) {
   return rows.length > 0;
 }
 
+async function resolveStewardReferralCode(env: Env, code: string) {
+  const normalized = normalizeReferralCode(code);
+  if (!normalized) return null;
+
+  const rows = await supabaseRequest<ResolvedStewardReferral[]>(env, '/rest/v1/rpc/resolve_active_steward_referral_code', {
+    method: 'POST',
+    body: JSON.stringify({ p_code: normalized }),
+  });
+
+  return rows[0] || null;
+}
+
 async function verifyWebhookSignature(rawBody: string, signature: string, secret: string) {
   const key = await crypto.subtle.importKey(
     'raw',
@@ -309,6 +333,7 @@ async function handleCheckoutInit(request: Request, env: Env) {
   const total = Number((subtotal + tax + shipping).toFixed(2));
   const reference = `VNBPAY-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
   const user = await getAuthUser(request, env);
+  const resolvedReferral = await resolveStewardReferralCode(env, String(body.referral_code || ''));
 
   await supabaseRequest(env, '/rest/v1/payment_attempts', {
     method: 'POST',
@@ -331,6 +356,15 @@ async function handleCheckoutInit(request: Request, env: Env) {
       total: total.toFixed(2),
       currency: paystackCurrency(env),
       status: 'initialized',
+      steward_id: resolvedReferral?.steward_id || null,
+      referral_code: resolvedReferral?.code || '',
+      referral_snapshot: resolvedReferral ? {
+        steward_id: resolvedReferral.steward_id,
+        code: resolvedReferral.code,
+        display_name: resolvedReferral.display_name,
+        commission_tier: resolvedReferral.commission_tier,
+        commission_rate: String(resolvedReferral.commission_rate),
+      } : {},
       cart_snapshot: snapshot,
       cart_item_ids: [],
     }),
@@ -347,6 +381,8 @@ async function handleCheckoutInit(request: Request, env: Env) {
         source: 'vnbway-worker-checkout',
         cancel_action: `${env.FRONTEND_ORIGIN}?payment_callback=1&status=cancelled`,
         user_id: user?.id || null,
+        referral_code: resolvedReferral?.code || '',
+        steward_id: resolvedReferral?.steward_id || null,
       },
       channels: paystackChannels(env),
     });

@@ -6,6 +6,7 @@ This Worker handles:
 - Paystack verification
 - Paystack webhooks
 - admin-only media uploads to R2
+- VNB Steward referral code validation during checkout
 
 ## Routes
 
@@ -42,4 +43,5 @@ npm run dev
 
 - Product images should be stored in R2, not in the database.
 - The Worker writes orders and payment attempts with the Supabase service role key.
+- Steward referral attribution is validated here and persisted to payment attempts before payment completes.
 - Customer-facing reads still go directly to Supabase from the frontend.

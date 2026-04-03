@@ -11,6 +11,7 @@
 - [x] Payment callback verifies Paystack and creates orders through Supabase.
 - [x] Admin panel is liveable for product, order, message, and media management.
 - [x] Worker and R2 architecture exists for `api.vnbway.com` and `media.vnbway.com`.
+- [x] Steward referral attribution, commission schema, payout schema, and milestone schema are scaffolded.
 
 ## Must Finish Before A Serious Public Launch
 
@@ -23,11 +24,14 @@
 - [ ] Run full checkout QA for success, cancellation, duplicate callback, and failed verification flows.
 - [ ] Decide whether the investment page is public-ready. If not, hide it until the numbers are real.
 - [ ] Remove or implement wishlist UI so it is not fake interaction.
+- [ ] Build the public VNB Steward waitlist/join flow.
+- [ ] Build steward/admin operations for steward approval, code management, commission review, and bi-weekly payout handling.
 
 ## Should Finish Soon After Launch
 
 - [ ] Add automated smoke tests for auth, checkout, payment callback, and admin login.
 - [ ] Add admin workflow support for fulfillment communication, not just order status edits.
+- [ ] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
 - [ ] Improve SEO beyond client-side meta updates.
 - [ ] Add a real order tracking/status communication flow.
 - [ ] Reduce bundle size and split large frontend chunks.
