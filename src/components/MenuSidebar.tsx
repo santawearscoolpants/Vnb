@@ -105,6 +105,16 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: menuItems.length * 0.05, duration: 0.3 }}
+                    onClick={() => { navigateTo('stewards'); onClose(); }}
+                    className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
+                  >
+                    <span className="text-sm">VNB Stewards</span>
+                    <ChevronRight className="h-4 w-4 text-zinc-400 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+                  </motion.button>
+                  <motion.button
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (menuItems.length + 1) * 0.05, duration: 0.3 }}
                     onClick={() => { navigateTo('contact'); onClose(); }}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >
@@ -114,7 +124,7 @@ export function MenuSidebar({ isOpen, onClose, onOpenContact }: MenuSidebarProps
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (menuItems.length + 1) * 0.05, duration: 0.3 }}
+                    transition={{ delay: (menuItems.length + 2) * 0.05, duration: 0.3 }}
                     onClick={() => { navigateTo('invest'); onClose(); }}
                     className="group flex w-full items-center justify-between py-3 text-left text-zinc-800 transition-colors hover:text-black"
                   >

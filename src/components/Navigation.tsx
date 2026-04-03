@@ -179,6 +179,7 @@ export function Navigation() {
             <div className="flex items-center justify-end gap-4 md:gap-6">
               <div className="hidden items-center gap-6 lg:flex">
                 <NavLink onClick={() => navigateTo('contact')}>{t('nav.contactUs')}</NavLink>
+                <NavLink onClick={() => navigateTo('stewards')}>Stewards</NavLink>
                 <NavLink onClick={() => navigateTo('invest')}>{t('nav.invest')}</NavLink>
               </div>
               {/* User menu */}

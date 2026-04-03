@@ -46,6 +46,9 @@
           <button class="tab" data-tab="products">Products</button>
           <button class="tab" data-tab="orders">Orders</button>
           <button class="tab" data-tab="payments">Payments</button>
+          <button class="tab" data-tab="stewardWaitlist">Steward Waitlist</button>
+          <button class="tab" data-tab="stewards">Stewards</button>
+          <button class="tab" data-tab="stewardFinance">Steward Finance</button>
           <button class="tab" data-tab="contact">Contact</button>
           <button class="tab" data-tab="invest">Invest</button>
           <button class="tab" data-tab="newsletter">Newsletter</button>
@@ -206,6 +209,69 @@
           <div class="card">
             <h3>Payment attempts</h3>
             <div id="paymentsTable"></div>
+          </div>
+        </section>
+
+        <section id="stewardWaitlist" class="panel">
+          <div class="card">
+            <h3>Steward waitlist</h3>
+            <p class="muted">Review interest, update status, and use the steward activation form once a candidate is approved.</p>
+            <div id="stewardWaitlistTable"></div>
+          </div>
+        </section>
+
+        <section id="stewards" class="panel">
+          <div class="card">
+            <h3>Activate or update steward</h3>
+            <form id="activateStewardForm" class="grid three">
+              <label>Auth user ID <input name="user_id" required placeholder="Supabase auth user UUID" /></label>
+              <label>Display name <input name="display_name" placeholder="Public steward display name" /></label>
+              <label>
+                Status
+                <select name="status">
+                  <option value="active">active</option>
+                  <option value="invited">invited</option>
+                  <option value="paused">paused</option>
+                  <option value="suspended">suspended</option>
+                  <option value="removed">removed</option>
+                </select>
+              </label>
+              <label>
+                Commission tier
+                <select name="commission_tier">
+                  <option value="standard">standard</option>
+                  <option value="support">support</option>
+                </select>
+              </label>
+              <label>Commission rate <input name="commission_rate" type="number" min="0" max="1" step="0.0001" value="0.1000" required /></label>
+              <label>
+                Course status
+                <select name="course_status">
+                  <option value="not_started">not_started</option>
+                  <option value="in_progress">in_progress</option>
+                  <option value="completed">completed</option>
+                  <option value="waived">waived</option>
+                </select>
+              </label>
+              <label>Primary referral code <input name="primary_code" placeholder="e.g. AMA10" /></label>
+              <label>Notes <input name="notes" placeholder="Optional internal notes" /></label>
+              <button type="submit" class="primary">Save steward</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>Stewards</h3>
+            <div id="stewardsTable"></div>
+          </div>
+        </section>
+
+        <section id="stewardFinance" class="panel">
+          <div class="card">
+            <h3>Steward commissions</h3>
+            <div id="stewardCommissionsTable"></div>
+          </div>
+          <div class="card">
+            <h3>Steward payouts</h3>
+            <div id="stewardPayoutsTable"></div>
           </div>
         </section>
 

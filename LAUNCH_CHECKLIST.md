@@ -24,14 +24,15 @@
 - [ ] Run full checkout QA for success, cancellation, duplicate callback, and failed verification flows.
 - [ ] Decide whether the investment page is public-ready. If not, hide it until the numbers are real.
 - [ ] Remove or implement wishlist UI so it is not fake interaction.
-- [ ] Build the public VNB Steward waitlist/join flow.
-- [ ] Build steward/admin operations for steward approval, code management, commission review, and bi-weekly payout handling.
+- [x] Build the public VNB Steward waitlist/join flow.
+- [x] Build first-pass steward/admin operations for steward activation, code management, commission review, and steward reporting.
+- [ ] Add a stricter approval workflow, fraud/returns hold logic, and payout batching for bi-weekly steward payouts.
 
 ## Should Finish Soon After Launch
 
 - [ ] Add automated smoke tests for auth, checkout, payment callback, and admin login.
 - [ ] Add admin workflow support for fulfillment communication, not just order status edits.
-- [ ] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
+- [x] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
 - [ ] Improve SEO beyond client-side meta updates.
 - [ ] Add a real order tracking/status communication flow.
 - [ ] Reduce bundle size and split large frontend chunks.

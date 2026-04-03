@@ -45,7 +45,7 @@ These areas exist, but they are not complete enough to describe as fully finishe
 - [ ] Shipping and tax are simplistic. The Worker currently uses `shipping = 0` and a fixed `tax = 8%`.
 - [ ] The dashboard payments tab is mostly placeholder UI. It does not manage real saved payment methods.
 - [ ] The investor page and generated investor deck use hardcoded metrics and narrative claims, not live business data.
-- [ ] The Steward program is structurally integrated, but there is no public waitlist page, steward dashboard, payout operations UI, or admin stewardship UI yet.
+- [ ] The Steward program now has a public waitlist page, a steward dashboard tab, and basic admin stewardship tools, but approval workflow depth, payout batching, and fraud/returns handling are still incomplete.
 - [ ] Footer links are not complete. Several links still show “available soon” toasts instead of real pages.
 - [ ] Wishlist hearts are local UI state only. There is no real wishlist model or persistence.
 - [ ] The storefront says confirmation and shipping emails will happen, but there is no current transactional email pipeline in the Worker or frontend repo.
@@ -65,7 +65,7 @@ If the goal is a credible public launch, this is the order I would use.
 - [ ] Add transactional emails for order confirmation and fulfillment updates.
 - [ ] Test the three core payment states end to end: success, cancelled, and failed verification.
 - [ ] Decide whether the dashboard “Payments” tab should become real saved methods functionality or be removed from the account area for now.
-- [ ] Add steward payout operations, commission review workflow, and milestone issuance workflow on top of the new ledger tables.
+- [ ] Tighten steward payout operations, commission review workflow, steward activation workflow, and milestone issuance workflow on top of the new ledger tables.
 
 ### 3. Brand Honesty
 - [ ] Replace investor metrics and deck claims with real numbers, or hide the investment page until the business data is defensible.
@@ -86,5 +86,5 @@ A complete VNB website should not just look polished. It should satisfy these co
 - [ ] Every customer-facing number on the investment page and deck is real, current, and defensible.
 - [ ] Every critical flow has at least smoke-test coverage and a manual QA script.
 - [ ] The admin team can manage products, orders, and media without touching the database directly.
-- [ ] The steward team can review waitlist entries, activate stewards, rotate codes, review commissions, and manage payouts without raw SQL.
+- [ ] The steward team can review waitlist entries, activate stewards, rotate codes, review commissions, and manage payouts without raw SQL or manual data cleanup.
 - [ ] The storefront copy, account dashboard, and footer do not claim features that are not actually implemented.

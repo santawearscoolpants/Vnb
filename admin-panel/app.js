@@ -17,6 +17,11 @@ const ui = {
   productsTable: $('productsTable'),
   ordersTable: $('ordersTable'),
   paymentsTable: $('paymentsTable'),
+  stewardWaitlistTable: $('stewardWaitlistTable'),
+  activateStewardForm: $('activateStewardForm'),
+  stewardsTable: $('stewardsTable'),
+  stewardCommissionsTable: $('stewardCommissionsTable'),
+  stewardPayoutsTable: $('stewardPayoutsTable'),
   contactTable: $('contactTable'),
   investTable: $('investTable'),
   newsletterTable: $('newsletterTable'),
@@ -115,6 +120,10 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function formatCurrency(value, currency = 'GHS') {
+  return `${escapeHtml(currency)} ${Number(value || 0).toFixed(2)}`;
 }
 
 function showError(message) {
@@ -255,6 +264,9 @@ async function loadStats() {
     ['categories', 'Categories'],
     ['orders', 'Orders'],
     ['payment_attempts', 'Payments'],
+    ['steward_waitlist', 'Steward Leads'],
+    ['vnb_stewards', 'Stewards'],
+    ['steward_commissions', 'Commissions'],
     ['contact_messages', 'Contact'],
     ['investment_inquiries', 'Invest'],
     ['newsletters', 'Newsletter'],
@@ -438,6 +450,167 @@ async function loadPayments() {
   `;
 }
 
+async function loadStewardWaitlist() {
+  if (!ui.stewardWaitlistTable) return;
+  const { data, error } = await supabase
+    .from('steward_waitlist')
+    .select('id,full_name,email,phone,location,background,message,status,created_at')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardWaitlistTable.innerHTML = `
+    <table>
+      <thead><tr><th>Name</th><th>Contact</th><th>Location</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>${escapeHtml(row.full_name)}</td>
+            <td>${escapeHtml(row.email)}<div class="muted">${escapeHtml(row.phone || '-')}</div></td>
+            <td>${escapeHtml(row.location || '-')}</td>
+            <td>
+              <select data-waitlist-status-id="${row.id}">
+                ${['joined', 'reviewed', 'invited', 'archived'].map((status) => (
+                  `<option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td>${new Date(row.created_at).toLocaleString()}</td>
+            <td class="actions">
+              <button data-action="view-waitlist" data-id="${row.id}">View</button>
+              <button data-action="save-waitlist" data-id="${row.id}" class="primary">Save</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadStewards() {
+  if (!ui.stewardsTable) return;
+  const { data, error } = await supabase
+    .from('vnb_stewards')
+    .select('user_id,display_name,status,commission_tier,commission_rate,course_status,notes,joined_at,activated_at')
+    .order('joined_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Steward</th><th>Status</th><th>Tier</th><th>Rate</th><th>Course</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>
+              ${escapeHtml(row.display_name || 'Unnamed steward')}
+              <div class="muted">${escapeHtml(row.user_id)}</div>
+            </td>
+            <td>
+              <select data-steward-status-id="${row.user_id}">
+                ${['waitlisted', 'invited', 'active', 'paused', 'suspended', 'removed'].map((status) => (
+                  `<option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td>
+              <select data-steward-tier-id="${row.user_id}">
+                ${['standard', 'support'].map((tier) => (
+                  `<option value="${tier}" ${row.commission_tier === tier ? 'selected' : ''}>${tier}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td><input type="number" min="0" max="1" step="0.0001" value="${Number(row.commission_rate || 0).toFixed(4)}" data-steward-rate-id="${row.user_id}" /></td>
+            <td>
+              <select data-steward-course-id="${row.user_id}">
+                ${['not_started', 'in_progress', 'completed', 'waived'].map((status) => (
+                  `<option value="${status}" ${row.course_status === status ? 'selected' : ''}>${status}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td class="actions">
+              <button data-action="view-steward" data-id="${row.user_id}">View</button>
+              <button data-action="save-steward" data-id="${row.user_id}" class="primary">Save</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadStewardCommissions() {
+  if (!ui.stewardCommissionsTable) return;
+  const { data, error } = await supabase
+    .from('steward_commissions')
+    .select('id,steward_id,referral_code,commission_amount,commission_rate,status,created_at,order_id,orders(order_number),vnb_stewards(display_name)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardCommissionsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Steward</th><th>Order</th><th>Code</th><th>Commission</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>${escapeHtml(row.vnb_stewards?.display_name || row.steward_id)}</td>
+            <td>${escapeHtml(row.orders?.order_number || String(row.order_id || '-'))}<div class="muted">${new Date(row.created_at).toLocaleString()}</div></td>
+            <td>${escapeHtml(row.referral_code || '-')}</td>
+            <td>${formatCurrency(row.commission_amount)}<div class="muted">${Math.round(Number(row.commission_rate || 0) * 100)}%</div></td>
+            <td>
+              <select data-commission-status-id="${row.id}">
+                ${['pending', 'approved', 'paid', 'reversed', 'void'].map((status) => (
+                  `<option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td class="actions">
+              <button data-action="save-commission" data-id="${row.id}" class="primary">Save</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadStewardPayouts() {
+  if (!ui.stewardPayoutsTable) return;
+  const { data, error } = await supabase
+    .from('steward_payouts')
+    .select('id,steward_id,period_start,period_end,total_amount,status,scheduled_for,paid_at,vnb_stewards(display_name)')
+    .order('period_end', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardPayoutsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Steward</th><th>Period</th><th>Total</th><th>Status</th><th>Scheduled</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>${escapeHtml(row.vnb_stewards?.display_name || row.steward_id)}</td>
+            <td>${escapeHtml(row.period_start)} to ${escapeHtml(row.period_end)}</td>
+            <td>${formatCurrency(row.total_amount)}</td>
+            <td>
+              <select data-payout-status-id="${row.id}">
+                ${['pending', 'processing', 'paid', 'failed', 'cancelled'].map((status) => (
+                  `<option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>`
+                )).join('')}
+              </select>
+            </td>
+            <td>${row.scheduled_for ? escapeHtml(row.scheduled_for) : '-'}</td>
+            <td class="actions">
+              <button data-action="save-payout" data-id="${row.id}" class="primary">Save</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 async function loadContact() {
   const { data, error } = await supabase
     .from('contact_messages')
@@ -542,6 +715,10 @@ async function refreshAll() {
     loadProducts(),
     loadOrders(),
     loadPayments(),
+    loadStewardWaitlist(),
+    loadStewards(),
+    loadStewardCommissions(),
+    loadStewardPayouts(),
     loadContact(),
     loadInvest(),
     loadNewsletter(),
@@ -556,7 +733,8 @@ async function handleTableActions(event) {
   const button = event.target.closest('button[data-action]');
   if (!button) return;
   const action = button.dataset.action;
-  const id = Number(button.dataset.id);
+  const rawId = String(button.dataset.id || '');
+  const id = Number(rawId);
 
   try {
     switch (action) {
@@ -592,6 +770,40 @@ async function handleTableActions(event) {
       case 'toggle-newsletter-active':
         await supabase.from('newsletters').update({ is_active: !parseBool(button.dataset.active) }).eq('id', id);
         break;
+      case 'save-waitlist': {
+        const status = document.querySelector(`[data-waitlist-status-id="${rawId}"]`)?.value;
+        await supabase.from('steward_waitlist').update({ status }).eq('id', id);
+        break;
+      }
+      case 'save-steward': {
+        const status = document.querySelector(`[data-steward-status-id="${rawId}"]`)?.value;
+        const commission_tier = document.querySelector(`[data-steward-tier-id="${rawId}"]`)?.value;
+        const commission_rate = Number(document.querySelector(`[data-steward-rate-id="${rawId}"]`)?.value || 0);
+        const course_status = document.querySelector(`[data-steward-course-id="${rawId}"]`)?.value;
+        const payload = { status, commission_tier, commission_rate, course_status };
+        if (status === 'active') payload.activated_at = new Date().toISOString();
+        await supabase.from('vnb_stewards').update(payload).eq('user_id', rawId);
+        break;
+      }
+      case 'save-commission': {
+        const status = document.querySelector(`[data-commission-status-id="${rawId}"]`)?.value;
+        const payload = {
+          status,
+          approved_at: status === 'approved' ? new Date().toISOString() : null,
+          paid_at: status === 'paid' ? new Date().toISOString() : null,
+        };
+        await supabase.from('steward_commissions').update(payload).eq('id', id);
+        break;
+      }
+      case 'save-payout': {
+        const status = document.querySelector(`[data-payout-status-id="${rawId}"]`)?.value;
+        const payload = {
+          status,
+          paid_at: status === 'paid' ? new Date().toISOString() : null,
+        };
+        await supabase.from('steward_payouts').update(payload).eq('id', id);
+        break;
+      }
       case 'view-contact': {
         const { data: row } = await supabase.from('contact_messages').select('*').eq('id', id).single();
         if (row)
@@ -620,6 +832,33 @@ async function handleTableActions(event) {
           `Order ${escapeHtml(order.order_number)}`,
           `<p><strong>Customer:</strong> ${escapeHtml(order.first_name)} ${escapeHtml(order.last_name)} &lt;${escapeHtml(order.email)}&gt;</p><p><strong>Phone:</strong> ${escapeHtml(order.phone)}</p><p><strong>Address:</strong> ${escapeHtml(addr)}</p><p><strong>Items:</strong></p><pre>${rows || '-'}</pre><p><strong>Total:</strong> ${escapeHtml(order.payment_currency || 'GHS')} ${Number(order.total).toFixed(2)}</p>`
         );
+        break;
+      }
+      case 'view-waitlist': {
+        const { data: row } = await supabase.from('steward_waitlist').select('*').eq('id', id).single();
+        if (row) {
+          showDetailModal(
+            'Steward waitlist entry',
+            `<p><strong>Name:</strong> ${escapeHtml(row.full_name)}</p><p><strong>Email:</strong> ${escapeHtml(row.email)}</p><p><strong>Phone:</strong> ${escapeHtml(row.phone || '-')}</p><p><strong>Location:</strong> ${escapeHtml(row.location || '-')}</p><p><strong>Status:</strong> ${escapeHtml(row.status)}</p><p><strong>Background:</strong></p><p>${escapeHtml(row.background || '-')}</p><p><strong>Message:</strong></p><p>${escapeHtml(row.message || '-')}</p>`
+          );
+        }
+        break;
+      }
+      case 'view-steward': {
+        const { data: steward } = await supabase
+          .from('vnb_stewards')
+          .select('*, steward_referral_codes(*), steward_commissions(id,commission_amount,status), steward_payouts(id,total_amount,status)')
+          .eq('user_id', rawId)
+          .single();
+        if (steward) {
+          const codes = (steward.steward_referral_codes || []).map((row) => row.code).join(', ') || '-';
+          const commissions = (steward.steward_commissions || []).length;
+          const payouts = (steward.steward_payouts || []).length;
+          showDetailModal(
+            'Steward profile',
+            `<p><strong>Name:</strong> ${escapeHtml(steward.display_name || 'Unnamed steward')}</p><p><strong>User ID:</strong> ${escapeHtml(steward.user_id)}</p><p><strong>Status:</strong> ${escapeHtml(steward.status)}</p><p><strong>Tier:</strong> ${escapeHtml(steward.commission_tier)}</p><p><strong>Rate:</strong> ${Math.round(Number(steward.commission_rate || 0) * 100)}%</p><p><strong>Course:</strong> ${escapeHtml(steward.course_status)}</p><p><strong>Codes:</strong> ${escapeHtml(codes)}</p><p><strong>Commission rows:</strong> ${commissions}</p><p><strong>Payout rows:</strong> ${payouts}</p><p><strong>Notes:</strong></p><p>${escapeHtml(steward.notes || '-')}</p>`
+          );
+        }
         break;
       }
       case 'edit-category': {
@@ -671,7 +910,7 @@ async function handleTableActions(event) {
       default:
         break;
     }
-    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
+    const skipRefresh = ['view-contact', 'view-invest', 'view-order', 'view-waitlist', 'view-steward', 'edit-category', 'edit-product', 'delete-product-image', 'delete-product-color', 'delete-product-size', 'delete-product-detail'].includes(action);
     if (!skipRefresh) await refreshAll();
   } catch (error) {
     showError(error.message || 'Action failed.');
@@ -701,6 +940,45 @@ function wireForms() {
   bindUploadInput('createProductImageFile', 'createProductImageUrl', 'products');
   bindUploadInput('editProductImageFile', 'editProductImageUrl', 'products');
   bindUploadInput('newImageFile', 'newImageUrl', 'products/gallery');
+
+  ui.activateStewardForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(ui.activateStewardForm);
+    const userId = String(data.get('user_id') || '').trim();
+    if (!userId) return showError('Enter a Supabase auth user ID.');
+
+    const status = String(data.get('status') || 'active');
+    const payload = {
+      user_id: userId,
+      display_name: String(data.get('display_name') || '').trim(),
+      status,
+      commission_tier: String(data.get('commission_tier') || 'standard'),
+      commission_rate: Number(data.get('commission_rate') || 0.1),
+      course_status: String(data.get('course_status') || 'not_started'),
+      notes: String(data.get('notes') || '').trim(),
+      activated_at: status === 'active' ? new Date().toISOString() : null,
+    };
+
+    const { error } = await supabase.from('vnb_stewards').upsert(payload, { onConflict: 'user_id' });
+    if (error) return showError(error.message);
+
+    const primaryCode = String(data.get('primary_code') || '').trim();
+    if (primaryCode) {
+      await supabase.from('steward_referral_codes').update({ is_primary: false }).eq('steward_id', userId);
+      const { error: codeError } = await supabase.from('steward_referral_codes').upsert({
+        steward_id: userId,
+        code: primaryCode,
+        status: 'active',
+        is_primary: true,
+      }, { onConflict: 'code' });
+      if (codeError) return showError(codeError.message);
+    }
+
+    ui.activateStewardForm.reset();
+    ui.activateStewardForm.querySelector('[name="commission_rate"]').value = '0.1000';
+    window.alert('Steward saved.');
+    await refreshAll();
+  });
 
   ui.createCategoryForm.addEventListener('submit', async (event) => {
     event.preventDefault();

@@ -26,6 +26,7 @@ export function FooterNew() {
   ];
 
   const aboutLinks = [
+    { label: 'VNB Stewards', page: 'stewards' },
     { label: t('footer.fashionShows') },
     { label: t('footer.artsCulture') },
     { label: t('footer.laMaison') },
@@ -35,7 +36,7 @@ export function FooterNew() {
     { label: t('footer.foundation') },
   ];
 
-  const legalLinks = [
+  const legalLinks: { label: string; page?: string }[] = [
     { label: 'Sitemap' },
     { label: 'Legal Notices' },
     { label: 'Privacy Policy' },
@@ -123,7 +124,7 @@ export function FooterNew() {
                 <li key={link.label}>
                   <button
                     type="button"
-                    onClick={() => toast.info('This page will be available soon.')}
+                    onClick={() => 'page' in link && link.page ? navigateTo(link.page) : toast.info('This page will be available soon.')}
                     className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}

@@ -186,6 +186,20 @@ table {
   font-size: 0.86rem;
 }
 
+#categoriesTable,
+#productsTable,
+#ordersTable,
+#paymentsTable,
+#contactTable,
+#investTable,
+#newsletterTable,
+#stewardWaitlistTable,
+#stewardsTable,
+#stewardCommissionsTable,
+#stewardPayoutsTable {
+  overflow-x: auto;
+}
+
 th,
 td {
   border-bottom: 1px solid var(--border);
