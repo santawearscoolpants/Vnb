@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Award, BadgePercent, BookOpen, Gift, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, Award, BadgePercent, BookOpen, Check, Gift, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import api, { type StewardMilestone } from '../services/api';
@@ -11,26 +11,54 @@ const highlights = [
   {
     icon: Users,
     title: 'Community-led growth',
-    description: 'Stewards introduce VNB to people who value African luxury, craftsmanship, and intentional style.',
+    description:
+      'Stewards introduce VNB to people who value African luxury, craftsmanship, and intentional style.',
   },
   {
     icon: BadgePercent,
     title: 'Real commission ledger',
-    description: 'Qualified referred purchases create tracked commission records instead of informal promises.',
+    description:
+      'Qualified referred purchases create tracked commission records instead of informal promises.',
   },
   {
     icon: Award,
     title: 'Milestones and recognition',
-    description: 'Top-performing stewards can unlock rewards, recognition, and ambassador review opportunities.',
+    description:
+      'Top-performing stewards can unlock rewards, recognition, and ambassador review opportunities.',
   },
-];
+] as const;
 
 const commitments = [
   'Default commission range: 10% to 15% of product subtotal on paid, verified orders.',
   'Bi-weekly payout review with a short fraud/returns hold before payment release.',
   'Referral links can be rotated or paused without losing historical performance.',
   'Course completion is part of activation so stewards represent the brand consistently.',
-];
+] as const;
+
+const steps = [
+  {
+    icon: BookOpen,
+    title: 'Join the waitlist',
+    body: 'Tell us your background, audience, and why you fit the brand.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Review and approval',
+    body: 'We review fit, alignment, and readiness before activating a live steward account.',
+  },
+  {
+    icon: Gift,
+    title: 'Receive code and milestones',
+    body: 'Approved stewards get a managed referral code, commission rate, and milestone path.',
+  },
+] as const;
+
+const sectionFade = {
+  initial: { opacity: 0, y: 16 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-40px' },
+  transition: { duration: 0.45 },
+} as const;
 
 export function StewardsPage() {
   const { navigateTo } = useRouter();
@@ -48,7 +76,8 @@ export function StewardsPage() {
   const storedReferral = getStoredStewardReferral();
 
   useEffect(() => {
-    api.getActiveStewardMilestones()
+    api
+      .getActiveStewardMilestones()
       .then(setMilestones)
       .catch(() => setMilestones([]));
   }, []);
@@ -74,222 +103,288 @@ export function StewardsPage() {
         background: '',
         message: '',
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Could not join the VNB Steward waitlist.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Could not join the VNB Steward waitlist.';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 pt-20 text-zinc-900">
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(196,156,91,0.28),_transparent_32%),linear-gradient(135deg,_#0d0d0d,_#171513_55%,_#352618)] py-24 text-white">
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.06)_45%,transparent_100%)]" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 md:px-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div className="min-h-screen bg-zinc-50 pt-20 text-zinc-900">
+      {/* Hero — high contrast, single focal column (matches Contact / FAQ) */}
+      <section className="relative overflow-hidden bg-zinc-950 py-16 text-white md:py-24">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(180, 140, 80, 0.35), transparent)',
+          }}
+        />
+        <div className="relative mx-auto max-w-3xl px-4 text-center md:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
           >
-            <p className="mb-4 text-xs uppercase tracking-[0.35em] text-amber-200/80">VNB Affiliate Community Program</p>
-            <h1 className="max-w-2xl text-4xl font-medium leading-tight md:text-6xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-amber-200/95">
+              VNB Steward program
+            </p>
+            <h1 className="text-balance text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl md:leading-[1.1]">
               Become a VNB Steward and grow the brand with us.
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-white/78 md:text-lg">
-              This is the community layer of Vines & Branches: disciplined advocates, tasteful storytellers, and
-              trusted referrers who bring new customers into the house.
+            <p className="mx-auto max-w-xl text-pretty text-base leading-relaxed text-white/85 md:text-lg md:leading-relaxed">
+              The community layer of Vines &amp; Branches: advocates and trusted referrers who bring new customers into
+              the house—with clear commissions tied to verified orders.
             </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="flex flex-col items-stretch justify-center gap-3 pt-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
               <Button
                 type="button"
                 size="lg"
-                className="rounded-none bg-white px-8 text-black hover:bg-white/90"
+                className="rounded-none bg-white px-8 text-zinc-950 hover:bg-zinc-100"
                 onClick={() => document.getElementById('steward-join-form')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Join The Waitlist
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Join the waitlist
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
               </Button>
               <Button
                 type="button"
                 size="lg"
                 variant="outline"
-                className="rounded-none border-white/30 bg-transparent px-8 text-white hover:bg-white/10"
+                className="rounded-none border-white/40 bg-transparent px-8 text-white hover:bg-white/10 hover:text-white"
                 onClick={() => navigateTo('account-dashboard')}
               >
-                Steward Dashboard
+                Steward dashboard
               </Button>
             </div>
-
-            {storedReferral && (
-              <div className="mt-8 max-w-xl rounded-sm border border-amber-200/30 bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm text-amber-100">
-                  Referral captured: <span className="font-medium text-white">{storedReferral.code}</span>
-                </p>
-                <p className="mt-1 text-sm text-white/70">
-                  If you shop or join from this device, that steward attribution will be carried into checkout.
-                </p>
-              </div>
-            )}
           </motion.div>
+        </div>
 
+        {storedReferral && (
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="rounded-sm border border-white/10 bg-white/8 p-6 backdrop-blur"
+            transition={{ duration: 0.45, delay: 0.15 }}
+            className="relative mx-auto mt-12 max-w-xl px-4 md:px-8"
           >
-            <div className="flex items-center gap-3 text-amber-200">
-              <ShieldCheck className="h-5 w-5" />
-              <p className="text-sm uppercase tracking-[0.3em]">Program commitments</p>
+            <div className="rounded-sm border border-amber-400/35 bg-zinc-900/80 px-5 py-4 text-left shadow-lg backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" aria-hidden />
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Referral on this device:{' '}
+                    <span className="font-semibold text-amber-100">{storedReferral.code}</span>
+                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/75">
+                    If you shop or join from here, steward attribution is carried into checkout.
+                  </p>
+                </div>
+              </div>
             </div>
-            <ul className="mt-6 space-y-4 text-sm leading-6 text-white/80">
-              {commitments.map((item) => (
-                <li key={item} className="border-b border-white/10 pb-4 last:border-0 last:pb-0">
-                  {item}
-                </li>
-              ))}
-            </ul>
           </motion.div>
+        )}
+      </section>
+
+      {/* Program commitments — light card strip (readable; no translucent dark panel) */}
+      <section className="border-b border-zinc-200 bg-white py-14 md:py-16">
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <motion.div {...sectionFade} className="mb-10 text-center md:mb-12">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white">
+              <ShieldCheck className="h-6 w-6" aria-hidden />
+            </div>
+            <h2 className="text-xl font-medium text-zinc-900 md:text-2xl">What you can expect</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600 md:text-base">
+              Straightforward terms so the program stays fair for stewards and for customers.
+            </p>
+          </motion.div>
+          <ul className="mx-auto grid max-w-3xl gap-4">
+            {commitments.map((item) => (
+              <motion.li
+                key={item}
+                {...sectionFade}
+                className="flex gap-4 rounded-sm border border-zinc-200 bg-zinc-50/80 px-5 py-4 md:px-6 md:py-5"
+              >
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white">
+                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+                </span>
+                <span className="text-left text-sm leading-relaxed text-zinc-700 md:text-[15px] md:leading-relaxed">
+                  {item}
+                </span>
+              </motion.li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Why this program exists</p>
-              <h2 className="mt-3 text-3xl font-medium text-black md:text-4xl">Not influencer noise. Real stewardship.</h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-7 text-zinc-600">
-              The program is designed for trusted referral growth. Every commission is tied to a verified payment attempt
-              and a real order, so performance, payouts, and rewards stay defensible.
+      {/* Why + three pillars */}
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <motion.div {...sectionFade} className="mb-12 max-w-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">Why this program exists</p>
+            <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
+              Not influencer noise. Real stewardship.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-zinc-600 md:text-base md:leading-relaxed">
+              Growth through trusted referrals. Every commission is tied to a verified payment and a real order—so
+              performance and payouts stay defensible.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
             {highlights.map((item, index) => (
               <motion.article
                 key={item.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
-                className="rounded-sm border border-zinc-200 bg-white p-7 shadow-sm"
+                viewport={{ once: true, margin: '-24px' }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
+                className="flex flex-col rounded-sm border border-zinc-200 bg-white p-8 shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
-                  <item.icon className="h-5 w-5" />
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-900">
+                  <item.icon className="h-7 w-7" strokeWidth={1.5} aria-hidden />
                 </div>
-                <h3 className="mt-6 text-xl font-medium text-black">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-zinc-600">{item.description}</p>
+                <h3 className="text-lg font-medium text-zinc-900">{item.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">{item.description}</p>
               </motion.article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-20">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 md:px-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Activation model</p>
-            <h2 className="mt-3 text-3xl font-medium text-black md:text-4xl">How VNB Stewards are onboarded</h2>
-            <div className="mt-8 space-y-6">
-              {[
-                { icon: BookOpen, title: '1. Join the waitlist', body: 'Tell us your background, audience, and why you fit the brand.' },
-                { icon: ShieldCheck, title: '2. Review and approval', body: 'We review fit, alignment, and readiness before activating a live steward account.' },
-                { icon: Gift, title: '3. Receive code and milestones', body: 'Approved stewards get a managed referral code, commission rate, and milestone path.' },
-              ].map((step) => (
-                <div key={step.title} className="flex gap-4">
-                  <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white">
-                    <step.icon className="h-4 w-4" />
+      {/* How it works — vertical timeline */}
+      <section className="border-y border-zinc-200 bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <motion.div {...sectionFade} className="mb-12 md:mb-16">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">How it works</p>
+            <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
+              From waitlist to active steward
+            </h2>
+          </motion.div>
+
+          <div className="relative mx-auto max-w-2xl">
+            <div className="absolute left-[21px] top-8 bottom-8 hidden w-px bg-zinc-200 md:block" aria-hidden />
+            <ol className="space-y-12 md:space-y-14">
+              {steps.map((step, index) => (
+                <motion.li
+                  key={step.title}
+                  initial={{ opacity: 0, x: -8 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  className="relative flex gap-6 md:gap-8"
+                >
+                  <div className="relative z-[1] flex shrink-0 flex-col items-center md:block">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-zinc-900 text-white shadow-md ring-4 ring-zinc-100 md:h-12 md:w-12">
+                      <step.icon className="h-5 w-5 md:h-5 md:w-5" strokeWidth={1.5} aria-hidden />
+                    </div>
+                    <span className="mt-2 text-xs font-semibold text-zinc-400 md:absolute md:-left-1 md:mt-0 md:translate-x-0">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-black">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-zinc-600">{step.body}</p>
+                  <div className="min-w-0 flex-1 pb-1 pt-0.5 md:pt-1">
+                    <h3 className="text-lg font-medium text-zinc-900">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-zinc-600 md:text-[15px] md:leading-relaxed">
+                      {step.body}
+                    </p>
                   </div>
-                </div>
+                </motion.li>
               ))}
-            </div>
+            </ol>
           </div>
+        </div>
+      </section>
 
-          <div className="rounded-sm border border-zinc-200 bg-stone-50 p-8 shadow-sm">
-            <div className="mb-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Apply now</p>
-              <h3 className="mt-3 text-2xl font-medium text-black">Join the VNB Steward waitlist</h3>
-              <p className="mt-3 text-sm leading-7 text-zinc-600">
-                This form records interest now. Steward activation still happens after review and approval.
-              </p>
-            </div>
+      {/* Waitlist form — dedicated band, narrow readable column */}
+      <section id="steward-join-form" className="scroll-mt-24 py-16 md:py-24">
+        <div className="mx-auto max-w-xl px-4 md:px-8">
+          <motion.div {...sectionFade} className="mb-10 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">Apply</p>
+            <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
+              Join the VNB Steward waitlist
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-600">
+              We record your interest here. Activation follows review and approval—we will follow up by email.
+            </p>
+          </motion.div>
 
-            <form id="steward-join-form" onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid gap-5 md:grid-cols-2">
-                <label className="block text-sm text-zinc-700">
-                  Full name *
+          <motion.div
+            {...sectionFade}
+            className="rounded-sm border border-zinc-200 bg-white p-6 shadow-sm md:p-10"
+          >
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <label className="block text-left">
+                  <span className="text-sm font-medium text-zinc-800">Full name *</span>
                   <input
                     name="full_name"
                     value={formData.full_name}
                     onChange={handleChange}
                     required
-                    className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                    autoComplete="name"
+                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                   />
                 </label>
-                <label className="block text-sm text-zinc-700">
-                  Email *
+                <label className="block text-left">
+                  <span className="text-sm font-medium text-zinc-800">Email *</span>
                   <input
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                    autoComplete="email"
+                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                   />
                 </label>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2">
-                <label className="block text-sm text-zinc-700">
-                  Phone
+              <div className="grid gap-6 sm:grid-cols-2">
+                <label className="block text-left">
+                  <span className="text-sm font-medium text-zinc-800">Phone</span>
                   <input
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                    autoComplete="tel"
+                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                   />
                 </label>
-                <label className="block text-sm text-zinc-700">
-                  Location
+                <label className="block text-left">
+                  <span className="text-sm font-medium text-zinc-800">Location</span>
                   <input
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
                     placeholder="City, country"
-                    className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                    autoComplete="address-level2"
+                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                   />
                 </label>
               </div>
 
-              <label className="block text-sm text-zinc-700">
-                Background
+              <label className="block text-left">
+                <span className="text-sm font-medium text-zinc-800">Background</span>
                 <textarea
                   name="background"
                   rows={4}
                   value={formData.background}
                   onChange={handleChange}
-                  placeholder="Tell us about your audience, brand fit, content style, or community experience."
-                  className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                  placeholder="Audience, brand fit, content style, or community experience."
+                  className="mt-2 w-full resize-y border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                 />
               </label>
 
-              <label className="block text-sm text-zinc-700">
-                Why do you want to become a steward?
+              <label className="block text-left">
+                <span className="text-sm font-medium text-zinc-800">Why do you want to become a steward?</span>
                 <textarea
                   name="message"
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  placeholder="Share the kind of customers you reach and why VNB aligns with your voice."
-                  className="mt-2 w-full rounded-none border border-zinc-300 bg-white px-4 py-3 outline-none transition focus:border-black"
+                  placeholder="Who you reach and why VNB fits your voice."
+                  className="mt-2 w-full resize-y border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                 />
               </label>
 
@@ -297,44 +392,66 @@ export function StewardsPage() {
                 type="submit"
                 size="lg"
                 disabled={loading}
-                className="w-full rounded-none bg-black text-white hover:bg-zinc-800"
+                className="w-full rounded-none bg-zinc-950 text-white hover:bg-zinc-800"
               >
-                {loading ? 'Submitting...' : 'Join The Waitlist'}
+                {loading ? 'Submitting…' : 'Submit application'}
               </Button>
             </form>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Milestones</p>
-              <h2 className="mt-3 text-3xl font-medium text-black md:text-4xl">Progress is rewarded deliberately.</h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-7 text-zinc-600">
-              Milestones are data-driven so recognition, free products, or ambassador review can be issued from a real ledger.
+      {/* Milestones */}
+      <section className="border-t border-zinc-200 bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <motion.div {...sectionFade} className="mb-10 max-w-2xl md:mb-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">Milestones</p>
+            <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
+              Progress, rewarded deliberately
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-zinc-600 md:text-base">
+              Milestones are tied to real order data so recognition and rewards stay aligned with performance.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            {milestones.length > 0 ? milestones.map((milestone) => (
-              <div key={milestone.id} className="rounded-sm border border-zinc-200 bg-white p-6 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">{milestone.measurement_window}</p>
-                <h3 className="mt-3 text-xl font-medium text-black">{milestone.name}</h3>
-                <p className="mt-3 text-sm leading-7 text-zinc-600">{milestone.description}</p>
-                <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-4 text-sm">
-                  <span className="text-zinc-500">{milestone.required_successful_orders} successful purchases</span>
-                  <span className="font-medium text-black">{milestone.reward_type.replace('_', ' ')}</span>
-                </div>
-              </div>
-            )) : (
-              <div className="rounded-sm border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-600 lg:col-span-3">
-                Milestones will appear here once the affiliate module is live in your Supabase project.
-              </div>
-            )}
-          </div>
+          {milestones.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {milestones.map((milestone, index) => (
+                <motion.article
+                  key={milestone.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: index * 0.05 }}
+                  className="flex flex-col rounded-sm border border-zinc-200 bg-zinc-50/50 p-6 md:p-7"
+                >
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">
+                    {milestone.measurement_window}
+                  </p>
+                  <h3 className="mt-3 text-lg font-medium text-zinc-900">{milestone.name}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">{milestone.description}</p>
+                  <div className="mt-6 flex flex-col gap-2 border-t border-zinc-200 pt-5 text-sm sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-zinc-600">
+                      {milestone.required_successful_orders} successful purchase
+                      {milestone.required_successful_orders === 1 ? '' : 's'}
+                    </span>
+                    <span className="font-medium text-zinc-900">
+                      {milestone.reward_type.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              {...sectionFade}
+              className="rounded-sm border border-dashed border-zinc-300 bg-zinc-50 px-6 py-12 text-center"
+            >
+              <p className="text-sm leading-relaxed text-zinc-600">
+                Milestones will appear here once the steward module is configured in your Supabase project.
+              </p>
+            </motion.div>
+          )}
         </div>
       </section>
     </div>
