@@ -74,9 +74,9 @@ Add a DNS record:
 Result:
 - `https://admin.vnbway.com`
 
-## 6) Migrate existing Django data
+## 6) Import legacy data
 
-If you want historical data from Django:
+If you want historical data from your previous backend/export:
 
 1. Export your current PostgreSQL tables to CSV
 2. Import into matching Supabase tables:

@@ -1,6 +1,6 @@
 # VNB Cloudflare Worker
 
-This Worker replaces the old Django backend for:
+This Worker handles:
 
 - checkout initialization
 - Paystack verification

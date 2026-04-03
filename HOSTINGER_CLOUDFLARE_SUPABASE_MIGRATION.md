@@ -11,7 +11,7 @@ Target architecture:
 ## What changed in this repo
 
 - Frontend catalog/auth/profile/forms now read and write through Supabase.
-- Storefront cart is now local browser storage, not Django session storage.
+- Storefront cart is now local browser storage, not server session storage.
 - Checkout and payment verification are designed to go through the Cloudflare Worker.
 - R2 is the target media host via `VITE_MEDIA_URL`.
 - Supabase checkout finalization is handled by `supabase/03_checkout.sql`.
@@ -73,10 +73,7 @@ Bind:
 
 ## Admin panel
 
-The current admin panel already writes product records to Supabase.
-Use `image_url` fields with R2 URLs hosted on `https://media.vnbway.com/...`.
-
-If you want admin-side uploads, wire the panel to:
+The current admin panel writes product/category records to Supabase and uploads media through:
 
 - `POST https://api.vnbway.com/media/upload`
 
@@ -98,12 +95,3 @@ with an authenticated admin session bearer token.
    - checkout init
    - Paystack callback
    - order history
-
-## What can be deleted later
-
-After production is fully running on Supabase + Worker:
-
-- `backend/`
-- old Django setup docs
-- backend environment files
-- Django deployment assumptions

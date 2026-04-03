@@ -70,10 +70,6 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 - The Worker is the only place that should hold Paystack and service-role secrets.
 - Images should live in R2, with only URLs stored in the database.
 
-## Legacy Backend
-
-The old Django backend remains in the repository as legacy material until full production cutover and cleanup are complete. The current target architecture no longer depends on it.
-
 ## Building
 
 ```bash

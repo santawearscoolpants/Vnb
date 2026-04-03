@@ -10,7 +10,7 @@ This repo now includes:
 
 ## Immediate goal achieved
 
-You no longer need Django admin for day-to-day operations.
+You no longer need the previous backend/admin stack for day-to-day operations.
 Use the admin site + Supabase dashboard for auth/user management.
 
 ## Migration steps
@@ -22,7 +22,7 @@ Use the admin site + Supabase dashboard for auth/user management.
 5. Create an auth admin user
 6. Insert that user into `public.admin_users`
 7. Configure and deploy `admin-panel/` to `admin.vnbway.com`
-8. Export Django data and import into Supabase tables
+8. Import your legacy catalog/order/customer data into Supabase tables
 
 ## Data import order
 
@@ -38,7 +38,7 @@ Import in this order to satisfy foreign keys:
 
 ## Frontend cutover (storefront)
 
-Your customer frontend can now drop Django and use:
+Your customer frontend now uses:
 
 - direct Supabase queries for catalog/auth/profile/forms/orders
 - a Cloudflare Worker for checkout/payment/media secure actions

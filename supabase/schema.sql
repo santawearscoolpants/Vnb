@@ -1,4 +1,4 @@
--- VNB Supabase schema (Django migration target)
+-- VNB Supabase schema
 -- Run in Supabase SQL editor in this order:
 -- 1) this file
 -- 2) create at least one auth user, then insert into admin_users

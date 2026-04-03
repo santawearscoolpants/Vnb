@@ -69,7 +69,7 @@
 
 ### Analytics & Operations
 - [x] Add analytics — GA4 integration with page-view tracking per route (`VITE_GA_MEASUREMENT_ID` env var)
-- [x] Confirm Django admin covers product/order management — all models fully registered with fieldsets, inlines, filters, and search
+- [x] Stand up the static Supabase-backed admin panel for product/order management and Worker-backed media uploads
 - [x] Transactional emails — order confirmation, shipping update, and welcome email on account creation
 
 ---
