@@ -60,6 +60,8 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 - [HOSTINGER_CLOUDFLARE_SUPABASE_MIGRATION.md](HOSTINGER_CLOUDFLARE_SUPABASE_MIGRATION.md)
 - [SUPABASE_MIGRATION.md](SUPABASE_MIGRATION.md)
+- [ROADMAP.md](ROADMAP.md)
+- [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
 - [cloudflare/worker/README.md](cloudflare/worker/README.md)
 - [admin-panel/README.md](admin-panel/README.md)
 
@@ -76,10 +78,6 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 npm run build
 ```
 
-## Support
-
-Original design: https://www.figma.com/design/yEQRJL1JxCwhZDgKncQYdu/E-commerce-Motion-Landing-Page
-
 ## License
 
-All rights reserved - Vines & Branches 2025
+All rights reserved | Vines & Branches Ltd 2025
