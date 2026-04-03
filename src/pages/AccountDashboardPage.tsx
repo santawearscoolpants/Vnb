@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   ShoppingBag, User, ChevronDown, ChevronUp,
   Package, Clock, CheckCircle, Truck, XCircle, ArrowLeft,
-  MapPin, CreditCard, Plus, Lock, BadgePercent, Link2, Gift,
+  MapPin, CreditCard, Plus, Lock, BadgePercent, Gift, Copy, Wallet,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -11,7 +11,7 @@ import { Label } from '../components/ui/label';
 import { CONTACT_EMAILS } from '../constants/contact';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from '../context/RouterContext';
-import api from '../services/api';
+import api, { type StewardApplicationRow, type StewardApplicationType } from '../services/api';
 import { toast } from 'sonner';
 import { useCurrency } from '../context/CurrencyContext';
 
@@ -61,12 +61,17 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 
 export function AccountDashboardPage() {
   const { user, logout } = useAuth();
-  const { navigateTo, goBack } = useRouter();
+  const { navigateTo, goBack, pageParams } = useRouter();
   const [tab, setTab] = useState<Tab>('orders');
 
   useEffect(() => {
     if (!user) navigateTo('account');
   }, [user, navigateTo]);
+
+  useEffect(() => {
+    const t = pageParams.tab as Tab | undefined;
+    if (t && TABS.some((x) => x.id === t)) setTab(t);
+  }, [pageParams.tab]);
 
   if (!user) return null;
 
@@ -540,15 +545,21 @@ function StewardTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboard, setDashboard] = useState<any>(null);
   const [milestones, setMilestones] = useState<any[]>([]);
+  const [application, setApplication] = useState<StewardApplicationRow | null>(null);
+  const [appType, setAppType] = useState<StewardApplicationType>('affiliate');
+  const [ambassadorCode, setAmbassadorCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     Promise.all([
       api.getStewardDashboard().catch(() => null),
       api.getActiveStewardMilestones().catch(() => []),
+      api.getMyStewardApplication().catch(() => null),
     ])
-      .then(([dashboardData, milestoneData]) => {
+      .then(([dashboardData, milestoneData, applicationRow]) => {
         setDashboard(dashboardData);
         setMilestones(milestoneData || []);
+        setApplication(applicationRow);
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -565,12 +576,30 @@ function StewardTab() {
     .filter((item: any) => item.status === 'paid')
     .reduce((sum: number, item: any) => sum + Number(item.total_amount || 0), 0);
 
-  async function copyCode(code: string) {
+  async function copyStewardCode(code: string) {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}?steward=${code}`);
-      toast.success('Steward referral link copied.');
+      await navigator.clipboard.writeText(code);
+      toast.success('Steward code copied.');
     } catch {
-      toast.error('Could not copy the referral link.');
+      toast.error('Could not copy the code.');
+    }
+  }
+
+  async function handleApplicationSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const result = await api.submitStewardApplication({
+        application_type: appType,
+        ambassador_invite_code: appType === 'brand_ambassador' ? ambassadorCode : '',
+      });
+      toast.success(result.message);
+      const row = await api.getMyStewardApplication();
+      setApplication(row);
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not submit application.');
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -579,40 +608,128 @@ function StewardTab() {
   }
 
   if (!steward) {
-    return (
-      <div className="space-y-6">
-        <div className="rounded-sm border border-zinc-200 bg-white p-8 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
-              <BadgePercent className="h-5 w-5" />
-            </div>
-            <div className="max-w-2xl">
-              <h2 className="text-lg font-medium text-black">You are not an active VNB Steward yet.</h2>
-              <p className="mt-3 text-sm leading-7 text-zinc-600">
-                If you want steward access, join the waitlist first. Once approved, this dashboard will show your
-                referral codes, commissions, payouts, and milestone progress.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button onClick={() => navigateTo('stewards')} className="rounded-none bg-black px-6 text-white hover:bg-zinc-800">
-                  Join The Program
-                </Button>
-                <Button onClick={() => navigateTo('contact')} variant="outline" className="rounded-none border-zinc-300">
-                  Ask A Question
-                </Button>
+    if (application) {
+      return (
+        <div className="space-y-6">
+          <div className="rounded-sm border border-zinc-200 bg-white p-8 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
+                <BadgePercent className="h-5 w-5" />
+              </div>
+              <div className="max-w-2xl">
+                <h2 className="text-lg font-medium text-black">Application received</h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-600">
+                  You applied as{' '}
+                  <span className="font-medium text-black">
+                    {application.application_type === 'brand_ambassador' ? 'a brand ambassador' : 'an affiliate'}
+                  </span>
+                  . We sent a confirmation email—our team will review and activate eligible stewards.
+                </p>
+                <p className="mt-3 text-xs text-zinc-500">
+                  Submitted {new Date(application.submitted_at).toLocaleString()} · Status:{' '}
+                  <span className="font-medium capitalize text-zinc-700">{application.status.replace(/_/g, ' ')}</span>
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button onClick={() => navigateTo('stewards')} variant="outline" className="rounded-none border-zinc-300">
+                    Program overview
+                  </Button>
+                  <Button onClick={() => navigateTo('contact')} variant="outline" className="rounded-none border-zinc-300">
+                    Contact us
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
+
+          <div className="rounded-sm bg-white p-6 shadow-sm">
+            <h3 className="text-sm font-medium text-black">Milestone structure</h3>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {milestones.map((milestone: any) => (
+                <div key={milestone.id} className="rounded-sm border border-zinc-200 p-4">
+                  <p className="text-xs uppercase tracking-wider text-zinc-400">{milestone.measurement_window}</p>
+                  <p className="mt-2 font-medium text-black">{milestone.name}</p>
+                  <p className="mt-2 text-sm text-zinc-600">{milestone.required_successful_orders} successful orders</p>
+                  <p className="mt-2 text-xs text-zinc-500">{milestone.reward_type.replace(/_/g, ' ')}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="rounded-sm border border-zinc-200 bg-white p-8 shadow-sm">
+          <h2 className="text-lg font-medium text-black">Apply to become a VNB Steward</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
+            Choose how you work with us. Brand ambassadors must use the invite code we issued to you (single use).
+          </p>
+          <form onSubmit={handleApplicationSubmit} className="mt-8 space-y-6">
+            <div className="space-y-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Application type</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex cursor-pointer gap-3 rounded-sm border border-zinc-200 p-4 has-[:checked]:border-black has-[:checked]:bg-zinc-50">
+                  <input
+                    type="radio"
+                    name="app_type"
+                    checked={appType === 'affiliate'}
+                    onChange={() => setAppType('affiliate')}
+                    className="mt-1"
+                  />
+                  <span>
+                    <span className="font-medium text-black">Affiliate</span>
+                    <span className="mt-1 block text-sm text-zinc-600">Standard referral partner track.</span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer gap-3 rounded-sm border border-zinc-200 p-4 has-[:checked]:border-black has-[:checked]:bg-zinc-50">
+                  <input
+                    type="radio"
+                    name="app_type"
+                    checked={appType === 'brand_ambassador'}
+                    onChange={() => setAppType('brand_ambassador')}
+                    className="mt-1"
+                  />
+                  <span>
+                    <span className="font-medium text-black">Brand ambassador</span>
+                    <span className="mt-1 block text-sm text-zinc-600">Requires your personal invite code from VNB.</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {appType === 'brand_ambassador' && (
+              <div>
+                <label className="text-sm font-medium text-zinc-800">Ambassador invite code *</label>
+                <input
+                  value={ambassadorCode}
+                  onChange={(e) => setAmbassadorCode(e.target.value)}
+                  placeholder="Enter the code we sent you"
+                  className="mt-2 w-full max-w-md border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                  autoComplete="off"
+                />
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="rounded-none bg-black px-8 text-white hover:bg-zinc-800"
+            >
+              {submitting ? 'Submitting…' : 'Apply'}
+            </Button>
+          </form>
         </div>
 
         <div className="rounded-sm bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-black">Current milestone structure</h3>
+          <h3 className="text-sm font-medium text-black">Milestone structure</h3>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {milestones.map((milestone: any) => (
               <div key={milestone.id} className="rounded-sm border border-zinc-200 p-4">
                 <p className="text-xs uppercase tracking-wider text-zinc-400">{milestone.measurement_window}</p>
                 <p className="mt-2 font-medium text-black">{milestone.name}</p>
                 <p className="mt-2 text-sm text-zinc-600">{milestone.required_successful_orders} successful orders</p>
-                <p className="mt-2 text-xs text-zinc-500">{milestone.reward_type.replace('_', ' ')}</p>
+                <p className="mt-2 text-xs text-zinc-500">{milestone.reward_type.replace(/_/g, ' ')}</p>
               </div>
             ))}
           </div>
@@ -625,47 +742,57 @@ function StewardTab() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-sm bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-wider text-zinc-400">Current tier</p>
+          <p className="text-xs uppercase tracking-wider text-zinc-400">Tier</p>
           <p className="mt-3 text-2xl font-medium text-black">{steward.commission_tier}</p>
           <p className="mt-2 text-sm text-zinc-600">{Math.round(steward.commission_rate * 100)}% commission rate</p>
         </div>
         <div className="rounded-sm bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-wider text-zinc-400">Pending + approved</p>
           <p className="mt-3 text-2xl font-medium text-black">{formatPrice(totalPending)}</p>
-          <p className="mt-2 text-sm text-zinc-600">Awaiting payout release</p>
+          <p className="mt-2 text-sm text-zinc-600">Eligible for next payout cycle</p>
         </div>
         <div className="rounded-sm bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-wider text-zinc-400">Paid out</p>
           <p className="mt-3 text-2xl font-medium text-black">{formatPrice(totalPaid)}</p>
-          <p className="mt-2 text-sm text-zinc-600">Across completed payout runs</p>
+          <p className="mt-2 text-sm text-zinc-600">Completed payouts</p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-sm bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="rounded-sm bg-white p-6 shadow-sm lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-medium text-black">Referral links</h3>
-              <p className="mt-1 text-xs text-zinc-500">Share these links when you promote VNB.</p>
+              <h3 className="text-sm font-medium text-black">Your steward codes</h3>
+              <p className="mt-1 text-xs text-zinc-500">
+                Buyers enter this code at checkout. It must match our database before the order credits you.
+              </p>
             </div>
             <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">{steward.status}</span>
           </div>
-
           <div className="mt-5 space-y-3">
             {referralCodes.map((code: any) => (
-              <div key={code.id} className="flex flex-col gap-3 rounded-sm border border-zinc-200 p-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Link2 className="h-4 w-4 text-zinc-400" />
-                    <p className="font-medium text-black">{code.code}</p>
-                    {code.is_primary && <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] uppercase tracking-wider text-zinc-600">Primary</span>}
-                  </div>
-                  <p className="mt-1 text-xs text-zinc-500">{window.location.origin}?steward={code.code}</p>
+              <div
+                key={code.id}
+                className="flex flex-col gap-3 rounded-sm border border-zinc-200 p-4 md:flex-row md:items-center md:justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Copy className="h-4 w-4 text-zinc-400" />
+                  <span className="font-mono text-lg font-medium tracking-wide text-black">{code.code}</span>
+                  {code.is_primary && (
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] uppercase tracking-wider text-zinc-600">
+                      Primary
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs uppercase tracking-wider text-zinc-400">{code.status}</span>
-                  <Button type="button" variant="outline" className="rounded-none border-zinc-300 text-xs" onClick={() => copyCode(code.code)}>
-                    Copy Link
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-none border-zinc-300 text-xs"
+                    onClick={() => copyStewardCode(code.code)}
+                  >
+                    Copy code
                   </Button>
                 </div>
               </div>
@@ -673,62 +800,98 @@ function StewardTab() {
           </div>
         </div>
 
-        <div className="rounded-sm bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-black">Program status</h3>
-          <div className="mt-5 space-y-4 text-sm text-zinc-600">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <span>Display name</span>
-              <span className="font-medium text-black">{steward.display_name || 'VNB Steward'}</span>
+        <div className="space-y-6">
+          <div className="rounded-sm border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <Wallet className="mt-0.5 h-5 w-5 shrink-0 text-zinc-400" />
+              <div>
+                <h3 className="text-sm font-medium text-black">Withdrawals</h3>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-600">
+                  Commissions move through pending → approved → scheduled payouts. Withdrawals follow the bi-weekly payout
+                  run; you will see each transfer listed under Payouts below.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <span>Course status</span>
-              <span className="font-medium capitalize text-black">{String(steward.course_status).replace('_', ' ')}</span>
-            </div>
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <span>Joined</span>
-              <span className="font-medium text-black">{new Date(steward.joined_at).toLocaleDateString()}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Activated</span>
-              <span className="font-medium text-black">
-                {steward.activated_at ? new Date(steward.activated_at).toLocaleDateString() : 'Pending review'}
-              </span>
-            </div>
+          </div>
+          <div className="rounded-sm bg-white p-6 shadow-sm">
+            <h3 className="text-sm font-medium text-black">Payment methods</h3>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-600">
+              Saved cards and payout preferences are managed under the <span className="font-medium text-zinc-800">Payments</span>{' '}
+              tab. Payout rails (bank / mobile money) are confirmed when your steward account is activated.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-sm bg-white p-6 shadow-sm">
+        <h3 className="text-sm font-medium text-black">Program status</h3>
+        <div className="mt-5 grid gap-4 text-sm text-zinc-600 sm:grid-cols-2">
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-3 sm:border-0 sm:pb-0">
+            <span>Display name</span>
+            <span className="font-medium text-black">{steward.display_name || 'VNB Steward'}</span>
+          </div>
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-3 sm:border-0 sm:pb-0">
+            <span>Course</span>
+            <span className="font-medium capitalize text-black">{String(steward.course_status).replace(/_/g, ' ')}</span>
+          </div>
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-3 sm:border-0 sm:pb-0">
+            <span>Joined</span>
+            <span className="font-medium text-black">{new Date(steward.joined_at).toLocaleDateString()}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Activated</span>
+            <span className="font-medium text-black">
+              {steward.activated_at ? new Date(steward.activated_at).toLocaleDateString() : 'Pending'}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-sm bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-black">Recent commissions</h3>
+          <h3 className="text-sm font-medium text-black">Commission ledger</h3>
+          <p className="mt-1 text-xs text-zinc-500">Per order: product mix, basis, rate, and status.</p>
           <div className="mt-4 space-y-3">
-            {commissions.length > 0 ? commissions.map((commission: any) => (
-              <div key={commission.id} className="flex items-start justify-between rounded-sm border border-zinc-200 p-4">
-                <div>
-                  <p className="font-medium text-black">{commission.order_number || `Order #${commission.id}`}</p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Code {commission.referral_code || 'n/a'} · {Math.round(commission.commission_rate * 100)}% of {formatPrice(commission.basis_amount)}
-                  </p>
+            {commissions.length > 0 ? (
+              commissions.map((commission: any) => (
+                <div key={commission.id} className="rounded-sm border border-zinc-200 p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="font-medium text-black">{commission.order_number || `Order #${commission.id}`}</p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {new Date(commission.created_at).toLocaleString()}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-600">
+                        <span className="font-medium text-zinc-800">Products:</span> {commission.products_summary || '—'}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Code {commission.referral_code || 'n/a'} · {Math.round(commission.commission_rate * 100)}% of{' '}
+                        {formatPrice(commission.basis_amount)}
+                      </p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="font-medium text-black">{formatPrice(commission.commission_amount)}</p>
+                      <p className="mt-1 text-xs uppercase tracking-wider text-zinc-400">{commission.status}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-black">{formatPrice(commission.commission_amount)}</p>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-zinc-400">{commission.status}</p>
-                </div>
-              </div>
-            )) : (
+              ))
+            ) : (
               <p className="text-sm text-zinc-500">No commissions yet.</p>
             )}
           </div>
         </div>
 
         <div className="rounded-sm bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-black">Payouts and rewards</h3>
+          <h3 className="text-sm font-medium text-black">Payouts & milestones</h3>
           <div className="mt-4 space-y-3">
             {payouts.map((payout: any) => (
               <div key={payout.id} className="rounded-sm border border-zinc-200 p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-black">{payout.period_start} to {payout.period_end}</p>
+                    <p className="font-medium text-black">
+                      {payout.period_start} to {payout.period_end}
+                    </p>
                     <p className="mt-1 text-xs text-zinc-500">
                       Gross {formatPrice(payout.gross_commission)} · Adjustments {formatPrice(payout.adjustments)}
                     </p>
@@ -747,14 +910,14 @@ function StewardTab() {
                 <div>
                   <p className="font-medium text-black">{award.milestone?.name || 'Milestone reward'}</p>
                   <p className="mt-1 text-xs text-zinc-500">
-                    {award.milestone?.reward_type?.replace('_', ' ') || 'reward'} · {award.reward_status}
+                    {award.milestone?.reward_type?.replace(/_/g, ' ') || 'reward'} · {award.reward_status}
                   </p>
                 </div>
               </div>
             ))}
 
             {payouts.length === 0 && milestoneAwards.length === 0 && (
-              <p className="text-sm text-zinc-500">No payouts or rewards have been issued yet.</p>
+              <p className="text-sm text-zinc-500">No payouts or milestone awards yet.</p>
             )}
           </div>
         </div>

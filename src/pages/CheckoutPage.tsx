@@ -12,7 +12,11 @@ import { toast } from 'sonner';
 import logo from '../assets/logo.png';
 import { useCurrency } from '../context/CurrencyContext';
 import { resolveMediaUrl } from '../utils/media';
-import { getStoredStewardReferralCode } from '../utils/referrals';
+import {
+  clearStewardReferral,
+  getStoredStewardReferralCode,
+  storeStewardReferral,
+} from '../utils/referrals';
 const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
 
 const COUNTRIES = [
@@ -67,6 +71,8 @@ export function CheckoutPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [stewardCodeInput, setStewardCodeInput] = useState('');
+  const [stewardCodeStatus, setStewardCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
 
   const items = cart?.items ?? [];
   const subtotal = Number(cart?.total ?? 0);
@@ -77,6 +83,23 @@ export function CheckoutPage() {
   useEffect(() => {
     sessionStorage.setItem(CHECKOUT_FORM_STORAGE_KEY, JSON.stringify(form));
   }, [form]);
+
+  useEffect(() => {
+    const existing = getStoredStewardReferralCode();
+    if (!existing) return;
+    setStewardCodeInput(existing);
+    setStewardCodeStatus('checking');
+    api
+      .verifyCheckoutStewardCode(existing)
+      .then((r) => {
+        setStewardCodeStatus(r.valid ? 'valid' : 'invalid');
+        if (!r.valid) toast.error(r.message);
+      })
+      .catch(() => {
+        setStewardCodeStatus('invalid');
+        toast.error('Could not verify steward code.');
+      });
+  }, []);
 
   function set(field: keyof FormData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -98,11 +121,42 @@ export function CheckoutPage() {
     return Object.keys(next).length === 0;
   }
 
+  async function verifyStewardCode() {
+    const trimmed = stewardCodeInput.trim();
+    if (!trimmed) {
+      toast.error('Enter a steward code first.');
+      return;
+    }
+    setStewardCodeStatus('checking');
+    try {
+      const r = await api.verifyCheckoutStewardCode(trimmed);
+      if (r.valid) {
+        storeStewardReferral(trimmed);
+        setStewardCodeStatus('valid');
+        toast.success(r.message);
+      } else {
+        setStewardCodeStatus('invalid');
+        toast.error(r.message);
+      }
+    } catch (err: any) {
+      setStewardCodeStatus('invalid');
+      toast.error(err?.message || 'Verification failed.');
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
     if (isEmpty) {
       toast.error('Your cart is empty.');
+      return;
+    }
+
+    const trimmedSteward = stewardCodeInput.trim();
+    if (!trimmedSteward) {
+      clearStewardReferral();
+    } else if (stewardCodeStatus !== 'valid') {
+      toast.error('Verify the steward code or clear the field before paying.');
       return;
     }
 
@@ -125,7 +179,7 @@ export function CheckoutPage() {
           size: item.size || '',
           color: item.color || '',
         })),
-        referral_code: getStoredStewardReferralCode() || undefined,
+        referral_code: trimmedSteward ? getStoredStewardReferralCode() || undefined : undefined,
       });
 
       window.location.assign(payment.authorization_url);
@@ -196,6 +250,56 @@ export function CheckoutPage() {
                     {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
                 </div>
+              </motion.div>
+
+              {/* Steward code */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 }}
+                className="rounded-sm bg-white p-6 shadow-sm"
+              >
+                <h2 className="mb-2 text-sm font-medium uppercase tracking-widest text-black">
+                  VNB Steward code
+                  <span className="ml-2 text-xs font-normal normal-case tracking-normal text-zinc-500">(optional)</span>
+                </h2>
+                <p className="mb-4 text-xs leading-relaxed text-zinc-600">
+                  If someone referred you, enter their steward code and tap Verify. We check it against our active
+                  stewards before payment. Leave blank if you do not have a code.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex-1">
+                    <Label htmlFor="stewardCode" className="text-xs text-zinc-700">
+                      Steward code
+                    </Label>
+                    <Input
+                      id="stewardCode"
+                      value={stewardCodeInput}
+                      onChange={(e) => {
+                        setStewardCodeInput(e.target.value);
+                        setStewardCodeStatus('idle');
+                      }}
+                      className="mt-1 rounded-none border-zinc-300 font-mono uppercase"
+                      placeholder="e.g. VNB-JANE"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 shrink-0 rounded-none border-zinc-300"
+                    disabled={stewardCodeStatus === 'checking'}
+                    onClick={() => void verifyStewardCode()}
+                  >
+                    {stewardCodeStatus === 'checking' ? 'Checking…' : 'Verify'}
+                  </Button>
+                </div>
+                {stewardCodeStatus === 'valid' && (
+                  <p className="mt-2 text-xs font-medium text-green-700">Code verified — this order will credit the steward.</p>
+                )}
+                {stewardCodeStatus === 'invalid' && stewardCodeInput.trim() && (
+                  <p className="mt-2 text-xs text-red-600">Code not accepted. Check spelling or clear the field to continue without a steward.</p>
+                )}
               </motion.div>
 
               {/* Delivery */}

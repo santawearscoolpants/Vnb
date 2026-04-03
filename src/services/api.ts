@@ -63,6 +63,7 @@ export interface StewardDashboardData {
     status: string;
     created_at: string;
     order_number: string;
+    products_summary: string;
   }>;
   payouts: Array<{
     id: number;
@@ -90,6 +91,17 @@ export interface StewardDashboardData {
   }>;
 }
 
+export type StewardApplicationType = 'affiliate' | 'brand_ambassador';
+
+export type StewardApplicationRow = {
+  id: number;
+  user_id: string;
+  application_type: StewardApplicationType;
+  ambassador_invite_code: string;
+  status: string;
+  submitted_at: string;
+};
+
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
   authenticated?: boolean;
@@ -107,6 +119,14 @@ function requireApiBaseUrl() {
     throw new Error('VITE_API_URL is not configured. Point it to your Cloudflare Worker domain.');
   }
   return API_BASE_URL;
+}
+
+function formatCommissionProductsSummary(row: any): string {
+  const items = row.orders?.order_items;
+  if (!Array.isArray(items) || items.length === 0) return '—';
+  return items
+    .map((it: any) => `${String(it.product_name || 'Product').trim()} ×${Number(it.quantity) || 1}`)
+    .join(', ');
 }
 
 function toOrderListItem(row: any) {
@@ -415,6 +435,72 @@ class ApiService {
     };
   }
 
+  /** Validates an active steward commission code (buyer checkout). */
+  async verifyCheckoutStewardCode(rawCode: string): Promise<{ valid: boolean; message: string }> {
+    const client = requireSupabase();
+    const trimmed = (rawCode || '').trim();
+    if (!trimmed) {
+      return { valid: false, message: 'Enter a steward code.' };
+    }
+    const { data, error } = await client.rpc('resolve_active_steward_referral_code', { p_code: trimmed });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row?.steward_id) {
+      return { valid: false, message: 'This code is not valid or the steward is not active.' };
+    }
+    return { valid: true, message: 'Code applied. This order will credit the steward.' };
+  }
+
+  async getMyStewardApplication(): Promise<StewardApplicationRow | null> {
+    const client = requireSupabase();
+    const { data: authData, error: authError } = await client.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) return null;
+    const { data, error } = await client
+      .from('steward_applications')
+      .select('id,user_id,application_type,ambassador_invite_code,status,submitted_at')
+      .eq('user_id', authData.user.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    return {
+      id: data.id,
+      user_id: data.user_id,
+      application_type: data.application_type as StewardApplicationType,
+      ambassador_invite_code: data.ambassador_invite_code || '',
+      status: data.status,
+      submitted_at: data.submitted_at,
+    };
+  }
+
+  async submitStewardApplication(payload: {
+    application_type: StewardApplicationType;
+    ambassador_invite_code?: string;
+  }): Promise<{ message: string }> {
+    const client = requireSupabase();
+    const { error } = await client.rpc('submit_steward_application', {
+      p_application_type: payload.application_type,
+      p_ambassador_invite_code: payload.ambassador_invite_code?.trim() || '',
+    });
+    if (error) {
+      const msg = error.message || '';
+      if (msg.includes('not_authenticated')) throw new Error('Sign in to submit an application.');
+      if (msg.includes('already_steward')) throw new Error('You are already a VNB Steward.');
+      if (msg.includes('already_applied')) throw new Error('You have already submitted an application.');
+      if (msg.includes('ambassador_code_required')) throw new Error('Enter the ambassador invite code you received.');
+      if (msg.includes('invalid_ambassador_code')) throw new Error('That ambassador code is invalid or already used.');
+      if (msg.includes('ambassador_code_forbidden_for_affiliate')) {
+        throw new Error('Remove the invite code when applying as an affiliate.');
+      }
+      if (msg.includes('invalid_application_type')) throw new Error('Invalid application type.');
+      throw new Error(msg);
+    }
+    return {
+      message:
+        'Application received. Check your email for confirmation. We will review and follow up soon.',
+    };
+  }
+
   async getActiveStewardMilestones(): Promise<StewardMilestone[]> {
     const client = requireSupabase();
     const { data, error } = await client
@@ -667,7 +753,9 @@ class ApiService {
         .order('created_at', { ascending: true }),
       client
         .from('steward_commissions')
-        .select('id,referral_code,basis_amount,commission_rate,commission_amount,status,created_at,orders(order_number)')
+        .select(
+          'id,referral_code,basis_amount,commission_rate,commission_amount,status,created_at,orders(order_number,order_items(product_name,quantity))',
+        )
         .eq('steward_id', userId)
         .order('created_at', { ascending: false })
         .limit(20),
@@ -719,6 +807,7 @@ class ApiService {
         status: row.status,
         created_at: row.created_at,
         order_number: row.orders?.order_number || '',
+        products_summary: formatCommissionProductsSummary(row),
       })),
       payouts: (payoutsResult.data || []).map((row) => ({
         id: row.id,

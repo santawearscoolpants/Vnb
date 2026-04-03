@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Award, BadgePercent, BookOpen, Check, Gift, ShieldCheck, Sparkles, Users } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import api, { type StewardMilestone } from '../services/api';
 import { getStoredStewardReferral } from '../utils/referrals';
 import { useRouter } from '../context/RouterContext';
+import { useAuth } from '../context/AuthContext';
 
 const highlights = [
   {
@@ -31,25 +31,25 @@ const highlights = [
 const commitments = [
   'Default commission range: 10% to 15% of product subtotal on paid, verified orders.',
   'Bi-weekly payout review with a short fraud/returns hold before payment release.',
-  'Referral links can be rotated or paused without losing historical performance.',
+  'Your steward code can be rotated or paused without losing historical performance.',
   'Course completion is part of activation so stewards represent the brand consistently.',
 ] as const;
 
 const steps = [
   {
     icon: BookOpen,
-    title: 'Join the waitlist',
-    body: 'Tell us your background, audience, and why you fit the brand.',
+    title: 'Create your VNB account',
+    body: 'Register so we can tie your application, payouts, and unique steward code to a single profile.',
   },
   {
     icon: ShieldCheck,
-    title: 'Review and approval',
-    body: 'We review fit, alignment, and readiness before activating a live steward account.',
+    title: 'Apply from your account',
+    body: 'In Account → VNB Steward, choose affiliate or brand ambassador. Ambassadors enter the invite code we issued to you.',
   },
   {
     icon: Gift,
-    title: 'Receive code and milestones',
-    body: 'Approved stewards get a managed referral code, commission rate, and milestone path.',
+    title: 'Receive your code & earn',
+    body: 'Once approved, your commission code appears in your account. Share it at checkout—buyers enter it to credit you.',
   },
 ] as const;
 
@@ -62,16 +62,8 @@ const sectionFade = {
 
 export function StewardsPage() {
   const { navigateTo } = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [milestones, setMilestones] = useState<StewardMilestone[]>([]);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    phone: '',
-    location: '',
-    background: '',
-    message: '',
-  });
 
   const storedReferral = getStoredStewardReferral();
 
@@ -81,35 +73,6 @@ export function StewardsPage() {
       .then(setMilestones)
       .catch(() => setMilestones([]));
   }, []);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-    try {
-      const result = await api.submitAffiliateWaitlist(formData);
-      toast.success(result.message);
-      setFormData({
-        full_name: '',
-        email: '',
-        phone: '',
-        location: '',
-        background: '',
-        message: '',
-      });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Could not join the VNB Steward waitlist.';
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-zinc-50 pt-20 text-zinc-900">
@@ -144,9 +107,9 @@ export function StewardsPage() {
                 type="button"
                 size="lg"
                 className="rounded-none bg-white px-8 text-zinc-900 hover:bg-zinc-100"
-                onClick={() => document.getElementById('steward-join-form')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('steward-get-started')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Join the waitlist
+                Get started
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
               </Button>
               <Button
@@ -154,9 +117,9 @@ export function StewardsPage() {
                 size="lg"
                 variant="outline"
                 className="rounded-none border-white/20 bg-transparent px-8 text-white hover:bg-white/10 hover:text-white"
-                onClick={() => navigateTo('account-dashboard')}
+                onClick={() => navigateTo('account-dashboard', user ? { tab: 'steward' } : undefined)}
               >
-                Steward dashboard
+                {user ? 'Steward dashboard' : 'Sign in'}
               </Button>
             </div>
           </motion.div>
@@ -178,7 +141,7 @@ export function StewardsPage() {
                     <span className="font-semibold text-[#fef9c3]">{storedReferral.code}</span>
                   </p>
                   <p className="mt-1.5 text-sm leading-relaxed text-white/70">
-                    If you shop or join from here, steward attribution is carried into checkout.
+                    At checkout, enter this code so the order credits your steward (after verification).
                   </p>
                 </div>
               </div>
@@ -259,7 +222,7 @@ export function StewardsPage() {
           <motion.div {...sectionFade} className="mb-12 md:mb-16">
             <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">How it works</p>
             <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
-              From waitlist to active steward
+              From account to active steward
             </h2>
           </motion.div>
 
@@ -285,9 +248,7 @@ export function StewardsPage() {
                   </div>
                   <div className="min-w-0 flex-1 pb-1 pt-0.5 md:pt-1">
                     <h3 className="text-lg font-medium text-zinc-900">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-600 md:text-[15px] md:leading-relaxed">
-                      {step.body}
-                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-zinc-600">{step.body}</p>
                   </div>
                 </motion.li>
               ))}
@@ -296,107 +257,65 @@ export function StewardsPage() {
         </div>
       </section>
 
-      {/* Waitlist form — dedicated band, narrow readable column */}
-      <section id="steward-join-form" className="scroll-mt-24 py-16 md:py-24">
+      {/* Account-first onboarding */}
+      <section id="steward-get-started" className="scroll-mt-24 py-16 md:py-24">
         <div className="mx-auto max-w-xl px-4 md:px-8">
           <motion.div {...sectionFade} className="mb-10 text-center">
-            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">Apply</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-zinc-500">Get started</p>
             <h2 className="mt-3 text-2xl font-medium tracking-tight text-zinc-900 md:text-3xl">
-              Join the VNB Steward waitlist
+              Create an account, then apply
             </h2>
             <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-zinc-600">
-              We record your interest here. Activation follows review and approval—we will follow up by email.
+              Applications are submitted from your VNB account. At checkout, buyers enter a steward&apos;s unique code;
+              it is checked against our database before payment proceeds.
             </p>
           </motion.div>
 
           <motion.div
             {...sectionFade}
-            className="rounded-sm border border-zinc-200 bg-white p-6 shadow-sm md:p-10"
+            className="space-y-6 rounded-sm border border-zinc-200 bg-white p-6 shadow-sm md:p-10"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid gap-6 sm:grid-cols-2">
-                <label className="block text-left">
-                  <span className="text-sm font-medium text-zinc-800">Full name *</span>
-                  <input
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={handleChange}
-                    required
-                    autoComplete="name"
-                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                  />
-                </label>
-                <label className="block text-left">
-                  <span className="text-sm font-medium text-zinc-800">Email *</span>
-                  <input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoComplete="email"
-                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <label className="block text-left">
-                  <span className="text-sm font-medium text-zinc-800">Phone</span>
-                  <input
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    autoComplete="tel"
-                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                  />
-                </label>
-                <label className="block text-left">
-                  <span className="text-sm font-medium text-zinc-800">Location</span>
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="City, country"
-                    autoComplete="address-level2"
-                    className="mt-2 w-full border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                  />
-                </label>
-              </div>
-
-              <label className="block text-left">
-                <span className="text-sm font-medium text-zinc-800">Background</span>
-                <textarea
-                  name="background"
-                  rows={4}
-                  value={formData.background}
-                  onChange={handleChange}
-                  placeholder="Audience, brand fit, content style, or community experience."
-                  className="mt-2 w-full resize-y border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                />
-              </label>
-
-              <label className="block text-left">
-                <span className="text-sm font-medium text-zinc-800">Why do you want to become a steward?</span>
-                <textarea
-                  name="message"
-                  rows={4}
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Who you reach and why VNB fits your voice."
-                  className="mt-2 w-full resize-y border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                />
-              </label>
-
-              <Button
-                type="submit"
-                size="lg"
-                disabled={loading}
-                className="w-full rounded-none bg-black text-white hover:bg-zinc-800"
-              >
-                {loading ? 'Submitting…' : 'Submit application'}
-              </Button>
-            </form>
+            <ol className="list-decimal space-y-4 pl-5 text-sm leading-relaxed text-zinc-700">
+              <li>Create a VNB customer account (or sign in if you already have one).</li>
+              <li>Open <span className="font-medium text-zinc-900">Account → VNB Steward</span> and choose affiliate or brand ambassador.</li>
+              <li>
+                Brand ambassadors must enter the invite code we emailed you, then tap Apply. You will receive a
+                confirmation email after submission.
+              </li>
+              <li>When approved, your steward code appears in your account for sharing and tracking earnings.</li>
+            </ol>
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
+              {!user ? (
+                <>
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="rounded-none bg-black text-white hover:bg-zinc-800"
+                    onClick={() => navigateTo('create-account')}
+                  >
+                    Create account
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="outline"
+                    className="rounded-none border-zinc-300"
+                    onClick={() => navigateTo('account')}
+                  >
+                    Sign in
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  className="rounded-none bg-black text-white hover:bg-zinc-800"
+                  onClick={() => navigateTo('account-dashboard', { tab: 'steward' })}
+                >
+                  Open steward application
+                </Button>
+              )}
+            </div>
           </motion.div>
         </div>
       </section>

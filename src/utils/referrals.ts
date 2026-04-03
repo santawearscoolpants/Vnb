@@ -26,6 +26,14 @@ export function getStoredStewardReferralCode() {
   return getStoredStewardReferral()?.code || '';
 }
 
+export function clearStewardReferral() {
+  try {
+    localStorage.removeItem(STEWARD_REFERRAL_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function storeStewardReferral(code: string, sourcePath = window.location.pathname + window.location.search) {
   const normalized = normalizeReferralCode(code);
   if (!normalized) return;
