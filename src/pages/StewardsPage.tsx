@@ -114,7 +114,7 @@ export function StewardsPage() {
   return (
     <div className="min-h-screen bg-zinc-50 pt-20 text-zinc-900">
       {/* Hero — high contrast, single focal column (matches Contact / FAQ) */}
-      <section className="relative overflow-hidden bg-zinc-950 py-16 text-white md:py-24">
+      <section className="relative overflow-hidden bg-black py-16 text-white md:py-24">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
@@ -129,13 +129,13 @@ export function StewardsPage() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-amber-200/95">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-[#e8c896]">
               VNB Steward program
             </p>
             <h1 className="text-balance text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl md:leading-[1.1]">
               Become a VNB Steward and grow the brand with us.
             </h1>
-            <p className="mx-auto max-w-xl text-pretty text-base leading-relaxed text-white/85 md:text-lg md:leading-relaxed">
+            <p className="mx-auto max-w-xl text-pretty text-base leading-relaxed text-white/80 md:text-lg md:leading-relaxed">
               The community layer of Vines &amp; Branches: advocates and trusted referrers who bring new customers into
               the house—with clear commissions tied to verified orders.
             </p>
@@ -143,7 +143,7 @@ export function StewardsPage() {
               <Button
                 type="button"
                 size="lg"
-                className="rounded-none bg-white px-8 text-zinc-950 hover:bg-zinc-100"
+                className="rounded-none bg-white px-8 text-zinc-900 hover:bg-zinc-100"
                 onClick={() => document.getElementById('steward-join-form')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Join the waitlist
@@ -153,7 +153,7 @@ export function StewardsPage() {
                 type="button"
                 size="lg"
                 variant="outline"
-                className="rounded-none border-white/40 bg-transparent px-8 text-white hover:bg-white/10 hover:text-white"
+                className="rounded-none border-white/20 bg-transparent px-8 text-white hover:bg-white/10 hover:text-white"
                 onClick={() => navigateTo('account-dashboard')}
               >
                 Steward dashboard
@@ -169,15 +169,15 @@ export function StewardsPage() {
             transition={{ duration: 0.45, delay: 0.15 }}
             className="relative mx-auto mt-12 max-w-xl px-4 md:px-8"
           >
-            <div className="rounded-sm border border-amber-400/35 bg-zinc-900/80 px-5 py-4 text-left shadow-lg backdrop-blur-sm">
+            <div className="rounded-sm border border-[rgba(251,191,36,0.45)] bg-zinc-900 px-5 py-4 text-left shadow-lg">
               <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" aria-hidden />
+                <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-[#fcd34d]" aria-hidden />
                 <div>
                   <p className="text-sm font-medium text-white">
                     Referral on this device:{' '}
-                    <span className="font-semibold text-amber-100">{storedReferral.code}</span>
+                    <span className="font-semibold text-[#fef9c3]">{storedReferral.code}</span>
                   </p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white/75">
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">
                     If you shop or join from here, steward attribution is carried into checkout.
                   </p>
                 </div>
@@ -204,7 +204,7 @@ export function StewardsPage() {
               <motion.li
                 key={item}
                 {...sectionFade}
-                className="flex gap-4 rounded-sm border border-zinc-200 bg-zinc-50/80 px-5 py-4 md:px-6 md:py-5"
+                className="flex gap-4 rounded-sm border border-zinc-200 bg-zinc-100 px-5 py-4 md:px-6 md:py-5"
               >
                 <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white">
                   <Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
@@ -276,7 +276,7 @@ export function StewardsPage() {
                   className="relative flex gap-6 md:gap-8"
                 >
                   <div className="relative z-[1] flex shrink-0 flex-col items-center md:block">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-zinc-900 text-white shadow-md ring-4 ring-zinc-100 md:h-12 md:w-12">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-zinc-900 text-white shadow-md ring-4 ring-white md:h-12 md:w-12">
                       <step.icon className="h-5 w-5 md:h-5 md:w-5" strokeWidth={1.5} aria-hidden />
                     </div>
                     <span className="mt-2 text-xs font-semibold text-zinc-400 md:absolute md:-left-1 md:mt-0 md:translate-x-0">
@@ -392,7 +392,7 @@ export function StewardsPage() {
                 type="submit"
                 size="lg"
                 disabled={loading}
-                className="w-full rounded-none bg-zinc-950 text-white hover:bg-zinc-800"
+                className="w-full rounded-none bg-black text-white hover:bg-zinc-800"
               >
                 {loading ? 'Submitting…' : 'Submit application'}
               </Button>
@@ -423,7 +423,7 @@ export function StewardsPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.35, delay: index * 0.05 }}
-                  className="flex flex-col rounded-sm border border-zinc-200 bg-zinc-50/50 p-6 md:p-7"
+                  className="flex flex-col rounded-sm border border-zinc-200 bg-zinc-50 p-6 md:p-7"
                 >
                   <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">
                     {milestone.measurement_window}
