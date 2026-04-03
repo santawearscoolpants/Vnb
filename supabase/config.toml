@@ -1,0 +1,9 @@
+# Supabase CLI configuration (https://supabase.com/docs/guides/cli/config)
+# Set project_id when linking: supabase link --project-ref <ref>
+
+[api]
+enabled = true
+
+# Database webhooks call this function with a shared secret header (no user JWT).
+[functions.resend-email-hook]
+verify_jwt = false
