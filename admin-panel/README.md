@@ -42,9 +42,11 @@ Inside `admin-panel/`:
 window.VNB_ADMIN_CONFIG = {
   SUPABASE_URL: 'https://YOUR-PROJECT-REF.supabase.co',
   SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
-  API_BASE_URL: 'https://api.vnbway.com', // optional, used for Worker-backed uploads/actions
+  API_BASE_URL: 'https://api.vnbway.com', // required for Worker-backed media uploads
 };
 ```
+
+`API_BASE_URL` should point at your Cloudflare Worker. The admin panel now uploads category and product images through `POST /media/upload`, then writes the returned URL into the form field automatically.
 
 ## 4) Deploy via GitHub Actions (optional)
 
@@ -93,8 +95,9 @@ If you want historical data from Django:
 ### Inputs to test
 
 - **Login:** email (required), password (required).
-- **Create category:** name, slug (required), image_url, description, Active checkbox.
-- **Create product:** name, slug, SKU, category (required), price, stock, image_url, Active, Featured, description (required).
+- **Create category:** name, slug (required), image URL or image upload, description, Active checkbox.
+- **Create product:** name, slug, SKU, category (required), price, stock, image URL or image upload, Active, Featured, description (required).
+- **Edit product images:** paste a URL or upload a file, then add alt text / primary / order.
 - **Edit category / Edit product:** same fields; **Update** saves, **Cancel** hides the form.
 - **Orders:** change status and payment dropdowns, click **Save**.
 - **Contact / Invest:** click **View** to open the full message in a modal; **Mark read** / **Mark contacted** toggles.

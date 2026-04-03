@@ -4,3 +4,5 @@ dist
 *.local
 admin-panel/config.js
 .env
+.dev.vars
+.dev.vars.example

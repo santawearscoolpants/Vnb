@@ -90,6 +90,10 @@ label {
   gap: 0.38rem;
 }
 
+.tiny {
+  font-size: 0.72rem;
+}
+
 input,
 textarea,
 select,
@@ -234,7 +238,8 @@ th {
 }
 
 .inline-add input[type="text"],
-.inline-add input[type="number"] {
+.inline-add input[type="number"],
+.inline-add input[type="file"] {
   max-width: 140px;
 }
 

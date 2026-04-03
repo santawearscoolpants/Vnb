@@ -106,6 +106,7 @@ async function renderProductInlines(productId) {
 
 let supabase = null;
 let activeUser = null;
+let runtimeConfig = null;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -127,6 +128,91 @@ async function loadRuntimeConfig() {
   } catch {
     return null;
   }
+}
+
+function requireApiBaseUrl() {
+  const apiBaseUrl = String(runtimeConfig?.API_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (!apiBaseUrl) {
+    throw new Error('Set API_BASE_URL in admin-panel/config.js before uploading media.');
+  }
+  return apiBaseUrl;
+}
+
+async function getAccessToken() {
+  if (!supabase) {
+    throw new Error('Admin panel is still initializing. Reload and try again.');
+  }
+
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  if (error) throw error;
+  if (!session?.access_token) {
+    throw new Error('Sign in again before uploading media.');
+  }
+
+  return session.access_token;
+}
+
+async function uploadMedia(file, folder = 'products') {
+  if (!(file instanceof File)) {
+    throw new Error('Choose a file to upload.');
+  }
+
+  const apiBaseUrl = requireApiBaseUrl();
+  const accessToken = await getAccessToken();
+  const formData = new FormData();
+  formData.set('file', file);
+  formData.set('folder', folder);
+
+  const response = await fetch(`${apiBaseUrl}/media/upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(data?.error || 'Media upload failed.');
+  }
+
+  if (!data?.url) {
+    throw new Error('Upload succeeded but no media URL was returned.');
+  }
+
+  return data;
+}
+
+function bindUploadInput(fileInputId, textInputId, folder) {
+  const fileInput = $(fileInputId);
+  const textInput = $(textInputId);
+  if (!fileInput || !textInput) return;
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    const previousPlaceholder = textInput.placeholder;
+    const previousValue = textInput.value;
+    textInput.placeholder = 'Uploading...';
+    fileInput.disabled = true;
+
+    try {
+      const media = await uploadMedia(file, folder);
+      textInput.value = media.url;
+    } catch (error) {
+      textInput.value = previousValue;
+      showError(error?.message || 'Unable to upload file.');
+    } finally {
+      textInput.placeholder = previousPlaceholder;
+      fileInput.value = '';
+      fileInput.disabled = false;
+    }
+  });
 }
 
 function wireTabs() {
@@ -610,6 +696,12 @@ function wireForms() {
     authUiSignedOut();
   });
 
+  bindUploadInput('createCategoryImageFile', 'createCategoryImageUrl', 'categories');
+  bindUploadInput('editCategoryImageFile', 'editCategoryImageUrl', 'categories');
+  bindUploadInput('createProductImageFile', 'createProductImageUrl', 'products');
+  bindUploadInput('editProductImageFile', 'editProductImageUrl', 'products');
+  bindUploadInput('newImageFile', 'newImageUrl', 'products/gallery');
+
   ui.createCategoryForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(ui.createCategoryForm);
@@ -814,7 +906,6 @@ async function bootSession() {
 
 async function init() {
   wireTabs();
-  wireForms();
 
   const config = await loadRuntimeConfig();
   if (!config?.SUPABASE_URL || !config?.SUPABASE_ANON_KEY) {
@@ -822,10 +913,13 @@ async function init() {
     return;
   }
 
+  runtimeConfig = config;
+
   supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true },
   });
 
+  wireForms();
   await bootSession();
   supabase.auth.onAuthStateChange(async () => {
     await bootSession();
