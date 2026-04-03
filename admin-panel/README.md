@@ -17,7 +17,7 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 ## 1) Set up Supabase schema
 
 1. Open Supabase project
-2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`
+2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`, then `supabase/03_checkout.sql`
 
 ## 2) Create admin user
 
@@ -42,6 +42,7 @@ Inside `admin-panel/`:
 window.VNB_ADMIN_CONFIG = {
   SUPABASE_URL: 'https://YOUR-PROJECT-REF.supabase.co',
   SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+  API_BASE_URL: 'https://api.vnbway.com', // optional, used for Worker-backed uploads/actions
 };
 ```
 

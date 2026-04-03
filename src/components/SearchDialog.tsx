@@ -4,17 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
+import { resolveMediaUrl } from '../utils/media';
 
 interface SearchDialogProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:8000';
-function resolveImageUrl(url?: string) {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  return `${MEDIA_BASE}${url}`;
 }
 
 const suggestedSearches = [
@@ -167,7 +161,7 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
                       </p>
                       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         {results.slice(0, 8).map((product: any) => {
-                          const img = resolveImageUrl(product.image);
+                          const img = resolveMediaUrl(product.image);
                           return (
                             <button
                               key={product.id}

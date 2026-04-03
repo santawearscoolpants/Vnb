@@ -11,14 +11,8 @@ import api from '../services/api';
 import { toast } from 'sonner';
 import logo from '../assets/logo.png';
 import { useCurrency } from '../context/CurrencyContext';
-
-const MEDIA_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:8000';
+import { resolveMediaUrl } from '../utils/media';
 const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
-function resolveImageUrl(url?: string) {
-  if (!url) return '/logo.png';
-  if (url.startsWith('http')) return url;
-  return `${MEDIA_BASE}${url}`;
-}
 
 const COUNTRIES = [
   'United States', 'United Kingdom', 'Canada', 'Australia', 'Nigeria',
@@ -124,6 +118,12 @@ export function CheckoutPage() {
         zip_code: form.zipCode,
         country: form.country,
         notes: form.notes || undefined,
+        items: items.map((item) => ({
+          product_id: item.product,
+          quantity: item.quantity,
+          size: item.size || '',
+          color: item.color || '',
+        })),
       });
 
       window.location.assign(payment.authorization_url);
@@ -350,7 +350,7 @@ export function CheckoutPage() {
                     {items.map((item: any) => (
                       <div key={item.id} className="flex items-start gap-3 border-b border-zinc-100 pb-4">
                         <img
-                          src={resolveImageUrl(item.product_detail?.image)}
+                          src={resolveMediaUrl(item.product_detail?.image) || '/logo.png'}
                           alt={item.product_detail?.name}
                           className="h-16 w-16 flex-shrink-0 object-cover"
                         />

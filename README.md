@@ -1,134 +1,80 @@
 # Vines & Branches - Luxury E-commerce Platform
 
-A complete, full-stack luxury e-commerce platform with React frontend and Django backend.
+This repository is now oriented around a low-cost production setup:
+
+- `www.vnbway.com` on Hostinger
+- `admin.vnbway.com` on Hostinger
+- `api.vnbway.com` on Cloudflare Workers
+- `media.vnbway.com` on Cloudflare R2
+- catalog, orders, and auth on Supabase
 
 ## Features
 
-### Frontend (React + TypeScript)
-- Beautiful, responsive UI with motion animations
-- Product catalog with categories
-- Product detail pages with variants (colors, sizes)
-- Shopping cart functionality
-- Newsletter subscription
-- Contact form
-- Investment inquiry system
-- User authentication pages
+### Storefront
+- React + TypeScript + Vite frontend
+- product catalog, categories, search, and product detail pages
+- local cart with checkout flow
+- customer account, profile, and order history
+- newsletter, contact, and investment forms
 
-### Backend (Django + DRF)
-- RESTful API with Django REST Framework
-- Full admin panel for product management
-- Image upload support
-- Shopping cart and order management
-- User account management
-- Newsletter and contact management
-- Investment inquiry tracking
-- CORS enabled for frontend integration
-
-### Admin Panel Capabilities
-- Add/Edit/Delete products
-- Change product prices instantly
-- Upload multiple product images
-- Manage stock quantities
-- Add color and size variants
-- Set featured products
-- Manage orders and update status
-- View customer information
-- Track messages and inquiries
+### Platform
+- Supabase for Postgres, auth, and row-level security
+- Cloudflare Worker for Paystack checkout, verification, webhooks, and secure actions
+- Cloudflare R2 for product media
+- static admin panel for product and order management
 
 ## Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- Python 3.8+
-- pip
+- a Supabase project
+- a Cloudflare account for Workers + R2
 
-### 1. Backend Setup
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-Admin panel: http://localhost:8000/admin
-
-### 2. Frontend Setup
+### Frontend
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Frontend: http://localhost:3000
+Set these in `.env`:
 
-## Detailed Documentation
-
-- **[FULL_SETUP_GUIDE.md](FULL_SETUP_GUIDE.md)** - Complete setup instructions
-- **[BACKEND_SETUP.md](BACKEND_SETUP.md)** - Backend-specific setup and API docs
+```env
+VITE_API_URL=https://api.vnbway.com
+VITE_MEDIA_URL=https://media.vnbway.com
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
 
 ## Project Structure
 
-```
-├── backend/              # Django backend
-│   ├── vnb_backend/     # Settings & configuration
-│   ├── store/           # Products & categories
-│   ├── accounts/        # User management
-│   ├── orders/          # Cart & orders
-│   └── requirements.txt # Python dependencies
-├── src/                 # React frontend
-│   ├── components/      # UI components
-│   ├── pages/           # Page components
-│   ├── services/        # API integration
-│   └── context/         # State management
-└── package.json         # Node dependencies
+```text
+├── admin-panel/          # Static admin app hosted on Hostinger
+├── cloudflare/worker/    # Worker backend for payments and uploads
+├── src/                  # React storefront
+├── supabase/             # Schema, RLS, and checkout SQL
+└── package.json          # Frontend dependencies
 ```
 
-## Key Technologies
+## Documentation
 
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Framer Motion
-- **Backend**: Django 5, Django REST Framework, Pillow
-- **Database**: SQLite (dev) / PostgreSQL (production)
-- **UI Components**: Radix UI, shadcn/ui
+- [HOSTINGER_CLOUDFLARE_SUPABASE_MIGRATION.md](HOSTINGER_CLOUDFLARE_SUPABASE_MIGRATION.md)
+- [SUPABASE_MIGRATION.md](SUPABASE_MIGRATION.md)
+- [cloudflare/worker/README.md](cloudflare/worker/README.md)
+- [admin-panel/README.md](admin-panel/README.md)
 
-## Admin Panel Usage
+## Production Notes
 
-1. Access http://localhost:8000/admin
-2. Login with superuser credentials
-3. Add categories and products
-4. Upload product images
-5. Set prices and stock quantities
-6. Mark products as featured
-7. Manage orders and customers
+- Hostinger continues serving the storefront and admin panel.
+- Supabase is the source of truth for application data.
+- The Worker is the only place that should hold Paystack and service-role secrets.
+- Images should live in R2, with only URLs stored in the database.
 
-Products added in admin panel automatically appear on the frontend!
+## Legacy Backend
 
-## API Endpoints
+The old Django backend remains in the repository as legacy material until full production cutover and cleanup are complete. The current target architecture no longer depends on it.
 
-All endpoints: `/api/`
-
-- **Store**: `/api/store/` - Products, categories, newsletter
-- **Accounts**: `/api/accounts/` - User registration, login
-- **Orders**: `/api/orders/` - Cart, orders
-
-See [BACKEND_SETUP.md](BACKEND_SETUP.md) for full API documentation.
-
-## Development
-
-Run both servers simultaneously:
-
-Terminal 1 - Backend:
-```bash
-cd backend && python manage.py runserver
-```
-
-Terminal 2 - Frontend:
-```bash
-npm run dev
-```
-
-## Building for Production
+## Building
 
 ```bash
 npm run build

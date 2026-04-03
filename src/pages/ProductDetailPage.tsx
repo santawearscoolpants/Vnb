@@ -7,15 +7,7 @@ import { toast } from 'sonner';
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
-
-const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api')
-  .replace('/api', '');
-
-function resolveImageUrl(url: string): string {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${MEDIA_BASE}${url}`;
-}
+import { resolveMediaUrl } from '../utils/media';
 
 interface ApiProduct {
   id: number;
@@ -108,8 +100,8 @@ export function ProductDetailPage() {
   // All image URLs for the gallery: prefer the images[] array, fallback to main image
   const imageUrls: string[] = product
     ? product.images.length > 0
-      ? product.images.map((img) => resolveImageUrl(img.image))
-      : [resolveImageUrl(product.image)]
+      ? product.images.map((img) => resolveMediaUrl(img.image))
+      : [resolveMediaUrl(product.image)]
     : [];
 
   const availableSizes = product?.sizes.filter((s) => s.is_available) ?? [];

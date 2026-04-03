@@ -6,14 +6,7 @@ import { useRouter } from '../context/RouterContext';
 import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
-
-const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace('/api', '');
-
-function resolveImageUrl(url: string): string {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${MEDIA_BASE}${url}`;
-}
+import { resolveMediaUrl } from '../utils/media';
 
 interface ApiProduct {
   id: number;
@@ -156,7 +149,7 @@ function ProductCard({
           className="h-full w-full"
         >
           <ImageWithFallback
-            src={resolveImageUrl(product.image)}
+            src={resolveMediaUrl(product.image)}
             alt={product.name}
             className="h-full w-full object-contain"
           />

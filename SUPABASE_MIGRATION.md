@@ -5,6 +5,7 @@ This repo now includes:
 - `supabase/schema.sql` -> complete database schema + RLS policies
 - `supabase/01_core.sql` -> core tables/functions/triggers (run first)
 - `supabase/02_rls.sql` -> RLS + policies, rerun-safe with `drop policy if exists`
+- `supabase/03_checkout.sql` -> payment finalization RPC for Worker-driven checkout
 - `admin-panel/` -> deployable admin website for `admin.vnbway.com`
 
 ## Immediate goal achieved
@@ -17,10 +18,11 @@ Use the admin site + Supabase dashboard for auth/user management.
 1. Create Supabase project
 2. Run `supabase/01_core.sql`
 3. Run `supabase/02_rls.sql`
-4. Create an auth admin user
-5. Insert that user into `public.admin_users`
-6. Configure and deploy `admin-panel/` to `admin.vnbway.com`
-7. Export Django data and import into Supabase tables
+4. Run `supabase/03_checkout.sql`
+5. Create an auth admin user
+6. Insert that user into `public.admin_users`
+7. Configure and deploy `admin-panel/` to `admin.vnbway.com`
+8. Export Django data and import into Supabase tables
 
 ## Data import order
 
@@ -36,15 +38,17 @@ Import in this order to satisfy foreign keys:
 
 ## Frontend cutover (storefront)
 
-Your customer frontend still calls Django right now.
-Next step is replacing `src/services/api.ts` with Supabase queries.
+Your customer frontend can now drop Django and use:
+
+- direct Supabase queries for catalog/auth/profile/forms/orders
+- a Cloudflare Worker for checkout/payment/media secure actions
 
 Recommended order:
 
 1. read-only catalog endpoints (categories/products)
 2. contact/newsletter/investment inserts
 3. auth/session swap to Supabase Auth
-4. cart/order/payment flows (edge functions for Paystack verification)
+4. Worker-driven checkout and Paystack verification
 
 ## Hosting notes
 

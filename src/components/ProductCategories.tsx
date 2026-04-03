@@ -4,14 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
-
-const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace('/api', '');
-
-function resolveImageUrl(url: string): string {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${MEDIA_BASE}${url}`;
-}
+import { resolveMediaUrl } from '../utils/media';
 
 interface ApiCategory {
   id: number;
@@ -120,7 +113,7 @@ function CategoryCard({
           className="h-full w-full"
         >
           <ImageWithFallback
-            src={resolveImageUrl(category.image)}
+            src={resolveMediaUrl(category.image)}
             alt={category.name}
             className="h-full w-full object-cover"
           />

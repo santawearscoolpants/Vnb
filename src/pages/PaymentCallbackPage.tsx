@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { useRouter } from '../context/RouterContext';
 import api from '../services/api';
 import logo from '../assets/logo.png';
+import { useCart } from '../context/CartContext';
 
 const CHECKOUT_FORM_STORAGE_KEY = 'vnb_checkout_form';
 
@@ -14,6 +15,7 @@ function clearPaymentQuery() {
 
 export function PaymentCallbackPage() {
   const { navigateTo, pageParams } = useRouter();
+  const { clear } = useCart();
   const [status, setStatus] = useState<'verifying' | 'error'>('verifying');
   const [message, setMessage] = useState('Confirming your payment with Paystack…');
 
@@ -43,6 +45,7 @@ export function PaymentCallbackPage() {
           const result = await api.verifyPayment(reference);
           if (cancelled) return;
 
+          await clear();
           sessionStorage.removeItem(CHECKOUT_FORM_STORAGE_KEY);
           clearPaymentQuery();
           navigateTo('order-confirmation', {
@@ -76,7 +79,7 @@ export function PaymentCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [navigateTo, pageParams.reference, pageParams.status]);
+  }, [clear, navigateTo, pageParams.reference, pageParams.status]);
 
   return (
     <div className="min-h-screen bg-zinc-50 pt-20">

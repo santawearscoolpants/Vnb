@@ -6,6 +6,7 @@ import logo from "../assets/logo.png";
 import { useCart } from '../context/CartContext';
 import { ArrowRight } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { resolveMediaUrl } from '../utils/media';
 export function CartPage() {
   const { goBack, navigateTo } = useRouter();
   const { cart, loading, updateItem, removeItem, clear } = useCart();
@@ -69,7 +70,7 @@ export function CartPage() {
                 <div className="space-y-4">
                   {cart?.items.map((item: any) => (
                     <div key={item.id} className="flex items-center gap-4 border-b border-zinc-100 pb-4">
-                      <img src={item.product_detail?.image || '/logo.png'} alt={item.product_detail?.name} className="h-20 w-20 object-cover" loading="lazy" decoding="async" />
+                      <img src={resolveMediaUrl(item.product_detail?.image) || '/logo.png'} alt={item.product_detail?.name} className="h-20 w-20 object-cover" loading="lazy" decoding="async" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <div>

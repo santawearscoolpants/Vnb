@@ -244,7 +244,7 @@ export function CreateAccountPage() {
         profile: {
           title: form.title,
           phone: `${selectedCountry.callingCode}${form.phone}`,
-          country: form.country,
+          country: selectedCountry.name,
           date_of_birth: `${form.birthYear}-${form.birthMonth}-${form.birthDay}`,
           marketing_consent: form.consentMarketing,
         },

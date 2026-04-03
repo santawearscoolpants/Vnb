@@ -5,4 +5,5 @@
 window.VNB_ADMIN_CONFIG = {
   SUPABASE_URL: 'https://YOUR-PROJECT-REF.supabase.co',
   SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+  API_BASE_URL: 'https://api.vnbway.com',
 };

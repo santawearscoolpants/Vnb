@@ -40,38 +40,52 @@ const CartContext = createContext<CartContextShape | undefined>(undefined);
 
 const LOCAL_KEY = 'vnb_cart_local';
 
+function recalculate(cart: CartShape): CartShape {
+  const items = cart.items.map((item) => {
+    const price = Number(item.product_detail?.price || 0);
+    return {
+      ...item,
+      subtotal: price * item.quantity,
+    };
+  });
+  const total = items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
+  const item_count = items.reduce((sum, item) => sum + item.quantity, 0);
+  return { ...cart, items, total, item_count };
+}
+
+function emptyCart(): CartShape {
+  return { items: [], total: 0, item_count: 0 };
+}
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartShape | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const saveLocal = (c: CartShape | null) => {
+  const saveLocal = (nextCart: CartShape | null) => {
     try {
-      if (c) localStorage.setItem(LOCAL_KEY, JSON.stringify(c));
-      else localStorage.removeItem(LOCAL_KEY);
-    } catch (e) {
-      // ignore
+      if (!nextCart) {
+        localStorage.removeItem(LOCAL_KEY);
+        return;
+      }
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(recalculate(nextCart)));
+    } catch {
+      // Ignore storage failures.
     }
   };
 
-  const loadLocal = (): CartShape | null => {
+  const loadLocal = (): CartShape => {
     try {
-      const v = localStorage.getItem(LOCAL_KEY);
-      return v ? JSON.parse(v) : null;
-    } catch (e) {
-      return null;
+      const raw = localStorage.getItem(LOCAL_KEY);
+      return raw ? recalculate(JSON.parse(raw)) : emptyCart();
+    } catch {
+      return emptyCart();
     }
   };
 
   const refresh = async () => {
     setLoading(true);
     try {
-      const data = (await api.getCurrentCart()) as any as CartShape;
-      setCart(data);
-      saveLocal(data);
-    } catch (e) {
-      // fallback to local
-      const local = loadLocal();
-      setCart(local);
+      setCart(loadLocal());
     } finally {
       setLoading(false);
     }
@@ -79,25 +93,47 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addItem = async (productId: number, quantity = 1, size = '', color = '') => {
     setLoading(true);
     try {
-  const data = (await api.addToCart(productId, quantity, size, color)) as any as CartShape;
-  setCart(data);
-  saveLocal(data);
-    } catch (e) {
-      // local fallback: merge into local cart
-      const local = loadLocal() || { items: [], total: 0, item_count: 0 };
-      const existing = local.items.find((it: any) => it.product === productId && it.size === size && it.color === color);
-      if (existing) existing.quantity += quantity;
-      else
-  local.items.push({ id: Date.now(), product: productId, quantity, size, color, product_detail: { id: productId, name: 'Product', price: 0 }, subtotal: 0 });
-      local.item_count = local.items.reduce((s: number, it: any) => s + it.quantity, 0);
-      setCart(local);
-      saveLocal(local);
+      const current = loadLocal();
+      const existing = current.items.find(
+        (item) => item.product === productId && item.size === size && item.color === color,
+      );
+
+      if (existing) {
+        existing.quantity += quantity;
+        const next = recalculate(current);
+        setCart(next);
+        saveLocal(next);
+        return;
+      }
+
+      const product = await api.getProductById(productId);
+      const next = recalculate({
+        ...current,
+        items: [
+          ...current.items,
+          {
+            id: Date.now(),
+            product: productId,
+            quantity,
+            size,
+            color,
+            product_detail: {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              slug: product.slug,
+            },
+          },
+        ],
+      });
+      setCart(next);
+      saveLocal(next);
     } finally {
       setLoading(false);
     }
@@ -106,21 +142,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateItem = async (itemId: number, quantity: number) => {
     setLoading(true);
     try {
-  const data = (await api.updateCartItem(itemId, quantity)) as any as CartShape;
-  setCart(data);
-  saveLocal(data);
-    } catch (e) {
-      const local = loadLocal();
-      if (local) {
-        const it = local.items.find((i: any) => i.id === itemId);
-        if (it) {
-          if (quantity <= 0) local.items = local.items.filter((i: any) => i.id !== itemId);
-          else it.quantity = quantity;
-          local.item_count = local.items.reduce((s: number, it: any) => s + it.quantity, 0);
-          setCart(local);
-          saveLocal(local);
-        }
-      }
+      const current = loadLocal();
+      const items = quantity <= 0
+        ? current.items.filter((item) => item.id !== itemId)
+        : current.items.map((item) => (item.id === itemId ? { ...item, quantity } : item));
+      const next = recalculate({ ...current, items });
+      setCart(next);
+      saveLocal(next);
     } finally {
       setLoading(false);
     }
@@ -129,17 +157,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeItem = async (itemId: number) => {
     setLoading(true);
     try {
-  const data = (await api.removeCartItem(itemId)) as any as CartShape;
-  setCart(data);
-  saveLocal(data);
-    } catch (e) {
-      const local = loadLocal();
-      if (local) {
-        local.items = local.items.filter((i: any) => i.id !== itemId);
-        local.item_count = local.items.reduce((s: number, it: any) => s + it.quantity, 0);
-        setCart(local);
-        saveLocal(local);
-      }
+      const current = loadLocal();
+      const next = recalculate({
+        ...current,
+        items: current.items.filter((item) => item.id !== itemId),
+      });
+      setCart(next);
+      saveLocal(next);
     } finally {
       setLoading(false);
     }
@@ -148,12 +172,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clear = async () => {
     setLoading(true);
     try {
-  const data = (await api.clearCart()) as any as CartShape;
-  setCart(data);
-  saveLocal(data);
-    } catch (e) {
-      setCart({ items: [], total: 0, item_count: 0 });
-      saveLocal(null);
+      const next = emptyCart();
+      setCart(next);
+      saveLocal(next);
     } finally {
       setLoading(false);
     }

@@ -1,0 +1,45 @@
+# VNB Cloudflare Worker
+
+This Worker replaces the old Django backend for:
+
+- checkout initialization
+- Paystack verification
+- Paystack webhooks
+- admin-only media uploads to R2
+
+## Routes
+
+- `GET /health`
+- `POST /checkout/init`
+- `GET /payments/verify?reference=...`
+- `POST /webhooks/paystack`
+- `POST /media/upload`
+
+## Local setup
+
+1. Copy `.dev.vars.example` to `.dev.vars`
+2. Fill in your Supabase and Paystack secrets
+3. Install dependencies inside this folder:
+
+```bash
+npm install
+```
+
+4. Run locally:
+
+```bash
+npm run dev
+```
+
+## Production
+
+- Attach the Worker to `api.vnbway.com`
+- Bind the `MEDIA_BUCKET` R2 bucket
+- Set `MEDIA_BASE_URL=https://media.vnbway.com`
+- Set `ALLOWED_ORIGINS=https://www.vnbway.com,https://admin.vnbway.com`
+
+## Notes
+
+- Product images should be stored in R2, not in the database.
+- The Worker writes orders and payment attempts with the Supabase service role key.
+- Customer-facing reads still go directly to Supabase from the frontend.
