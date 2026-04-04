@@ -497,41 +497,69 @@ function AddressBookTab() {
 
 /* ─── Payments Tab ───────────────────────────────────────────── */
 function PaymentsTab() {
+  const { formatPrice } = useCurrency();
+  const [rows, setRows] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.getPaymentAttempts()
+      .then((data) => setRows(data || []))
+      .catch(() => setRows([]))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return <div className="h-48 animate-pulse rounded-sm bg-white shadow-sm" />;
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-sm font-medium text-black">Payment Methods</h2>
+      <h2 className="text-sm font-medium text-black">Payment Activity</h2>
 
-      {/* Empty state */}
-      <div className="rounded-sm bg-white p-10 text-center shadow-sm">
-        <CreditCard className="mx-auto mb-4 h-10 w-10 text-zinc-300" />
-        <p className="mb-1 text-sm text-zinc-700">No payment methods saved</p>
-        <p className="text-xs text-zinc-400">Saved cards will appear here once payment is set up.</p>
-      </div>
+      {rows.length === 0 ? (
+        <div className="rounded-sm bg-white p-10 text-center shadow-sm">
+          <CreditCard className="mx-auto mb-4 h-10 w-10 text-zinc-300" />
+          <p className="mb-1 text-sm text-zinc-700">No payment attempts yet</p>
+          <p className="text-xs text-zinc-400">Your Paystack attempts will appear here once checkout starts.</p>
+        </div>
+      ) : (
+        <div className="rounded-sm bg-white p-6 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wider text-zinc-500">
+                  <th className="py-3 pr-4">Reference</th>
+                  <th className="py-3 pr-4">Created</th>
+                  <th className="py-3 pr-4">Amount</th>
+                  <th className="py-3 pr-4">Status</th>
+                  <th className="py-3 pr-0">Gateway</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id} className="border-b border-zinc-100 text-zinc-700 last:border-0">
+                    <td className="py-3 pr-4 font-mono text-xs text-zinc-600">{row.reference}</td>
+                    <td className="py-3 pr-4 text-xs">{new Date(row.created_at).toLocaleString()}</td>
+                    <td className="py-3 pr-4">{formatPrice(row.total)}</td>
+                    <td className="py-3 pr-4">
+                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] uppercase tracking-wider text-zinc-600">
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-0 text-xs uppercase tracking-wider text-zinc-500">{row.paystack_status || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-      {/* Coming soon notice */}
       <div className="flex items-start gap-3 rounded-sm border border-zinc-200 bg-zinc-50 p-5">
         <Lock className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
         <div className="text-xs text-zinc-500 leading-relaxed">
-          <p className="mb-1 font-medium text-zinc-700">Secure payments coming soon</p>
-          We are integrating{' '}
-          <span className="font-medium text-zinc-700">Paystack</span> for local payments (Ghana, Nigeria)
-          and <span className="font-medium text-zinc-700">Stripe</span> for international cards.
-          Your payment data is never stored on our servers — it is handled directly by the payment provider.
-        </div>
-      </div>
-
-      {/* Accepted methods preview */}
-      <div className="rounded-sm bg-white p-6 shadow-sm">
-        <p className="mb-4 text-xs font-medium uppercase tracking-wider text-zinc-400">Accepted payment methods</p>
-        <div className="flex flex-wrap gap-3">
-          {['Visa', 'Mastercard', 'Mobile Money', 'Paystack', 'Bank Transfer'].map((method) => (
-            <span
-              key={method}
-              className="rounded border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600"
-            >
-              {method}
-            </span>
-          ))}
+          <p className="mb-1 font-medium text-zinc-700">Provider-managed payment security</p>
+          Card and wallet details are handled directly by Paystack. VNB stores payment references and verification state only.
         </div>
       </div>
     </div>
@@ -549,6 +577,9 @@ function StewardTab() {
   const [appType, setAppType] = useState<StewardApplicationType>('affiliate');
   const [ambassadorCode, setAmbassadorCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState('');
+  const [payoutAccountRef, setPayoutAccountRef] = useState('');
+  const [savingPayoutProfile, setSavingPayoutProfile] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -560,6 +591,10 @@ function StewardTab() {
         setDashboard(dashboardData);
         setMilestones(milestoneData || []);
         setApplication(applicationRow);
+        if (dashboardData?.steward) {
+          setPayoutMethod(String(dashboardData.steward.payout_method || ''));
+          setPayoutAccountRef(String(dashboardData.steward.payout_account_ref || ''));
+        }
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -600,6 +635,32 @@ function StewardTab() {
       toast.error(err?.message || 'Could not submit application.');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handlePayoutProfileSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingPayoutProfile(true);
+    try {
+      const row = await api.updateMyStewardPayoutProfile({
+        payout_method: payoutMethod,
+        payout_account_ref: payoutAccountRef,
+      });
+      setDashboard((prev: any) => ({
+        ...prev,
+        steward: prev?.steward
+          ? {
+              ...prev.steward,
+              payout_method: String(row?.payout_method || payoutMethod),
+              payout_account_ref: String(row?.payout_account_ref || payoutAccountRef),
+            }
+          : prev?.steward,
+      }));
+      toast.success('Payout profile updated.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not update payout profile.');
+    } finally {
+      setSavingPayoutProfile(false);
     }
   }
 
@@ -814,10 +875,38 @@ function StewardTab() {
             </div>
           </div>
           <div className="rounded-sm bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-medium text-black">Payment methods</h3>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-600">
-              Saved cards and payout preferences are managed under the <span className="font-medium text-zinc-800">Payments</span>{' '}
-              tab. Payout rails (bank / mobile money) are confirmed when your steward account is activated.
+            <h3 className="text-sm font-medium text-black">Payout profile</h3>
+            <form onSubmit={handlePayoutProfileSave} className="mt-3 space-y-3">
+              <div>
+                <Label htmlFor="stewardPayoutMethod" className="text-xs text-zinc-600">Method</Label>
+                <Input
+                  id="stewardPayoutMethod"
+                  value={payoutMethod}
+                  onChange={(e) => setPayoutMethod(e.target.value)}
+                  placeholder="bank_transfer or mobile_money"
+                  className="mt-1 rounded-none border-zinc-300"
+                />
+              </div>
+              <div>
+                <Label htmlFor="stewardPayoutAccountRef" className="text-xs text-zinc-600">Account reference</Label>
+                <Input
+                  id="stewardPayoutAccountRef"
+                  value={payoutAccountRef}
+                  onChange={(e) => setPayoutAccountRef(e.target.value)}
+                  placeholder="Bank details or MoMo number"
+                  className="mt-1 rounded-none border-zinc-300"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="rounded-none bg-black text-white hover:bg-zinc-800"
+                disabled={savingPayoutProfile}
+              >
+                {savingPayoutProfile ? 'Saving…' : 'Save payout profile'}
+              </Button>
+            </form>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-600">
+              Card and wallet payment methods are handled directly by Paystack during checkout and are not stored in your VNB account.
             </p>
           </div>
         </div>

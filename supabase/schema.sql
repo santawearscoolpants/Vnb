@@ -16,6 +16,364 @@ as $$
   select timezone('utc', now());
 $$;
 
+-- Steward ops hardening (approval hold + payout batching)
+alter table public.steward_commissions
+  add column if not exists hold_until timestamptz;
+
+create table if not exists public.steward_program_settings (
+  id smallint primary key default 1 check (id = 1),
+  approval_hold_days integer not null default 14 check (approval_hold_days >= 0 and approval_hold_days <= 90),
+  payout_cadence_days integer not null default 14 check (payout_cadence_days >= 7 and payout_cadence_days <= 31),
+  created_at timestamptz not null default public.now_utc(),
+  updated_at timestamptz not null default public.now_utc()
+);
+
+insert into public.steward_program_settings (id, approval_hold_days, payout_cadence_days)
+values (1, 14, 14)
+on conflict (id) do update
+set
+  approval_hold_days = excluded.approval_hold_days,
+  payout_cadence_days = excluded.payout_cadence_days,
+  updated_at = public.now_utc();
+
+create index if not exists idx_steward_commissions_hold on public.steward_commissions(status, hold_until, payout_id);
+
+drop trigger if exists trg_steward_program_settings_updated_at on public.steward_program_settings;
+create trigger trg_steward_program_settings_updated_at before update on public.steward_program_settings
+for each row execute procedure public.set_updated_at();
+
+alter table public.steward_program_settings enable row level security;
+
+drop policy if exists "admins full steward_program_settings" on public.steward_program_settings;
+create policy "admins full steward_program_settings" on public.steward_program_settings
+for all using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+
+create or replace function public.auto_approve_steward_commissions(p_now timestamptz default public.now_utc())
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_count integer := 0;
+begin
+  update public.steward_commissions
+  set
+    status = 'approved',
+    approved_at = coalesce(approved_at, p_now)
+  where status = 'pending'
+    and payout_id is null
+    and coalesce(hold_until, created_at) <= p_now;
+
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+create or replace function public.create_steward_payout_batch(p_period_end date default current_date)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_settings public.steward_program_settings%rowtype;
+  v_period_end date := coalesce(p_period_end, current_date);
+  v_period_start date;
+  v_group record;
+  v_payout_id bigint;
+  v_payout_count integer := 0;
+  v_commission_count integer := 0;
+begin
+  select * into v_settings from public.steward_program_settings where id = 1;
+  if not found then
+    v_settings.approval_hold_days := 14;
+    v_settings.payout_cadence_days := 14;
+  end if;
+
+  perform public.auto_approve_steward_commissions(public.now_utc());
+  v_period_start := v_period_end - (greatest(v_settings.payout_cadence_days, 1) - 1);
+
+  for v_group in
+    select
+      steward_id,
+      sum(commission_amount)::numeric(10,2) as gross_commission,
+      count(*)::integer as row_count
+    from public.steward_commissions
+    where status = 'approved'
+      and payout_id is null
+      and coalesce(approved_at, created_at)::date <= v_period_end
+    group by steward_id
+    having sum(commission_amount) > 0
+  loop
+    insert into public.steward_payouts (
+      steward_id,
+      period_start,
+      period_end,
+      scheduled_for,
+      gross_commission,
+      adjustments,
+      total_amount,
+      status
+    )
+    values (
+      v_group.steward_id,
+      v_period_start,
+      v_period_end,
+      v_period_end + 1,
+      v_group.gross_commission,
+      0,
+      v_group.gross_commission,
+      'pending'
+    )
+    returning id into v_payout_id;
+
+    update public.steward_commissions
+    set payout_id = v_payout_id
+    where status = 'approved'
+      and payout_id is null
+      and steward_id = v_group.steward_id
+      and coalesce(approved_at, created_at)::date <= v_period_end;
+
+    v_payout_count := v_payout_count + 1;
+    v_commission_count := v_commission_count + v_group.row_count;
+  end loop;
+
+  return jsonb_build_object(
+    'period_start', v_period_start,
+    'period_end', v_period_end,
+    'payout_count', v_payout_count,
+    'commission_count', v_commission_count
+  );
+end;
+$$;
+
+create or replace function public.mark_steward_payout_paid(p_payout_id bigint, p_reference text default '')
+returns public.steward_payouts
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_payout public.steward_payouts%rowtype;
+  v_now timestamptz := public.now_utc();
+begin
+  select * into v_payout
+  from public.steward_payouts
+  where id = p_payout_id
+  for update;
+
+  if not found then
+    raise exception 'Payout not found.';
+  end if;
+
+  update public.steward_payouts
+  set
+    status = 'paid',
+    paid_at = v_now,
+    payout_reference = case when trim(coalesce(p_reference, '')) <> '' then trim(p_reference) else payout_reference end
+  where id = v_payout.id
+  returning * into v_payout;
+
+  update public.steward_commissions
+  set
+    status = 'paid',
+    paid_at = v_now
+  where payout_id = v_payout.id
+    and status in ('approved', 'pending');
+
+  return v_payout;
+end;
+$$;
+
+create or replace function public.finalize_payment_attempt(
+  p_reference text,
+  p_paystack_status text default '',
+  p_verified_at timestamptz default public.now_utc()
+)
+returns public.orders
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_attempt public.payment_attempts%rowtype;
+  v_order public.orders%rowtype;
+  v_item jsonb;
+  v_product public.products%rowtype;
+  v_quantity integer;
+  v_commission_rate numeric(5, 4);
+begin
+  select *
+  into v_attempt
+  from public.payment_attempts
+  where reference = p_reference
+  for update;
+
+  if not found then
+    raise exception 'Payment reference not found.';
+  end if;
+
+  if v_attempt.order_id is not null then
+    select * into v_order from public.orders where id = v_attempt.order_id;
+    return v_order;
+  end if;
+
+  insert into public.orders (
+    user_id,
+    email,
+    first_name,
+    last_name,
+    phone,
+    address,
+    city,
+    state,
+    zip_code,
+    country,
+    subtotal,
+    shipping,
+    tax,
+    total,
+    status,
+    payment_provider,
+    payment_reference,
+    payment_currency,
+    payment_status,
+    paid_at,
+    notes,
+    steward_id,
+    referral_code,
+    referral_snapshot,
+    commissionable_subtotal
+  )
+  values (
+    v_attempt.user_id,
+    v_attempt.email,
+    v_attempt.first_name,
+    v_attempt.last_name,
+    v_attempt.phone,
+    v_attempt.address,
+    v_attempt.city,
+    v_attempt.state,
+    v_attempt.zip_code,
+    v_attempt.country,
+    v_attempt.subtotal,
+    v_attempt.shipping,
+    v_attempt.tax,
+    v_attempt.total,
+    'processing',
+    'paystack',
+    v_attempt.reference,
+    v_attempt.currency,
+    'paid',
+    coalesce(p_verified_at, public.now_utc()),
+    v_attempt.notes,
+    v_attempt.steward_id,
+    v_attempt.referral_code,
+    v_attempt.referral_snapshot,
+    v_attempt.subtotal
+  )
+  returning * into v_order;
+
+  for v_item in
+    select * from jsonb_array_elements(v_attempt.cart_snapshot)
+  loop
+    v_quantity := coalesce((v_item ->> 'quantity')::integer, 0);
+
+    select *
+    into v_product
+    from public.products
+    where id = (v_item ->> 'product_id')::bigint
+      and is_active = true
+    for update;
+
+    if not found then
+      raise exception 'Product no longer exists for reference %.', p_reference;
+    end if;
+
+    if v_quantity <= 0 then
+      raise exception 'Invalid quantity supplied for product %.', v_product.name;
+    end if;
+
+    if v_product.stock_quantity < v_quantity then
+      raise exception 'Insufficient stock for %.', v_product.name;
+    end if;
+
+    insert into public.order_items (
+      order_id,
+      product_id,
+      product_name,
+      product_sku,
+      quantity,
+      size,
+      color,
+      price,
+      subtotal
+    )
+    values (
+      v_order.id,
+      v_product.id,
+      coalesce(v_item ->> 'product_name', v_product.name),
+      coalesce(v_item ->> 'product_sku', coalesce(v_product.sku, '')),
+      v_quantity,
+      coalesce(v_item ->> 'size', ''),
+      coalesce(v_item ->> 'color', ''),
+      (v_item ->> 'price')::numeric,
+      (v_item ->> 'subtotal')::numeric
+    );
+
+    update public.products
+    set stock_quantity = stock_quantity - v_quantity
+    where id = v_product.id;
+  end loop;
+
+  if v_attempt.steward_id is not null and exists (
+    select 1
+    from public.vnb_stewards s
+    where s.user_id = v_attempt.steward_id
+      and s.status = 'active'
+  ) then
+    v_commission_rate := coalesce(
+      nullif(v_attempt.referral_snapshot ->> 'commission_rate', '')::numeric,
+      (select s.commission_rate from public.vnb_stewards s where s.user_id = v_attempt.steward_id),
+      0.1000
+    );
+
+    insert into public.steward_commissions (
+      steward_id,
+      order_id,
+      referral_code,
+      basis_amount,
+      commission_rate,
+      commission_amount,
+      status,
+      hold_until
+    )
+    values (
+      v_attempt.steward_id,
+      v_order.id,
+      v_attempt.referral_code,
+      v_attempt.subtotal,
+      v_commission_rate,
+      round(v_attempt.subtotal * v_commission_rate, 2),
+      'pending',
+      public.now_utc() + make_interval(days => coalesce((select approval_hold_days from public.steward_program_settings where id = 1), 14))
+    )
+    on conflict (order_id) do nothing;
+  end if;
+
+  update public.payment_attempts
+  set
+    order_id = v_order.id,
+    status = 'success',
+    paystack_status = coalesce(nullif(p_paystack_status, ''), paystack_status),
+    verified_at = coalesce(p_verified_at, public.now_utc())
+  where id = v_attempt.id;
+
+  return v_order;
+end;
+$$;
+
 create or replace function public.generate_order_number()
 returns text
 language sql

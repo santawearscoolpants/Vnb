@@ -72,6 +72,7 @@ create table if not exists public.steward_commissions (
   commission_rate numeric(5, 4) not null check (commission_rate >= 0 and commission_rate <= 1),
   commission_amount numeric(10, 2) not null default 0,
   status text not null default 'pending' check (status in ('pending', 'approved', 'paid', 'reversed', 'void')),
+  hold_until timestamptz,
   notes text not null default '',
   approved_at timestamptz,
   paid_at timestamptz,
@@ -121,6 +122,22 @@ create table if not exists public.steward_reward_ledger (
   created_at timestamptz not null default public.now_utc(),
   updated_at timestamptz not null default public.now_utc()
 );
+
+create table if not exists public.steward_program_settings (
+  id smallint primary key default 1 check (id = 1),
+  approval_hold_days integer not null default 14 check (approval_hold_days >= 0 and approval_hold_days <= 90),
+  payout_cadence_days integer not null default 14 check (payout_cadence_days >= 7 and payout_cadence_days <= 31),
+  created_at timestamptz not null default public.now_utc(),
+  updated_at timestamptz not null default public.now_utc()
+);
+
+insert into public.steward_program_settings (id, approval_hold_days, payout_cadence_days)
+values (1, 14, 14)
+on conflict (id) do update
+set
+  approval_hold_days = excluded.approval_hold_days,
+  payout_cadence_days = excluded.payout_cadence_days,
+  updated_at = public.now_utc();
 
 alter table public.payment_attempts
   add column if not exists steward_id uuid references public.vnb_stewards(user_id) on delete set null,
@@ -193,6 +210,7 @@ create index if not exists idx_steward_referral_codes_code on public.steward_ref
 create index if not exists idx_payment_attempts_steward_id on public.payment_attempts(steward_id);
 create index if not exists idx_orders_steward_id on public.orders(steward_id);
 create index if not exists idx_steward_commissions_steward_id on public.steward_commissions(steward_id, created_at desc);
+create index if not exists idx_steward_commissions_hold on public.steward_commissions(status, hold_until, payout_id);
 create index if not exists idx_steward_payouts_steward_id on public.steward_payouts(steward_id, period_end desc);
 
 alter table public.steward_waitlist enable row level security;
@@ -203,6 +221,7 @@ alter table public.steward_commissions enable row level security;
 alter table public.steward_milestone_definitions enable row level security;
 alter table public.steward_milestone_awards enable row level security;
 alter table public.steward_reward_ledger enable row level security;
+alter table public.steward_program_settings enable row level security;
 
 drop policy if exists "public insert steward_waitlist" on public.steward_waitlist;
 create policy "public insert steward_waitlist" on public.steward_waitlist
@@ -268,6 +287,10 @@ drop policy if exists "admins full steward_reward_ledger" on public.steward_rewa
 create policy "admins full steward_reward_ledger" on public.steward_reward_ledger
 for all using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
 
+drop policy if exists "admins full steward_program_settings" on public.steward_program_settings;
+create policy "admins full steward_program_settings" on public.steward_program_settings
+for all using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+
 insert into public.steward_milestone_definitions (slug, name, description, measurement_window, required_successful_orders, reward_type, reward_value, is_active)
 values
   ('weekly-5-sales', '5 Weekly Sales', 'Recognition inside the VNB Steward community for five successful attributed purchases in a week.', 'weekly', 5, 'recognition', 'community-recognition', true),
@@ -308,6 +331,144 @@ as $$
     and rc.status = 'active'
     and s.status = 'active'
   limit 1;
+$$;
+
+create or replace function public.auto_approve_steward_commissions(p_now timestamptz default public.now_utc())
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_count integer := 0;
+begin
+  update public.steward_commissions
+  set
+    status = 'approved',
+    approved_at = coalesce(approved_at, p_now)
+  where status = 'pending'
+    and payout_id is null
+    and coalesce(hold_until, created_at) <= p_now;
+
+  get diagnostics v_count = row_count;
+  return v_count;
+end;
+$$;
+
+create or replace function public.create_steward_payout_batch(p_period_end date default current_date)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_settings public.steward_program_settings%rowtype;
+  v_period_end date := coalesce(p_period_end, current_date);
+  v_period_start date;
+  v_group record;
+  v_payout_id bigint;
+  v_payout_count integer := 0;
+  v_commission_count integer := 0;
+begin
+  select * into v_settings from public.steward_program_settings where id = 1;
+  if not found then
+    v_settings.approval_hold_days := 14;
+    v_settings.payout_cadence_days := 14;
+  end if;
+
+  perform public.auto_approve_steward_commissions(public.now_utc());
+  v_period_start := v_period_end - (greatest(v_settings.payout_cadence_days, 1) - 1);
+
+  for v_group in
+    select
+      steward_id,
+      sum(commission_amount)::numeric(10,2) as gross_commission,
+      count(*)::integer as row_count
+    from public.steward_commissions
+    where status = 'approved'
+      and payout_id is null
+      and coalesce(approved_at, created_at)::date <= v_period_end
+    group by steward_id
+    having sum(commission_amount) > 0
+  loop
+    insert into public.steward_payouts (
+      steward_id,
+      period_start,
+      period_end,
+      scheduled_for,
+      gross_commission,
+      adjustments,
+      total_amount,
+      status
+    )
+    values (
+      v_group.steward_id,
+      v_period_start,
+      v_period_end,
+      v_period_end + 1,
+      v_group.gross_commission,
+      0,
+      v_group.gross_commission,
+      'pending'
+    )
+    returning id into v_payout_id;
+
+    update public.steward_commissions
+    set payout_id = v_payout_id
+    where status = 'approved'
+      and payout_id is null
+      and steward_id = v_group.steward_id
+      and coalesce(approved_at, created_at)::date <= v_period_end;
+
+    v_payout_count := v_payout_count + 1;
+    v_commission_count := v_commission_count + v_group.row_count;
+  end loop;
+
+  return jsonb_build_object(
+    'period_start', v_period_start,
+    'period_end', v_period_end,
+    'payout_count', v_payout_count,
+    'commission_count', v_commission_count
+  );
+end;
+$$;
+
+create or replace function public.mark_steward_payout_paid(p_payout_id bigint, p_reference text default '')
+returns public.steward_payouts
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_payout public.steward_payouts%rowtype;
+  v_now timestamptz := public.now_utc();
+begin
+  select * into v_payout
+  from public.steward_payouts
+  where id = p_payout_id
+  for update;
+
+  if not found then
+    raise exception 'Payout not found.';
+  end if;
+
+  update public.steward_payouts
+  set
+    status = 'paid',
+    paid_at = v_now,
+    payout_reference = case when trim(coalesce(p_reference, '')) <> '' then trim(p_reference) else payout_reference end
+  where id = v_payout.id
+  returning * into v_payout;
+
+  update public.steward_commissions
+  set
+    status = 'paid',
+    paid_at = v_now
+  where payout_id = v_payout.id
+    and status in ('approved', 'pending');
+
+  return v_payout;
+end;
 $$;
 
 create or replace function public.finalize_payment_attempt(
@@ -470,7 +631,8 @@ begin
       basis_amount,
       commission_rate,
       commission_amount,
-      status
+      status,
+      hold_until
     )
     values (
       v_attempt.steward_id,
@@ -479,7 +641,8 @@ begin
       v_attempt.subtotal,
       v_commission_rate,
       round(v_attempt.subtotal * v_commission_rate, 2),
-      'pending'
+      'pending',
+      public.now_utc() + make_interval(days => coalesce((select approval_hold_days from public.steward_program_settings where id = 1), 14))
     )
     on conflict (order_id) do nothing;
   end if;

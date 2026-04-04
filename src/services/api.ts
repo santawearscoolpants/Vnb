@@ -19,6 +19,39 @@ export interface PaymentVerificationResponse {
   };
 }
 
+export interface CheckoutQuoteResponse {
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  policy: {
+    free_shipping_threshold: number;
+    shipping_mode: string;
+    tax_mode: string;
+    tax_rate: number;
+  };
+}
+
+export interface PaymentAttemptListItem {
+  id: number;
+  reference: string;
+  total: string;
+  currency: string;
+  status: string;
+  paystack_status: string;
+  created_at: string;
+}
+
+export interface PublicStoreMetrics {
+  as_of_date: string | null;
+  source: string;
+  categories: number;
+  active_products: number;
+  featured_products: number;
+  paid_orders_30d: number | null;
+  monthly_revenue: number | null;
+}
+
 export interface CheckoutCartItemInput {
   product_id: number;
   quantity: number;
@@ -45,6 +78,8 @@ export interface StewardDashboardData {
     commission_tier: string;
     commission_rate: number;
     course_status: string;
+    payout_method: string;
+    payout_account_ref: string;
     joined_at: string;
     activated_at: string | null;
   } | null;
@@ -410,6 +445,45 @@ class ApiService {
     return { message: 'Thank you for your interest! Our investment team will contact you within 48 hours.' };
   }
 
+  async getPublicStoreMetrics(): Promise<PublicStoreMetrics> {
+    const client = requireSupabase();
+    const { data: rpcRows, error: rpcError } = await client.rpc('get_latest_public_investor_metrics');
+    if (!rpcError && Array.isArray(rpcRows) && rpcRows[0]) {
+      const row = rpcRows[0] as any;
+      return {
+        as_of_date: row.as_of_date || null,
+        source: row.source || 'snapshot',
+        categories: Number(row.active_categories || 0),
+        active_products: Number(row.active_products || 0),
+        featured_products: Number(row.featured_products || 0),
+        paid_orders_30d: row.paid_orders_30d == null ? null : Number(row.paid_orders_30d),
+        monthly_revenue: row.monthly_revenue == null ? null : Number(row.monthly_revenue),
+      };
+    }
+
+    const [categoriesResult, activeProductsResult, featuredProductsResult, paidOrdersResult] = await Promise.all([
+      client.from('categories').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      client.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      client.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('is_featured', true),
+      client.from('orders').select('*', { count: 'exact', head: true }).eq('payment_status', 'paid').gte('created_at', new Date(Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString()),
+    ]);
+
+    if (categoriesResult.error) throw new Error(categoriesResult.error.message);
+    if (activeProductsResult.error) throw new Error(activeProductsResult.error.message);
+    if (featuredProductsResult.error) throw new Error(featuredProductsResult.error.message);
+    if (paidOrdersResult.error) throw new Error(paidOrdersResult.error.message);
+
+    return {
+      as_of_date: new Date().toISOString().slice(0, 10),
+      source: 'live_fallback',
+      categories: categoriesResult.count || 0,
+      active_products: activeProductsResult.count || 0,
+      featured_products: featuredProductsResult.count || 0,
+      paid_orders_30d: paidOrdersResult.count || 0,
+      monthly_revenue: null,
+    };
+  }
+
   async submitAffiliateWaitlist(data: {
     full_name: string;
     email: string;
@@ -576,7 +650,7 @@ class ApiService {
   async requestPasswordReset(email: string) {
     const client = requireSupabase();
     const { error } = await client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}?page=reset-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) throw error;
     return { message: 'If that email is registered, a reset link has been sent.' };
@@ -725,6 +799,31 @@ class ApiService {
     return (data || []).map(toOrderListItem);
   }
 
+  async getPaymentAttempts(): Promise<PaymentAttemptListItem[]> {
+    const client = requireSupabase();
+    const { data: authData, error: authError } = await client.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) return [];
+
+    const { data, error } = await client
+      .from('payment_attempts')
+      .select('id,reference,total,currency,status,paystack_status,created_at')
+      .eq('user_id', authData.user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      reference: row.reference,
+      total: String(row.total),
+      currency: row.currency || 'GHS',
+      status: row.status || '',
+      paystack_status: row.paystack_status || '',
+      created_at: row.created_at,
+    }));
+  }
+
   async getStewardDashboard(): Promise<StewardDashboardData> {
     const client = requireSupabase();
     const { data: authData, error: authError } = await client.auth.getUser();
@@ -742,7 +841,7 @@ class ApiService {
     ] = await Promise.all([
       client
         .from('vnb_stewards')
-        .select('user_id,display_name,status,commission_tier,commission_rate,course_status,joined_at,activated_at')
+        .select('user_id,display_name,status,commission_tier,commission_rate,course_status,payout_method,payout_account_ref,joined_at,activated_at')
         .eq('user_id', userId)
         .maybeSingle(),
       client
@@ -788,6 +887,8 @@ class ApiService {
             commission_tier: stewardResult.data.commission_tier,
             commission_rate: Number(stewardResult.data.commission_rate || 0),
             course_status: stewardResult.data.course_status,
+            payout_method: stewardResult.data.payout_method || '',
+            payout_account_ref: stewardResult.data.payout_account_ref || '',
             joined_at: stewardResult.data.joined_at,
             activated_at: stewardResult.data.activated_at,
           }
@@ -838,6 +939,16 @@ class ApiService {
     };
   }
 
+  async updateMyStewardPayoutProfile(payload: { payout_method: string; payout_account_ref: string }) {
+    const client = requireSupabase();
+    const { data, error } = await client.rpc('update_my_steward_payout_profile', {
+      p_payout_method: payload.payout_method,
+      p_payout_account_ref: payload.payout_account_ref,
+    });
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
   async initializePayment(data: {
     email: string;
     first_name: string;
@@ -855,6 +966,13 @@ class ApiService {
     return this.request<PaymentInitializationResponse>('/checkout/init', {
       method: 'POST',
       authenticated: true,
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getCheckoutQuote(data: { country: string; items: CheckoutCartItemInput[] }) {
+    return this.request<CheckoutQuoteResponse>('/checkout/quote', {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }

@@ -196,7 +196,9 @@ table {
 #stewardWaitlistTable,
 #stewardsTable,
 #stewardCommissionsTable,
-#stewardPayoutsTable {
+#stewardPayoutsTable,
+#stewardMilestoneAwardsTable,
+#investorSnapshotsTable {
   overflow-x: auto;
 }
 

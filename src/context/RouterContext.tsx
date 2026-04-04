@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  buildUrlFromRoute,
+  isLegacyQueryRoute,
+  parseRouteFromLocation,
+} from '../utils/routing';
 
 interface NavigateParams {
   productId?: string;
@@ -17,76 +23,44 @@ interface RouterContextType {
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined);
 
-function getInitialRoute() {
-  const params = new URLSearchParams(window.location.search);
-  const callbackReference = params.get('reference') || params.get('trxref');
-
-  if (params.get('payment_callback') === '1' || callbackReference) {
-    const extra: Record<string, string> = {};
-    if (callbackReference) extra.reference = callbackReference;
-    const status = params.get('status');
-    if (status) extra.status = status;
-    return {
-      currentPage: 'payment-callback',
-      pageParams: extra,
-      history: ['home', 'checkout', 'payment-callback'],
-    };
-  }
-
-  const page = params.get('page');
-  if (page) {
-    const extra: Record<string, string> = {};
-    for (const [key, value] of params.entries()) {
-      if (key !== 'page') extra[key] = value;
-    }
-    return {
-      currentPage: page,
-      pageParams: extra,
-      history: ['home', page],
-    };
-  }
-
-  return {
-    currentPage: 'home',
-    pageParams: {},
-    history: ['home'],
-  };
-}
-
 export function RouterProvider({ children }: { children: ReactNode }) {
-  const initialRoute = getInitialRoute();
-  const [currentPage, setCurrentPage] = useState(initialRoute.currentPage);
-  const [productId, setProductId] = useState<string | null>(null);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [pageParams, setPageParams] = useState<Record<string, string>>(initialRoute.pageParams);
-  const [history, setHistory] = useState<string[]>(initialRoute.history);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const parsed = parseRouteFromLocation(location.pathname, location.search);
+  const { currentPage, productId, categoryId, pageParams } = parsed;
 
-  const navigateTo = (page: string, params?: NavigateParams) => {
-    setCurrentPage(page);
-    setProductId(params?.productId || null);
-    setCategoryId(params?.categoryId || null);
+  useEffect(() => {
+    const normalizedUrl = buildUrlFromRoute(currentPage, productId, categoryId, pageParams);
+    const currentUrl = `${location.pathname}${location.search}`;
+    const isLegacy = isLegacyQueryRoute(location.search) || location.pathname === '/account-dashboard';
+    const shouldCanonicalize = isLegacy || (normalizedUrl === '/' && location.pathname !== '/');
+    if (shouldCanonicalize && currentUrl !== normalizedUrl) {
+      navigate(normalizedUrl, { replace: true });
+    }
+  }, [categoryId, currentPage, location.pathname, location.search, navigate, pageParams, productId]);
+
+  const navigateTo = useCallback((page: string, params?: NavigateParams) => {
+    const nextProductId = params?.productId || null;
+    const nextCategoryId = params?.categoryId || null;
     const extra: Record<string, string> = {};
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         if (k !== 'productId' && k !== 'categoryId' && v !== undefined) extra[k] = v;
       }
     }
-    setPageParams(extra);
-    setHistory(prev => [...prev, page]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
-  const goBack = () => {
-    if (history.length > 1) {
-      const newHistory = [...history];
-      newHistory.pop();
-      const previousPage = newHistory[newHistory.length - 1];
-      setHistory(newHistory);
-      setCurrentPage(previousPage);
-      setPageParams({});
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    const nextUrl = buildUrlFromRoute(page, nextProductId, nextCategoryId, extra);
+    navigate(nextUrl);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [navigate]);
+
+  const goBack = useCallback(() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
     }
-  };
+    navigate('/');
+  }, [navigate]);
 
   return (
     <RouterContext.Provider value={{ currentPage, productId, categoryId, pageParams, navigateTo, goBack }}>

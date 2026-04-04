@@ -22,8 +22,18 @@ const ui = {
   stewardsTable: $('stewardsTable'),
   stewardCommissionsTable: $('stewardCommissionsTable'),
   stewardPayoutsTable: $('stewardPayoutsTable'),
+  stewardMilestoneAwardsTable: $('stewardMilestoneAwardsTable'),
+  stewardBatchPeriodEnd: $('stewardBatchPeriodEnd'),
+  stewardPayoutReference: $('stewardPayoutReference'),
+  autoApproveCommissionsBtn: $('autoApproveCommissionsBtn'),
+  reconcileCommissionsBtn: $('reconcileCommissionsBtn'),
+  issueMilestonesBtn: $('issueMilestonesBtn'),
+  createPayoutBatchBtn: $('createPayoutBatchBtn'),
   contactTable: $('contactTable'),
   investTable: $('investTable'),
+  investorSnapshotDate: $('investorSnapshotDate'),
+  captureInvestorSnapshotBtn: $('captureInvestorSnapshotBtn'),
+  investorSnapshotsTable: $('investorSnapshotsTable'),
   newsletterTable: $('newsletterTable'),
   detailModal: $('detailModal'),
   detailModalTitle: $('detailModalTitle'),
@@ -163,6 +173,25 @@ async function getAccessToken() {
   }
 
   return session.access_token;
+}
+
+async function adminApiRequest(path, payload) {
+  const apiBaseUrl = requireApiBaseUrl();
+  const accessToken = await getAccessToken();
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(data?.error || 'Admin API request failed.');
+  }
+  return data;
 }
 
 async function uploadMedia(file, folder = 'products') {
@@ -543,14 +572,14 @@ async function loadStewardCommissions() {
   if (!ui.stewardCommissionsTable) return;
   const { data, error } = await supabase
     .from('steward_commissions')
-    .select('id,steward_id,referral_code,commission_amount,commission_rate,status,created_at,order_id,orders(order_number),vnb_stewards(display_name)')
+    .select('id,steward_id,referral_code,commission_amount,commission_rate,status,hold_until,created_at,order_id,orders(order_number),vnb_stewards(display_name)')
     .order('created_at', { ascending: false })
     .limit(200);
   if (error) throw error;
 
   ui.stewardCommissionsTable.innerHTML = `
     <table>
-      <thead><tr><th>Steward</th><th>Order</th><th>Code</th><th>Commission</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Steward</th><th>Order</th><th>Code</th><th>Commission</th><th>Hold Until</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
         ${(data || []).map((row) => `
           <tr>
@@ -558,6 +587,7 @@ async function loadStewardCommissions() {
             <td>${escapeHtml(row.orders?.order_number || String(row.order_id || '-'))}<div class="muted">${new Date(row.created_at).toLocaleString()}</div></td>
             <td>${escapeHtml(row.referral_code || '-')}</td>
             <td>${formatCurrency(row.commission_amount)}<div class="muted">${Math.round(Number(row.commission_rate || 0) * 100)}%</div></td>
+            <td>${row.hold_until ? new Date(row.hold_until).toLocaleString() : '-'}</td>
             <td>
               <select data-commission-status-id="${row.id}">
                 ${['pending', 'approved', 'paid', 'reversed', 'void'].map((status) => (
@@ -604,6 +634,66 @@ async function loadStewardPayouts() {
             <td class="actions">
               <button data-action="save-payout" data-id="${row.id}" class="primary">Save</button>
             </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadStewardMilestoneAwards() {
+  if (!ui.stewardMilestoneAwardsTable) return;
+  const { data, error } = await supabase
+    .from('steward_milestone_awards')
+    .select('id,steward_id,reward_status,reference_period_start,reference_period_end,earned_at,issued_at,vnb_stewards(display_name),steward_milestone_definitions(name,reward_type)')
+    .order('earned_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardMilestoneAwardsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Steward</th><th>Milestone</th><th>Window</th><th>Status</th><th>Earned</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>${escapeHtml(row.vnb_stewards?.display_name || row.steward_id)}</td>
+            <td>${escapeHtml(row.steward_milestone_definitions?.name || '-')}<div class="muted">${escapeHtml((row.steward_milestone_definitions?.reward_type || '-').replace(/_/g, ' '))}</div></td>
+            <td>${row.reference_period_start && row.reference_period_end ? `${escapeHtml(row.reference_period_start)} → ${escapeHtml(row.reference_period_end)}` : 'all_time'}</td>
+            <td>${escapeHtml(row.reward_status || '-')}</td>
+            <td>${new Date(row.earned_at).toLocaleString()}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadInvestorSnapshots() {
+  if (!ui.investorSnapshotsTable) return;
+  const { data, error } = await supabase
+    .from('investor_reporting_snapshots')
+    .select('id,as_of_date,active_categories,active_products,featured_products,paid_orders_30d,monthly_revenue,is_public,updated_at')
+    .order('as_of_date', { ascending: false })
+    .limit(24);
+  if (error) {
+    ui.investorSnapshotsTable.innerHTML = `<p class="muted">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  ui.investorSnapshotsTable.innerHTML = `
+    <table>
+      <thead><tr><th>Date</th><th>Categories</th><th>Products</th><th>Featured</th><th>Paid (30d)</th><th>Revenue (30d)</th><th>Public</th><th>Updated</th></tr></thead>
+      <tbody>
+        ${(data || []).map((row) => `
+          <tr>
+            <td>${escapeHtml(row.as_of_date)}</td>
+            <td>${Number(row.active_categories || 0)}</td>
+            <td>${Number(row.active_products || 0)}</td>
+            <td>${Number(row.featured_products || 0)}</td>
+            <td>${row.paid_orders_30d == null ? '-' : Number(row.paid_orders_30d)}</td>
+            <td>${row.monthly_revenue == null ? '-' : Number(row.monthly_revenue).toFixed(2)}</td>
+            <td>${row.is_public ? 'Yes' : 'No'}</td>
+            <td>${new Date(row.updated_at).toLocaleString()}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -719,8 +809,10 @@ async function refreshAll() {
     loadStewards(),
     loadStewardCommissions(),
     loadStewardPayouts(),
+    loadStewardMilestoneAwards(),
     loadContact(),
     loadInvest(),
+    loadInvestorSnapshots(),
     loadNewsletter(),
   ]);
 }
@@ -758,7 +850,11 @@ async function handleTableActions(event) {
       case 'save-order': {
         const status = document.querySelector(`[data-order-status-id="${id}"]`)?.value;
         const payment_status = document.querySelector(`[data-order-payment-id="${id}"]`)?.value;
-        await supabase.from('orders').update({ status, payment_status }).eq('id', id);
+        await adminApiRequest('/orders/status', {
+          order_id: id,
+          status,
+          payment_status,
+        });
         break;
       }
       case 'toggle-contact-read':
@@ -797,11 +893,19 @@ async function handleTableActions(event) {
       }
       case 'save-payout': {
         const status = document.querySelector(`[data-payout-status-id="${rawId}"]`)?.value;
-        const payload = {
-          status,
-          paid_at: status === 'paid' ? new Date().toISOString() : null,
-        };
-        await supabase.from('steward_payouts').update(payload).eq('id', id);
+        if (status === 'paid') {
+          const reference = String(ui.stewardPayoutReference?.value || '').trim();
+          await supabase.rpc('mark_steward_payout_paid', {
+            p_payout_id: id,
+            p_reference: reference,
+          });
+        } else {
+          const payload = {
+            status,
+            paid_at: null,
+          };
+          await supabase.from('steward_payouts').update(payload).eq('id', id);
+        }
         break;
       }
       case 'view-contact': {
@@ -940,6 +1044,69 @@ function wireForms() {
   bindUploadInput('createProductImageFile', 'createProductImageUrl', 'products');
   bindUploadInput('editProductImageFile', 'editProductImageUrl', 'products');
   bindUploadInput('newImageFile', 'newImageUrl', 'products/gallery');
+
+  ui.autoApproveCommissionsBtn?.addEventListener('click', async () => {
+    try {
+      const { data, error } = await supabase.rpc('auto_approve_steward_commissions');
+      if (error) throw error;
+      window.alert(`Approved ${Number(data || 0)} commission row(s).`);
+      await refreshAll();
+    } catch (error) {
+      showError(error.message || 'Could not auto-approve commissions.');
+    }
+  });
+
+  ui.reconcileCommissionsBtn?.addEventListener('click', async () => {
+    try {
+      const { data, error } = await supabase.rpc('reconcile_steward_commissions_from_orders', { p_limit: 500 });
+      if (error) throw error;
+      window.alert(
+        `Reconciled commissions. Reversed: ${Number(data?.reversed_count || 0)}, manual review: ${Number(data?.manual_review_count || 0)}.`
+      );
+      await refreshAll();
+    } catch (error) {
+      showError(error.message || 'Could not reconcile commissions.');
+    }
+  });
+
+  ui.issueMilestonesBtn?.addEventListener('click', async () => {
+    try {
+      const periodEnd = String(ui.stewardBatchPeriodEnd?.value || '').trim();
+      const payload = periodEnd ? { p_period_end: periodEnd } : {};
+      const { data, error } = await supabase.rpc('issue_steward_milestone_awards', payload);
+      if (error) throw error;
+      window.alert(`Issued ${Number(data || 0)} milestone award(s).`);
+      await refreshAll();
+    } catch (error) {
+      showError(error.message || 'Could not issue milestone awards.');
+    }
+  });
+
+  ui.createPayoutBatchBtn?.addEventListener('click', async () => {
+    try {
+      const periodEnd = String(ui.stewardBatchPeriodEnd?.value || '').trim();
+      const payload = periodEnd ? { p_period_end: periodEnd } : {};
+      const { data, error } = await supabase.rpc('create_steward_payout_batch', payload);
+      if (error) throw error;
+      window.alert(`Batch created. Payouts: ${Number(data?.payout_count || 0)}, commissions linked: ${Number(data?.commission_count || 0)}.`);
+      await refreshAll();
+    } catch (error) {
+      showError(error.message || 'Could not create payout batch.');
+    }
+  });
+
+  ui.captureInvestorSnapshotBtn?.addEventListener('click', async () => {
+    try {
+      const snapshotDate = String(ui.investorSnapshotDate?.value || '').trim();
+      const payload = snapshotDate ? { p_as_of_date: snapshotDate } : {};
+      const { error } = await supabase.rpc('capture_investor_snapshot_from_live', payload);
+      if (error) throw error;
+      window.alert('Investor snapshot captured.');
+      await refreshAll();
+    } catch (error) {
+      showError(error.message || 'Could not capture investor snapshot.');
+    }
+  });
 
   ui.activateStewardForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -1198,6 +1365,12 @@ async function init() {
   });
 
   wireForms();
+  if (ui.stewardBatchPeriodEnd && !ui.stewardBatchPeriodEnd.value) {
+    ui.stewardBatchPeriodEnd.value = new Date().toISOString().slice(0, 10);
+  }
+  if (ui.investorSnapshotDate && !ui.investorSnapshotDate.value) {
+    ui.investorSnapshotDate.value = new Date().toISOString().slice(0, 10);
+  }
   await bootSession();
   supabase.auth.onAuthStateChange(async () => {
     await bootSession();

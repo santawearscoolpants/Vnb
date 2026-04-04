@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import logoImage from '../assets/logo.png';
 
 interface PageMeta {
   title?: string;
@@ -11,7 +12,7 @@ interface PageMeta {
 
 const BRAND = 'Vines & Branches';
 const DEFAULT_DESCRIPTION = 'African luxury fashion — premium handcrafted pieces from Ghana to the world.';
-const DEFAULT_OG_IMAGE = '/src/assets/logo.png';
+const DEFAULT_OG_IMAGE = logoImage;
 
 function setMeta(name: string, content: string, attribute = 'name') {
   let el = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement | null;
@@ -23,7 +24,19 @@ function setMeta(name: string, content: string, attribute = 'name') {
   el.content = content;
 }
 
+function setCanonical(href: string) {
+  let el = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = href;
+}
+
 export function usePageMeta(meta: PageMeta) {
+  const locationKey = `${window.location.pathname}${window.location.search}`;
+
   useEffect(() => {
     const title = meta.title ? `${meta.title} | ${BRAND}` : BRAND;
     document.title = title;
@@ -35,12 +48,14 @@ export function usePageMeta(meta: PageMeta) {
     setMeta('og:image', meta.ogImage || DEFAULT_OG_IMAGE, 'property');
     setMeta('og:type', meta.ogType || 'website', 'property');
     setMeta('og:site_name', BRAND, 'property');
+    setMeta('og:url', window.location.href, 'property');
 
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', meta.ogTitle || meta.title || BRAND);
     setMeta('twitter:description', meta.ogDescription || meta.description || DEFAULT_DESCRIPTION);
     setMeta('twitter:image', meta.ogImage || DEFAULT_OG_IMAGE);
-  }, [meta.title, meta.description, meta.ogTitle, meta.ogDescription, meta.ogImage, meta.ogType]);
+    setCanonical(window.location.href);
+  }, [locationKey, meta.title, meta.description, meta.ogTitle, meta.ogDescription, meta.ogImage, meta.ogType]);
 }
 
 export const PAGE_META: Record<string, PageMeta> = {

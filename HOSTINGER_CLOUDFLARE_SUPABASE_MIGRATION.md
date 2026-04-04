@@ -39,6 +39,8 @@ VITE_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
+If you use Apache/Hostinger static hosting, keep the SPA fallback rewrite (`.htaccess`) so path routes like `/stewards` and `/account/dashboard` load `index.html` on refresh.
+
 ## Supabase
 
 Run, in order:
@@ -47,6 +49,8 @@ Run, in order:
 2. `supabase/02_rls.sql`
 3. `supabase/03_checkout.sql`
 4. `supabase/04_affiliates.sql`
+5. `supabase/05_steward_applications.sql`
+6. `supabase/06_ops_reporting.sql`
 
 Then import your existing product/order/customer data.
 
@@ -62,7 +66,7 @@ PAYSTACK_SECRET_KEY=YOUR_PAYSTACK_SECRET_KEY
 PAYSTACK_BASE_URL=https://api.paystack.co
 PAYSTACK_CURRENCY=GHS
 PAYSTACK_CHANNELS=card,mobile_money,bank_transfer
-PAYSTACK_CALLBACK_URL=https://www.vnbway.com?payment_callback=1
+PAYSTACK_CALLBACK_URL=https://www.vnbway.com/payment-callback?payment_callback=1
 FRONTEND_ORIGIN=https://www.vnbway.com
 ALLOWED_ORIGINS=https://www.vnbway.com,https://admin.vnbway.com
 MEDIA_BASE_URL=https://media.vnbway.com

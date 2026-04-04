@@ -42,7 +42,7 @@ type FormData = {
 };
 
 export function CheckoutPage() {
-  const { goBack } = useRouter();
+  const { goBack, navigateTo } = useRouter();
   const { cart } = useCart();
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
@@ -73,11 +73,14 @@ export function CheckoutPage() {
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [stewardCodeInput, setStewardCodeInput] = useState('');
   const [stewardCodeStatus, setStewardCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [quote, setQuote] = useState<{ subtotal: number; shipping: number; tax: number; total: number; policy?: { tax_rate?: number } } | null>(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
 
   const items = cart?.items ?? [];
-  const subtotal = Number(cart?.total ?? 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const subtotal = Number(quote?.subtotal ?? cart?.total ?? 0);
+  const shipping = Number(quote?.shipping ?? 0);
+  const tax = Number(quote?.tax ?? 0);
+  const total = Number(quote?.total ?? (subtotal + shipping + tax));
   const isEmpty = items.length === 0;
 
   useEffect(() => {
@@ -100,6 +103,39 @@ export function CheckoutPage() {
         toast.error('Could not verify steward code.');
       });
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (isEmpty || !form.country) {
+      setQuote(null);
+      return;
+    }
+
+    setIsQuoteLoading(true);
+    api
+      .getCheckoutQuote({
+        country: form.country,
+        items: items.map((item) => ({
+          product_id: item.product,
+          quantity: item.quantity,
+          size: item.size || '',
+          color: item.color || '',
+        })),
+      })
+      .then((result) => {
+        if (!cancelled) setQuote(result);
+      })
+      .catch(() => {
+        if (!cancelled) setQuote(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsQuoteLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form.country, isEmpty, items]);
 
   function set(field: keyof FormData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -486,10 +522,17 @@ export function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-xs text-zinc-600">
                     <span>Shipping</span>
-                    <span className="text-green-700">Free</span>
+                    <span className={shipping === 0 ? 'text-green-700' : ''}>
+                      {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs text-zinc-600">
-                    <span>Tax (8%)</span>
+                    <span>
+                      Tax
+                      {quote?.policy?.tax_rate
+                        ? ` (${Math.round(Number(quote.policy.tax_rate) * 100)}%)`
+                        : ''}
+                    </span>
                     <span>{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between border-t border-zinc-200 pt-2 text-sm font-medium text-black">
@@ -497,6 +540,9 @@ export function CheckoutPage() {
                     <span>{formatPrice(total)}</span>
                   </div>
                 </div>
+                {isQuoteLoading && (
+                  <p className="mt-2 text-xs text-zinc-500">Updating shipping and tax for {form.country}…</p>
+                )}
               </motion.div>
 
               {/* VNB Box */}
@@ -537,8 +583,20 @@ export function CheckoutPage() {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex flex-wrap justify-center gap-4">
-              {['Terms and conditions', 'Privacy & cookies', 'Legal issues', 'Accessibility'].map(link => (
-                <a key={link} href="#" className="text-xs text-zinc-600 hover:text-black">{link}</a>
+              {[
+                { label: 'Terms and conditions', topic: 'terms' },
+                { label: 'Privacy & cookies', topic: 'privacy-policy' },
+                { label: 'Legal issues', topic: 'legal-notices' },
+                { label: 'Accessibility', topic: 'accessibility' },
+              ].map((link) => (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => navigateTo('info', { topic: link.topic })}
+                  className="text-xs text-zinc-600 hover:text-black"
+                >
+                  {link.label}
+                </button>
               ))}
             </div>
             <p className="text-xs text-zinc-600">© Vines & Branches 2025. All rights reserved.</p>

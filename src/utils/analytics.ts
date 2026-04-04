@@ -32,7 +32,7 @@ export function trackPageView(pageName: string) {
   window.gtag('event', 'page_view', {
     page_title: document.title,
     page_location: window.location.href,
-    page_path: `/${pageName}`,
+    page_path: window.location.pathname || `/${pageName}`,
   });
 }
 

@@ -2,9 +2,11 @@ import { Navigation } from './components/Navigation';
 import { FooterNew } from './components/FooterNew';
 import { CurrencyPrompt } from './components/CurrencyPrompt';
 import { RouterProvider, useRouter } from './context/RouterContext';
+import { BrowserRouter } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { CurrencyProvider } from './context/CurrencyContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { I18nProvider } from './i18n/I18nContext';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -98,16 +100,20 @@ function AppContent() {
 
 export default function App() {
   return (
-    <RouterProvider>
-      <AuthProvider>
-        <I18nProvider>
-          <CurrencyProvider>
-            <CartProvider>
-              <AppContent />
-            </CartProvider>
-          </CurrencyProvider>
-        </I18nProvider>
-      </AuthProvider>
-    </RouterProvider>
+    <BrowserRouter>
+      <RouterProvider>
+        <AuthProvider>
+          <I18nProvider>
+            <CurrencyProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <AppContent />
+                </CartProvider>
+              </WishlistProvider>
+            </CurrencyProvider>
+          </I18nProvider>
+        </AuthProvider>
+      </RouterProvider>
+    </BrowserRouter>
   );
 }

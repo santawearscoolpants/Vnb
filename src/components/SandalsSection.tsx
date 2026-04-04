@@ -7,6 +7,7 @@ import { useI18n } from '../i18n/I18nContext';
 import api from '../services/api';
 import { useCurrency } from '../context/CurrencyContext';
 import { resolveMediaUrl } from '../utils/media';
+import { useWishlist } from '../context/WishlistContext';
 
 interface ApiProduct {
   id: number;
@@ -114,7 +115,9 @@ function ProductCard({
 }) {
   const { formatPrice } = useCurrency();
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const { has, toggle } = useWishlist();
+  const wishlistKey = product.slug || String(product.id);
+  const isFavorited = has(wishlistKey);
 
   return (
     <motion.div
@@ -133,7 +136,7 @@ function ProductCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsFavorited(!isFavorited);
+            toggle(wishlistKey);
           }}
           aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
           className="absolute right-2 top-2 z-10 rounded-full border border-black/20 bg-white/80 p-1.5 backdrop-blur-sm transition-all hover:bg-white md:right-4 md:top-4 md:p-2"

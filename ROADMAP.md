@@ -1,6 +1,6 @@
 # VNB — Verified Status And Roadmap
 
-> Status verified against the codebase on April 3, 2026.
+> Status verified against the codebase on April 4, 2026.
 
 This file is intentionally stricter than a hype roadmap. It reflects what is actually implemented in `src/`, `admin-panel/`, `cloudflare/worker/`, and `supabase/`.
 
@@ -41,35 +41,35 @@ This file is intentionally stricter than a hype roadmap. It reflects what is act
 
 These areas exist, but they are not complete enough to describe as fully finished.
 
-- [ ] Routing is still custom in-memory state in [src/context/RouterContext.tsx](/Users/solideogloria/development/Websites/Vnb/src/context/RouterContext.tsx), not real URL-backed routing.
-- [ ] SEO is only partially addressed. Meta tags are client-side only, and deep links are weak because routing is not URL-native.
-- [ ] Shipping and tax are simplistic. The Worker currently uses `shipping = 0` and a fixed `tax = 8%`.
-- [ ] The dashboard payments tab is mostly placeholder UI. It does not manage real saved payment methods.
-- [ ] The investor page and generated investor deck use hardcoded metrics and narrative claims, not live business data.
-- [ ] The Steward program now has a public waitlist page, a steward dashboard tab, and basic admin stewardship tools, but approval workflow depth, payout batching, and fraud/returns handling are still incomplete.
-- [ ] Several non-footer interactions still use placeholder toasts (for example live chat/social prompts) and should be converted to real destinations as the product scope matures.
-- [ ] Wishlist hearts are local UI state only. There is no real wishlist model or persistence.
-- [ ] The storefront says confirmation and shipping emails will happen, but there is no current transactional email pipeline in the Worker or frontend repo.
-- [ ] There is no automated test suite covering checkout, auth, admin CRUD, or payment callback.
+- [x] Routing now uses `react-router-dom` with canonical path URLs (legacy `?page=` links auto-normalize to path routes).
+- [x] SEO baseline now includes canonical path URLs, sitemap (`/sitemap.xml`), robots (`/robots.txt`), and improved canonical/OG URL consistency.
+- [x] Shipping/tax policy is configurable in Worker runtime vars and enforced via live checkout quote calls before payment init.
+- [x] Dashboard payments now show real attempts, and steward payout profile editing is now explicit (without implying stored customer card methods).
+- [x] Investor reporting now has a formal source of truth via `investor_reporting_snapshots` + `get_latest_public_investor_metrics()` RPC.
+- [x] Steward workflow now includes hold windows, auto-approval, payout batches, cancellation reconciliation, and milestone issuance RPCs.
+- [x] Non-footer placeholder toasts were replaced with real page destinations.
+- [x] Wishlist hearts now persist through a local wishlist model.
+- [x] Transactional email pipeline exists in the Worker (order confirmation and order status updates when configured).
+- [ ] Automated tests now exist as baseline smoke coverage, but flow-level integration coverage for checkout/auth/admin is still thin.
 
 ## Launch-Critical Next Steps
 
 If the goal is a credible public launch, this is the order I would use.
 
 ### 1. Trust And Navigation
-- [ ] Replace the custom router with URL-backed routing so refresh, deep linking, and analytics are reliable.
+- [x] Replace the custom router with path-based URL routing so refresh, deep linking, and analytics are reliable.
 - [x] Build real legal pages and wire footer links to actual routes.
 - [x] Remove or replace footer/service/about placeholder link toasts with real pages.
 
 ### 2. Commerce Reliability
-- [ ] Review shipping and tax rules and encode the real business policy in the Worker and order records.
-- [ ] Add transactional emails for order confirmation and fulfillment updates.
+- [x] Review shipping and tax rules and encode the real business policy in the Worker and order records.
+- [x] Add transactional emails for order confirmation and fulfillment updates.
 - [ ] Test the three core payment states end to end: success, cancelled, and failed verification.
-- [ ] Decide whether the dashboard “Payments” tab should become real saved methods functionality or be removed from the account area for now.
-- [ ] Tighten steward payout operations, commission review workflow, steward activation workflow, and milestone issuance workflow on top of the new ledger tables.
+- [x] Decide whether the dashboard “Payments” tab should become real saved methods functionality or be removed from the account area for now.
+- [x] Tighten steward payout operations, commission review workflow, steward activation workflow, and milestone issuance workflow on top of the new ledger tables.
 
 ### 3. Brand Honesty
-- [ ] Replace investor metrics and deck claims with real numbers, or hide the investment page until the business data is defensible.
+- [x] Replace investor metrics and deck claims with real numbers, or hide the investment page until the business data is defensible.
 - [ ] Audit every user-facing promise in copy against what the platform actually does today.
 
 ### 4. Engineering Hardening

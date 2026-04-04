@@ -18,7 +18,7 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 
 1. Open Supabase project
 2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`, then `supabase/03_checkout.sql`
-3. Run `supabase/04_affiliates.sql` if you want the VNB Steward module enabled
+3. Run `supabase/04_affiliates.sql`, `supabase/05_steward_applications.sql`, and `supabase/06_ops_reporting.sql` for the full VNB Steward + reporting module
 
 ## 2) Create admin user
 
@@ -47,7 +47,9 @@ window.VNB_ADMIN_CONFIG = {
 };
 ```
 
-`API_BASE_URL` should point at your Cloudflare Worker. The admin panel now uploads category and product images through `POST /media/upload`, then writes the returned URL into the form field automatically.
+`API_BASE_URL` should point at your Cloudflare Worker. The admin panel now:
+- uploads category/product images through `POST /media/upload`
+- updates order status through `POST /orders/status` (which can trigger transactional status emails)
 
 ## 4) Deploy via GitHub Actions (optional)
 
@@ -98,7 +100,19 @@ The affiliate/community promotion program now has schema support for:
 - milestone definitions and awards
 - reward ledger records
 
-The admin panel does not yet expose steward management UI. For now, those records are managed in Supabase until dedicated admin screens are built.
+The admin panel now includes first-pass stewardship operations:
+
+- waitlist review + status updates
+- steward activation/update form (tier/rate/course + primary code)
+- commission status updates + hold visibility
+- payout status updates
+- RPC actions for auto-approve, cancelled-order commission reconciliation, milestone issuance, and payout batch creation
+- milestone awards visibility for audit and operations follow-up
+
+The invest tab now also includes investor reporting snapshots:
+
+- capture a dated snapshot from live platform counts
+- review latest public/private snapshots and update cadence
 
 ## Testing the admin panel locally
 

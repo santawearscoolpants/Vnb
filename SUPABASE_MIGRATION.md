@@ -2,11 +2,13 @@
 
 This repo now includes:
 
-- `supabase/schema.sql` -> complete database schema + RLS policies
+- `supabase/schema.sql` -> schema snapshot (use numbered scripts below as source of truth for latest rollout)
 - `supabase/01_core.sql` -> core tables/functions/triggers (run first)
 - `supabase/02_rls.sql` -> RLS + policies, rerun-safe with `drop policy if exists`
 - `supabase/03_checkout.sql` -> payment finalization RPC for Worker-driven checkout
 - `supabase/04_affiliates.sql` -> VNB Steward waitlist, referral, commission, payout, and milestone module
+- `supabase/05_steward_applications.sql` -> steward application workflow + invite-code validation RPC
+- `supabase/06_ops_reporting.sql` -> steward ops hardening + investor reporting snapshots/RPCs
 - `admin-panel/` -> deployable admin website for `admin.vnbway.com`
 
 ## Immediate goal achieved
@@ -21,10 +23,12 @@ Use the admin site + Supabase dashboard for auth/user management.
 3. Run `supabase/02_rls.sql`
 4. Run `supabase/03_checkout.sql`
 5. Run `supabase/04_affiliates.sql`
-6. Create an auth admin user
-7. Insert that user into `public.admin_users`
-8. Configure and deploy `admin-panel/` to `admin.vnbway.com`
-9. Import your legacy catalog/order/customer data into Supabase tables
+6. Run `supabase/05_steward_applications.sql`
+7. Run `supabase/06_ops_reporting.sql`
+8. Create an auth admin user
+9. Insert that user into `public.admin_users`
+10. Configure and deploy `admin-panel/` to `admin.vnbway.com`
+11. Import your legacy catalog/order/customer data into Supabase tables
 
 ## Data import order
 

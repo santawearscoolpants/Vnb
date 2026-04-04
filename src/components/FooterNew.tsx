@@ -1,8 +1,4 @@
 import { motion } from 'motion/react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { useI18n } from '../i18n/I18nContext';
 import { useRouter } from '../context/RouterContext';
 import logo from "../assets/logo.png";
@@ -44,16 +40,6 @@ export function FooterNew() {
     { label: 'Sitemap', page: 'info', topic: 'sitemap' },
   ];
 
-  const [email, setEmail] = useState('');
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      toast.success('Successfully subscribed to our newsletter!');
-      setEmail('');
-    }
-  };
-
   const navigateFooterLink = (link: { page?: string; topic?: string }) => {
     if (!link.page) return;
     if (link.topic) {
@@ -86,7 +72,7 @@ export function FooterNew() {
               , or you may also{' '}
               <button
                 type="button"
-                onClick={() => toast.info('Live chat will be available soon.')}
+                onClick={() => navigateTo('contact')}
                 className="underline hover:text-black"
               >
                 chat with us
@@ -150,7 +136,7 @@ export function FooterNew() {
             <p className="mb-4 text-xs text-zinc-700">
               <button
                 type="button"
-                onClick={() => toast.info('Email/SMS sign-up details coming soon.')}
+                onClick={() => navigateTo('contact', { topic: 'newsletter' })}
                 className="underline hover:text-black"
               >
                 {t('newsletter.subscribe')}
@@ -160,7 +146,7 @@ export function FooterNew() {
             <p className="text-xs text-zinc-700">
               <button
                 type="button"
-                onClick={() => toast.info('Social channels will be linked soon.')}
+                onClick={() => navigateTo('info', { topic: 'latest-news' })}
                 className="underline hover:text-black"
               >
                 {t('footer.followUs')}

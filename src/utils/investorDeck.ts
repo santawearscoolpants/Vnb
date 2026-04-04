@@ -51,10 +51,10 @@ export function generateInvestorDeck() {
   doc.setFontSize(12);
   doc.setTextColor(GREY);
   const opp = [
-    "Africa's luxury goods market is projected to exceed $8 billion by 2027.",
-    'Ghana is emerging as a key gateway for premium fashion on the continent.',
-    'There is no established luxury brand authentically rooted in African craftsmanship.',
-    'VNB occupies this white-space with a vertically integrated, omnichannel model.',
+    'VNB focuses on premium African fashion with disciplined, data-backed growth.',
+    'Current operations are commerce-first with verified checkout and order controls.',
+    'Expansion assumptions are staged and validated against operational performance.',
+    'Investor updates should be tied to current internal metrics, not static hype claims.',
   ];
   opp.forEach((line, i) => {
     doc.circle(24, 52 + i * 14 - 1, 1.5, 'F');
@@ -72,11 +72,11 @@ export function generateInvestorDeck() {
 
   const kpis: [string, string][] = [
     ['Year Founded', '2024'],
-    ['Product Lines', '4'],
-    ['Registered Customers', '500+'],
-    ['Target Markets', '3 (Ghana, Nigeria, Diaspora)'],
-    ['Online Store', 'Live — e-commerce with Paystack payments'],
-    ['Repeat Purchase Rate', 'Growing month-over-month'],
+    ['Online Store', 'Live'],
+    ['Payment Verification', 'Implemented (Paystack)'],
+    ['Admin Operations', 'Catalog, media, order controls live'],
+    ['Investor Reporting', 'Use live internal dashboard exports'],
+    ['Data Policy', 'Avoid static unverifiable claims in decks'],
   ];
   doc.setFontSize(12);
   kpis.forEach(([label, value], i) => {

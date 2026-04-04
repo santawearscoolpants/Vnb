@@ -1,6 +1,6 @@
 # VNB Launch Checklist
 
-> This checklist is based on the current codebase as of April 3, 2026.
+> This checklist is based on the current codebase as of April 4, 2026.
 
 ## Already In Place
 
@@ -15,25 +15,26 @@
 
 ## Must Finish Before A Serious Public Launch
 
-- [ ] Replace the custom in-memory router with URL-backed routing.
+- [x] Replace the custom in-memory router with canonical path routing.
 - [x] Build Terms, Privacy, Legal Notices, Sitemap, and Accessibility pages.
 - [x] Replace footer placeholder link toasts with real pages or remove dead links.
-- [ ] Add transactional emails for order confirmation and shipping/order-status updates.
-- [ ] Review and implement the real shipping policy.
-- [ ] Review and implement the real tax policy instead of the fixed `8%` placeholder logic.
+- [x] Add transactional emails for order confirmation and shipping/order-status updates.
+- [x] Review and implement the real shipping policy.
+- [x] Review and implement the real tax policy instead of the fixed `8%` placeholder logic.
 - [ ] Run full checkout QA for success, cancellation, duplicate callback, and failed verification flows.
-- [ ] Decide whether the investment page is public-ready. If not, hide it until the numbers are real.
-- [ ] Remove or implement wishlist UI so it is not fake interaction.
+- [x] Decide whether the investment page is public-ready. If not, hide it until the numbers are real.
+- [x] Remove or implement wishlist UI so it is not fake interaction.
 - [x] Build the public VNB Steward waitlist/join flow.
 - [x] Build first-pass steward/admin operations for steward activation, code management, commission review, and steward reporting.
-- [ ] Add a stricter approval workflow, fraud/returns hold logic, and payout batching for bi-weekly steward payouts.
+- [x] Add a stricter approval workflow, fraud/returns hold logic, and payout batching for bi-weekly steward payouts.
+- [x] Add baseline automated tests for routing helpers (`npm test` with Vitest).
 
 ## Should Finish Soon After Launch
 
 - [ ] Add automated smoke tests for auth, checkout, payment callback, and admin login.
 - [ ] Add admin workflow support for fulfillment communication, not just order status edits.
 - [x] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
-- [ ] Improve SEO beyond client-side meta updates.
+- [x] Improve SEO baseline beyond client-side meta updates (path URLs + sitemap + robots + canonical URL consistency).
 - [ ] Add a real order tracking/status communication flow.
 - [ ] Reduce bundle size and split large frontend chunks.
 
@@ -42,7 +43,7 @@
 - [ ] Saved wishlist across sessions and devices.
 - [ ] Saved payment methods if the business really needs them.
 - [ ] Richer category filtering and sorting.
-- [ ] Better investor/admin reporting dashboards.
+- [x] Better investor/admin reporting dashboards.
 - [ ] Dedicated content pages for stores, repairs, personalization, careers, sustainability, and brand stories.
 
 ## My Definition Of “Complete”

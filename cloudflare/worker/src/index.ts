@@ -10,6 +10,16 @@ type Env = {
   FRONTEND_ORIGIN: string;
   ALLOWED_ORIGINS?: string;
   MEDIA_BASE_URL?: string;
+  SHIPPING_LOCAL_COUNTRIES?: string;
+  SHIPPING_LOCAL?: string;
+  SHIPPING_INTERNATIONAL?: string;
+  FREE_SHIPPING_THRESHOLD?: string;
+  TAX_MODE?: string;
+  TAX_RATE?: string;
+  TAXABLE_COUNTRIES?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  EMAIL_REPLY_TO?: string;
   MEDIA_BUCKET: R2Bucket;
 };
 
@@ -29,7 +39,9 @@ type ResolvedStewardReferral = {
 };
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
-const TAX_RATE = 0.08;
+const DEFAULT_TAX_RATE = 0.08;
+const ORDER_STATUS_VALUES = new Set(['pending', 'processing', 'shipped', 'delivered', 'cancelled']);
+const PAYMENT_STATUS_VALUES = new Set(['pending', 'paid', 'failed']);
 
 function getAllowedOrigin(request: Request, env: Env) {
   const origin = request.headers.get('Origin');
@@ -80,7 +92,7 @@ function paystackChannels(env: Env) {
 }
 
 function callbackUrl(env: Env) {
-  return env.PAYSTACK_CALLBACK_URL || `${env.FRONTEND_ORIGIN}?payment_callback=1`;
+  return env.PAYSTACK_CALLBACK_URL || `${env.FRONTEND_ORIGIN}/payment-callback?payment_callback=1`;
 }
 
 function toSubunit(amount: number) {
@@ -89,6 +101,62 @@ function toSubunit(amount: number) {
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function parseNumber(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function normalizeCountry(value: string) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function parseCountrySet(raw: string | undefined, fallback: string[]) {
+  const values = (raw || fallback.join(','))
+    .split(',')
+    .map((item) => normalizeCountry(item))
+    .filter(Boolean);
+  return new Set(values);
+}
+
+function isLocalCountry(country: string, env: Env) {
+  const local = parseCountrySet(env.SHIPPING_LOCAL_COUNTRIES, ['Ghana']);
+  return local.has(normalizeCountry(country));
+}
+
+function isTaxableCountry(country: string, env: Env) {
+  const taxable = parseCountrySet(env.TAXABLE_COUNTRIES, ['Ghana']);
+  return taxable.has(normalizeCountry(country));
+}
+
+function calculateTotals(subtotal: number, country: string, env: Env) {
+  const freeShippingThreshold = Math.max(0, parseNumber(env.FREE_SHIPPING_THRESHOLD, 0));
+  let shipping = 0;
+  if (freeShippingThreshold <= 0 || subtotal < freeShippingThreshold) {
+    shipping = isLocalCountry(country, env)
+      ? Math.max(0, parseNumber(env.SHIPPING_LOCAL, 0))
+      : Math.max(0, parseNumber(env.SHIPPING_INTERNATIONAL, 0));
+  }
+
+  const taxMode = (env.TAX_MODE || 'country').toLowerCase();
+  const taxRate = Math.max(0, parseNumber(env.TAX_RATE, DEFAULT_TAX_RATE));
+  const taxable = taxMode === 'flat' ? true : isTaxableCountry(country, env);
+  const tax = taxable ? Number((subtotal * taxRate).toFixed(2)) : 0;
+  const total = Number((subtotal + shipping + tax).toFixed(2));
+
+  return {
+    subtotal: Number(subtotal.toFixed(2)),
+    shipping: Number(shipping.toFixed(2)),
+    tax,
+    total,
+    policy: {
+      free_shipping_threshold: Number(freeShippingThreshold.toFixed(2)),
+      shipping_mode: isLocalCountry(country, env) ? 'local' : 'international',
+      tax_mode: taxMode,
+      tax_rate: taxRate,
+    },
+  };
 }
 
 function slugifyFilename(name: string) {
@@ -164,6 +232,16 @@ async function getPaymentAttemptByReference(env: Env, reference: string) {
     limit: '1',
   });
   const rows = await supabaseRequest<any[]>(env, `/rest/v1/payment_attempts?${params.toString()}`, { method: 'GET' });
+  return rows[0] || null;
+}
+
+async function getOrderWithItemsById(env: Env, id: number) {
+  const params = new URLSearchParams({
+    select: 'id,order_number,email,first_name,last_name,total,payment_currency,status,created_at,order_items(product_name,quantity,subtotal)',
+    id: `eq.${id}`,
+    limit: '1',
+  });
+  const rows = await supabaseRequest<any[]>(env, `/rest/v1/orders?${params.toString()}`, { method: 'GET' });
   return rows[0] || null;
 }
 
@@ -328,9 +406,7 @@ async function handleCheckoutInit(request: Request, env: Env) {
     return badRequest(error?.message || 'Invalid cart payload.', request, env);
   }
 
-  const shipping = 0;
-  const tax = Number((subtotal * TAX_RATE).toFixed(2));
-  const total = Number((subtotal + tax + shipping).toFixed(2));
+  const totals = calculateTotals(subtotal, String(body.country || ''), env);
   const reference = `VNBPAY-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
   const user = await getAuthUser(request, env);
   const resolvedReferral = await resolveStewardReferralCode(env, String(body.referral_code || ''));
@@ -350,10 +426,10 @@ async function handleCheckoutInit(request: Request, env: Env) {
       zip_code: body.zip_code,
       country: body.country,
       notes: body.notes || '',
-      subtotal: subtotal.toFixed(2),
-      shipping: shipping.toFixed(2),
-      tax: tax.toFixed(2),
-      total: total.toFixed(2),
+      subtotal: totals.subtotal.toFixed(2),
+      shipping: totals.shipping.toFixed(2),
+      tax: totals.tax.toFixed(2),
+      total: totals.total.toFixed(2),
       currency: paystackCurrency(env),
       status: 'initialized',
       steward_id: resolvedReferral?.steward_id || null,
@@ -364,6 +440,7 @@ async function handleCheckoutInit(request: Request, env: Env) {
         display_name: resolvedReferral.display_name,
         commission_tier: resolvedReferral.commission_tier,
         commission_rate: String(resolvedReferral.commission_rate),
+        pricing_policy: totals.policy,
       } : {},
       cart_snapshot: snapshot,
       cart_item_ids: [],
@@ -374,7 +451,7 @@ async function handleCheckoutInit(request: Request, env: Env) {
     const paystack = await initializePaystackTransaction(env, {
       reference,
       email: body.email,
-      amount: toSubunit(total),
+      amount: toSubunit(totals.total),
       currency: paystackCurrency(env),
       callback_url: callbackUrl(env),
       metadata: {
@@ -398,6 +475,133 @@ async function handleCheckoutInit(request: Request, env: Env) {
     await updatePaymentAttempt(env, reference, { status: 'failed' });
     return badRequest(error?.message || 'Unable to initialize payment.', request, env, 502);
   }
+}
+
+async function handleCheckoutQuote(request: Request, env: Env) {
+  const body = await request.json<any>().catch(() => null);
+  if (!body) return badRequest('Invalid JSON body.', request, env);
+  const country = String(body.country || '').trim();
+  if (!country) return badRequest('Missing country.', request, env);
+
+  const items = Array.isArray(body.items) ? (body.items as CheckoutItem[]) : [];
+  if (!items.length) return badRequest('Cart is empty.', request, env);
+
+  const uniqueIds = [...new Set(items.map((item) => Number(item.product_id)).filter(Boolean))];
+  const products = await getProductsByIds(env, uniqueIds);
+  const productMap = new Map(products.map((product) => [product.id, product]));
+
+  let subtotal = 0;
+  for (const item of items) {
+    const product = productMap.get(Number(item.product_id));
+    if (!product || !product.is_active) return badRequest(`Product ${item.product_id} is unavailable.`, request, env);
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) return badRequest('Invalid cart quantity.', request, env);
+    if (product.stock_quantity < item.quantity) return badRequest(`Insufficient stock for ${product.name}.`, request, env);
+    subtotal += Number(product.price) * item.quantity;
+  }
+
+  return json(calculateTotals(subtotal, country, env), request, env);
+}
+
+async function sendEmailViaResend(env: Env, payload: Record<string, unknown>) {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) return false;
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return response.ok;
+}
+
+function renderOrderItemsHtml(items: Array<{ product_name: string; quantity: number; subtotal: string | number }>) {
+  return items
+    .map((item) => `<li>${item.quantity} × ${item.product_name} — ${Number(item.subtotal || 0).toFixed(2)}</li>`)
+    .join('');
+}
+
+async function sendOrderConfirmationEmail(env: Env, order: any) {
+  if (!order?.email) return;
+  const currency = order.payment_currency || 'GHS';
+  const items = Array.isArray(order.order_items) ? order.order_items : [];
+  const payload: Record<string, unknown> = {
+    from: env.EMAIL_FROM,
+    to: [order.email],
+    subject: `VNB Order Confirmation — ${order.order_number || 'Order'}`,
+    html: `
+      <h2>Thank you for shopping with VNB.</h2>
+      <p>Your payment has been verified and your order is now processing.</p>
+      <p><strong>Order number:</strong> ${order.order_number || '-'}</p>
+      <p><strong>Total:</strong> ${currency} ${Number(order.total || 0).toFixed(2)}</p>
+      <p><strong>Status:</strong> ${order.status || 'processing'}</p>
+      <h3>Items</h3>
+      <ul>${renderOrderItemsHtml(items)}</ul>
+      <p>We will send updates as your order progresses.</p>
+    `,
+    text: `Order ${order.order_number || ''} confirmed. Total ${currency} ${Number(order.total || 0).toFixed(2)}.`,
+  };
+  if (env.EMAIL_REPLY_TO) payload.reply_to = env.EMAIL_REPLY_TO;
+  await sendEmailViaResend(env, payload);
+}
+
+async function sendOrderStatusEmail(env: Env, order: any, previousStatus: string) {
+  if (!order?.email || previousStatus === order.status) return;
+  const currency = order.payment_currency || 'GHS';
+  const payload: Record<string, unknown> = {
+    from: env.EMAIL_FROM,
+    to: [order.email],
+    subject: `VNB Order Update — ${order.order_number || 'Order'} (${String(order.status || '').toUpperCase()})`,
+    html: `
+      <h2>Your VNB order status was updated.</h2>
+      <p><strong>Order number:</strong> ${order.order_number || '-'}</p>
+      <p><strong>Previous status:</strong> ${previousStatus || 'pending'}</p>
+      <p><strong>Current status:</strong> ${order.status || '-'}</p>
+      <p><strong>Total:</strong> ${currency} ${Number(order.total || 0).toFixed(2)}</p>
+      <p>If you need support, reply to this email and our team will help.</p>
+    `,
+    text: `Order ${order.order_number || ''} moved from ${previousStatus} to ${order.status}.`,
+  };
+  if (env.EMAIL_REPLY_TO) payload.reply_to = env.EMAIL_REPLY_TO;
+  await sendEmailViaResend(env, payload);
+}
+
+async function handleOrderStatusUpdate(request: Request, env: Env) {
+  const user = await getAuthUser(request, env);
+  if (!user) return badRequest('Authentication required.', request, env, 401);
+  if (!(await isAdmin(env, user.id))) return badRequest('Admin access required.', request, env, 403);
+
+  const body = await request.json<any>().catch(() => null);
+  if (!body) return badRequest('Invalid JSON body.', request, env);
+
+  const orderId = Number(body.order_id);
+  const status = String(body.status || '');
+  const paymentStatus = String(body.payment_status || '');
+  if (!Number.isFinite(orderId) || orderId <= 0) return badRequest('Invalid order_id.', request, env);
+  if (!ORDER_STATUS_VALUES.has(status)) return badRequest('Invalid order status.', request, env);
+  if (paymentStatus && !PAYMENT_STATUS_VALUES.has(paymentStatus)) return badRequest('Invalid payment status.', request, env);
+
+  const params = new URLSearchParams({
+    select: 'id,order_number,email,total,payment_currency,status',
+    id: `eq.${orderId}`,
+    limit: '1',
+  });
+  const existingRows = await supabaseRequest<any[]>(env, `/rest/v1/orders?${params.toString()}`, { method: 'GET' });
+  const existingOrder = existingRows[0];
+  if (!existingOrder) return badRequest('Order not found.', request, env, 404);
+  const previousStatus = existingOrder.status || '';
+
+  const patch: Record<string, unknown> = { status };
+  if (paymentStatus) patch.payment_status = paymentStatus;
+  await supabaseRequest(env, `/rest/v1/orders?id=eq.${orderId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  });
+
+  const updatedRows = await supabaseRequest<any[]>(env, `/rest/v1/orders?${params.toString()}`, { method: 'GET' });
+  const updated = updatedRows[0] || existingOrder;
+  await sendOrderStatusEmail(env, updated, previousStatus);
+  return json({ ok: true, order: updated }, request, env);
 }
 
 async function handlePaymentVerify(request: Request, env: Env) {
@@ -437,6 +641,8 @@ async function handlePaymentVerify(request: Request, env: Env) {
     }
 
     const order = await finalizePaymentAttempt(env, reference, paystack.status, paystack.paid_at || nowIso());
+    const orderWithItems = order?.id ? await getOrderWithItemsById(env, order.id) : order;
+    await sendOrderConfirmationEmail(env, orderWithItems || order);
     return json({ status: 'success', order }, request, env);
   } catch (error: any) {
     return badRequest(error?.message || 'Unable to verify payment.', request, env, 502);
@@ -456,7 +662,9 @@ async function handlePaystackWebhook(request: Request, env: Env) {
       const paystack = await verifyPaystackTransaction(env, reference);
       const attempt = await getPaymentAttemptByReference(env, reference);
       if (attempt && !attempt.order_id && paystack.status === 'success') {
-        await finalizePaymentAttempt(env, reference, paystack.status, paystack.paid_at || nowIso());
+        const order = await finalizePaymentAttempt(env, reference, paystack.status, paystack.paid_at || nowIso());
+        const orderWithItems = order?.id ? await getOrderWithItemsById(env, order.id) : order;
+        await sendOrderConfirmationEmail(env, orderWithItems || order);
       }
     } catch {
       // Webhooks should be idempotent; swallow errors and let retries happen.
@@ -510,8 +718,14 @@ export default {
       if (request.method === 'POST' && url.pathname === '/checkout/init') {
         return handleCheckoutInit(request, env);
       }
+      if (request.method === 'POST' && url.pathname === '/checkout/quote') {
+        return handleCheckoutQuote(request, env);
+      }
       if (request.method === 'GET' && url.pathname === '/payments/verify') {
         return handlePaymentVerify(request, env);
+      }
+      if (request.method === 'POST' && url.pathname === '/orders/status') {
+        return handleOrderStatusUpdate(request, env);
       }
       if (request.method === 'POST' && url.pathname === '/webhooks/paystack') {
         return handlePaystackWebhook(request, env);

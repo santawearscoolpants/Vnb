@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { TrendingUp, Users, Globe, Award, ArrowRight, Check } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import logo from "../assets/logo.png";
 import api from '../services/api';
@@ -49,13 +49,6 @@ const investmentTiers = [
   },
 ];
 
-const metrics = [
-  { label: 'Year Founded', value: '2024', icon: Award },
-  { label: 'Product Lines', value: '4', icon: TrendingUp },
-  { label: 'Registered Customers', value: '500+', icon: Users },
-  { label: 'Target Markets', value: '3', icon: Globe },
-];
-
 export function InvestPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -65,6 +58,40 @@ export function InvestPage() {
     message: ''
   });
   const [loading, setLoading] = useState(false);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+  const [metricsMeta, setMetricsMeta] = useState<{ asOf: string | null; source: string }>({
+    asOf: null,
+    source: 'live_fallback',
+  });
+  const [metrics, setMetrics] = useState<Array<{ label: string; value: string; icon: any }>>([
+    { label: 'Active Categories', value: '—', icon: TrendingUp },
+    { label: 'Active Products', value: '—', icon: Users },
+    { label: 'Featured Products', value: '—', icon: Globe },
+    { label: 'Paid Orders (30d)', value: '—', icon: Award },
+  ]);
+
+  useEffect(() => {
+    api.getPublicStoreMetrics()
+      .then((live) => {
+        setMetricsMeta({ asOf: live.as_of_date, source: live.source || 'snapshot' });
+        setMetrics([
+          { label: 'Active Categories', value: String(live.categories), icon: TrendingUp },
+          { label: 'Active Products', value: String(live.active_products), icon: Users },
+          { label: 'Featured Products', value: String(live.featured_products), icon: Globe },
+          { label: 'Paid Orders (30d)', value: live.paid_orders_30d == null ? '—' : String(live.paid_orders_30d), icon: Award },
+        ]);
+      })
+      .catch(() => {
+        setMetricsMeta({ asOf: null, source: 'live_fallback' });
+        setMetrics([
+          { label: 'Active Categories', value: '—', icon: TrendingUp },
+          { label: 'Active Products', value: '—', icon: Users },
+          { label: 'Featured Products', value: '—', icon: Globe },
+          { label: 'Paid Orders (30d)', value: '—', icon: Award },
+        ]);
+      })
+      .finally(() => setMetricsLoading(false));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,8 +148,8 @@ export function InvestPage() {
             />
             <h1 className="mb-6">Invest in the Future of Luxury</h1>
             <p className="mx-auto mb-12 max-w-2xl text-white/80">
-              Join us in building Africa's most prestigious luxury fashion brand. 
-              Be part of a movement that's redefining elegance and craftsmanship.
+              Join us in building a disciplined African luxury fashion house with transparent operations,
+              verified commerce workflows, and deliberate brand growth.
             </p>
             <Button
               size="lg"
@@ -159,6 +186,11 @@ export function InvestPage() {
               </motion.div>
             ))}
           </div>
+          <p className="mt-6 text-center text-xs text-zinc-500">
+            {metricsLoading
+              ? 'Loading investor metrics…'
+              : `Metrics source: ${metricsMeta.source === 'snapshot' ? 'published snapshot' : 'live fallback'}${metricsMeta.asOf ? ` · as of ${metricsMeta.asOf}` : ''}.`}
+          </p>
         </div>
       </section>
 
@@ -181,27 +213,27 @@ export function InvestPage() {
             {[
               {
                 title: 'Market Opportunity',
-                description: 'Africa\'s luxury goods market is projected to exceed $8 billion by 2027, with Ghana positioned as a key gateway to the continent.',
+                description: 'We are focused on the premium segment of African fashion and diaspora demand, with disciplined market testing rather than inflated projections.',
               },
               {
-                title: 'Early-Stage Momentum',
-                description: 'Launched in 2024 with growing traction — 500+ registered customers, repeat purchase rate climbing, and strong social engagement.',
+                title: 'Operational Momentum',
+                description: 'The commerce stack is already live with checkout verification, order processing, and admin control for catalog, media, and fulfillment operations.',
               },
               {
                 title: 'Unique Positioning',
-                description: 'A luxury brand authentically rooted in African craftsmanship with global appeal — no direct local competitor at this quality tier.',
+                description: 'The brand is rooted in African craftsmanship and premium execution, with a clear focus on quality consistency and differentiated storytelling.',
               },
               {
                 title: 'Scalable Model',
-                description: 'Omnichannel approach combining e-commerce, flagship retail, and strategic partnerships across Ghana, Nigeria, and the diaspora.',
+                description: 'Current growth is commerce-first. Expansion into retail and partnerships is staged against proof of demand and operational readiness.',
               },
               {
                 title: 'Founding Team',
-                description: 'Passionate founders with deep knowledge of African fashion, supply-chain logistics, and digital commerce.',
+                description: 'The team is execution-focused across product curation, ecommerce, and backend operations.',
               },
               {
                 title: 'Sustainability Focus',
-                description: 'Ethical sourcing and local production appeal to the growing market of conscious luxury consumers worldwide.',
+                description: 'Quality and durability remain central; sustainability reporting will expand as operational measurement matures.',
               },
             ].map((item, index) => (
               <motion.div

@@ -266,12 +266,36 @@
 
         <section id="stewardFinance" class="panel">
           <div class="card">
+            <h3>Payout automation</h3>
+            <div class="grid three">
+              <label>
+                Batch period end
+                <input type="date" id="stewardBatchPeriodEnd" />
+              </label>
+              <label>
+                Payout reference (optional)
+                <input type="text" id="stewardPayoutReference" placeholder="bank transfer reference" />
+              </label>
+              <div class="actions">
+                <button type="button" id="autoApproveCommissionsBtn">Auto-approve eligible commissions</button>
+                <button type="button" id="reconcileCommissionsBtn">Reconcile cancelled-order commissions</button>
+                <button type="button" id="issueMilestonesBtn">Issue milestone awards</button>
+                <button type="button" id="createPayoutBatchBtn" class="primary">Create payout batch</button>
+              </div>
+            </div>
+            <p class="muted tiny">This uses Supabase RPCs to apply hold rules, move eligible commissions, and create payout rows.</p>
+          </div>
+          <div class="card">
             <h3>Steward commissions</h3>
             <div id="stewardCommissionsTable"></div>
           </div>
           <div class="card">
             <h3>Steward payouts</h3>
             <div id="stewardPayoutsTable"></div>
+          </div>
+          <div class="card">
+            <h3>Milestone awards</h3>
+            <div id="stewardMilestoneAwardsTable"></div>
           </div>
         </section>
 
@@ -283,6 +307,19 @@
         </section>
 
         <section id="invest" class="panel">
+          <div class="card">
+            <h3>Investor reporting snapshots</h3>
+            <div class="grid three">
+              <label>
+                Snapshot date
+                <input type="date" id="investorSnapshotDate" />
+              </label>
+              <div class="actions">
+                <button type="button" id="captureInvestorSnapshotBtn">Capture snapshot from live data</button>
+              </div>
+            </div>
+            <div id="investorSnapshotsTable"></div>
+          </div>
           <div class="card">
             <h3>Investment inquiries</h3>
             <div id="investTable"></div>
