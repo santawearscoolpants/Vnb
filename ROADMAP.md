@@ -50,7 +50,7 @@ These areas exist, but they are not complete enough to describe as fully finishe
 - [x] Non-footer placeholder toasts were replaced with real page destinations.
 - [x] Wishlist hearts now persist through a local wishlist model.
 - [x] Transactional email pipeline exists in the Worker (order confirmation and order status updates when configured).
-- [ ] Automated tests now exist as baseline smoke coverage, but flow-level integration coverage for checkout/auth/admin is still thin.
+- [ ] Automated tests now include a runnable smoke harness (`npm run smoke`) plus Vitest baselines, but CI-enforced flow-level integration coverage is still thin.
 
 ## Launch-Critical Next Steps
 
@@ -70,12 +70,12 @@ If the goal is a credible public launch, this is the order I would use.
 
 ### 3. Brand Honesty
 - [x] Replace investor metrics and deck claims with real numbers, or hide the investment page until the business data is defensible.
-- [ ] Audit every user-facing promise in copy against what the platform actually does today.
+- [x] Audit every user-facing promise in copy against what the platform actually does today.
 
 ### 4. Engineering Hardening
-- [ ] Add automated smoke tests for sign up, sign in, checkout init, payment callback, and admin login.
-- [ ] Add a small QA checklist for mobile, desktop, and payment callback recovery.
-- [ ] Trim obviously unused dependencies like `next` from the Vite app unless there is a near-term plan to use them.
+- [x] Add automated smoke tests for sign up, sign in, checkout init, payment callback, and admin login.
+- [x] Add a small QA checklist for mobile, desktop, and payment callback recovery.
+- [x] Trim obviously unused dependencies like `next` from the Vite app unless there is a near-term plan to use them.
 
 ## What “Complete” Should Mean For This Website
 

@@ -62,6 +62,8 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 - [SUPABASE_MIGRATION.md](SUPABASE_MIGRATION.md)
 - [ROADMAP.md](ROADMAP.md)
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
+- [QA_CHECKLIST.md](QA_CHECKLIST.md)
+- [COPY_PROMISE_AUDIT.md](COPY_PROMISE_AUDIT.md)
 - [affiliate.md](affiliate.md)
 - [cloudflare/worker/README.md](cloudflare/worker/README.md)
 - [admin-panel/README.md](admin-panel/README.md)
@@ -78,6 +80,14 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```bash
 npm run build
 ```
+
+## Smoke Tests
+
+```bash
+npm run smoke
+```
+
+See [scripts/smoke/README.md](scripts/smoke/README.md) for environment variables.
 
 ## License
 

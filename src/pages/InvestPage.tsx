@@ -104,7 +104,7 @@ export function InvestPage() {
         tier: formData.amount,
         message: formData.message
       });
-      toast.success('Thank you for your interest! Our investment team will contact you within 48 hours.');
+      toast.success('Thank you for your interest. Our investment team will review and contact you soon.');
       setFormData({ name: '', email: '', phone: '', amount: '', message: '' });
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit inquiry. Please try again.');

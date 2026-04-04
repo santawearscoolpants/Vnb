@@ -12,6 +12,8 @@
 - [x] Admin panel is liveable for product, order, message, and media management.
 - [x] Worker and R2 architecture exists for `api.vnbway.com` and `media.vnbway.com`.
 - [x] Steward referral attribution, commission schema, payout schema, and milestone schema are scaffolded.
+- [x] Manual QA checklist exists for desktop/mobile/payment-callback recovery.
+- [x] Smoke harness exists for auth, checkout init, payment callback behavior, and admin login guards (`npm run smoke`).
 
 ## Must Finish Before A Serious Public Launch
 
@@ -31,7 +33,7 @@
 
 ## Should Finish Soon After Launch
 
-- [ ] Add automated smoke tests for auth, checkout, payment callback, and admin login.
+- [x] Add automated smoke tests for auth, checkout, payment callback, and admin login.
 - [ ] Add admin workflow support for fulfillment communication, not just order status edits.
 - [x] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
 - [x] Improve SEO baseline beyond client-side meta updates (path URLs + sitemap + robots + canonical URL consistency).

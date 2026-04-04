@@ -280,7 +280,7 @@ export function StewardsPage() {
               <li>Open <span className="font-medium text-zinc-900">Account → VNB Steward</span> and choose affiliate or brand ambassador.</li>
               <li>
                 Brand ambassadors must enter the invite code we emailed you, then tap Apply. You will receive a
-                confirmation email after submission.
+                confirmation message after submission. If email notifications are enabled, you will also receive an email.
               </li>
               <li>When approved, your steward code appears in your account for sharing and tracking earnings.</li>
             </ol>

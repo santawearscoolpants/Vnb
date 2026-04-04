@@ -557,7 +557,13 @@ export function CheckoutPage() {
                   <Package className="mt-0.5 h-10 w-10 flex-shrink-0 text-amber-500" />
                   <p className="text-xs text-zinc-700">
                     All orders are delivered in a VNB box tied with a ribbon, with the exception of{' '}
-                    <a href="#" className="underline">certain items</a>.
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('info', { topic: 'returns-disputes' })}
+                      className="underline"
+                    >
+                      certain items
+                    </button>.
                   </p>
                 </div>
               </motion.div>

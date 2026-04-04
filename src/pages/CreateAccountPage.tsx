@@ -283,13 +283,21 @@ export function CreateAccountPage() {
           </h1>
           <p className={`mb-8 ${helperBase}`} style={{ lineHeight: 1.6 }}>
             By creating an account, you agree to our{' '}
-            <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded">
+            <button
+              type="button"
+              onClick={() => navigateTo('info', { topic: 'terms-and-conditions' })}
+              className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded"
+            >
               General Terms and Conditions
-            </a>{' '}
+            </button>{' '}
             and our{' '}
-            <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded">
+            <button
+              type="button"
+              onClick={() => navigateTo('info', { topic: 'privacy-policy' })}
+              className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded"
+            >
               Privacy Policy
-            </a>{' '}
+            </button>{' '}
             (Vines &amp; Branches).
           </p>
 
@@ -693,13 +701,21 @@ export function CreateAccountPage() {
                   style={{ lineHeight: 1.5 }}
                 >
                   I agree to the{' '}
-                  <a href="#" className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black rounded">
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('info', { topic: 'terms-and-conditions' })}
+                    className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black rounded"
+                  >
                     Terms and Conditions
-                  </a>{' '}
+                  </button>{' '}
                   and{' '}
-                  <a href="#" className="underline hover:text-black focus:ring-2 focus:ring-black rounded">
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('info', { topic: 'privacy-policy' })}
+                    className="underline hover:text-black focus:ring-2 focus:ring-black rounded"
+                  >
                     Privacy Policy
-                  </a>{' '}
+                  </button>{' '}
                   <strong>(required)</strong>.
                 </label>
               </div>

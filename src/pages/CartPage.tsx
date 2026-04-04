@@ -142,9 +142,13 @@ export function CartPage() {
                 <div className="h-16 w-16 flex-shrink-0 rounded-sm bg-amber-500" />
                 <p className="text-xs text-zinc-700">
                   All orders are delivered in a VNB box tied with a ribbon, with the exception of{' '}
-                  <a href="#" className="underline">
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('info', { topic: 'returns-disputes' })}
+                    className="underline"
+                  >
                     certain items
-                  </a>
+                  </button>
                   .
                 </p>
               </div>
@@ -181,18 +185,21 @@ export function CartPage() {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex flex-wrap justify-center gap-4">
-              <a href="#" className="text-xs text-zinc-600 hover:text-black">
-                Terms and conditions
-              </a>
-              <a href="#" className="text-xs text-zinc-600 hover:text-black">
-                Privacy & cookies
-              </a>
-              <a href="#" className="text-xs text-zinc-600 hover:text-black">
-                Legal issues
-              </a>
-              <a href="#" className="text-xs text-zinc-600 hover:text-black">
-                Accessibility
-              </a>
+              {[
+                { label: 'Terms and conditions', topic: 'terms' },
+                { label: 'Privacy & cookies', topic: 'privacy-policy' },
+                { label: 'Legal issues', topic: 'legal-notices' },
+                { label: 'Accessibility', topic: 'accessibility' },
+              ].map((link) => (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => navigateTo('info', { topic: link.topic })}
+                  className="text-xs text-zinc-600 hover:text-black"
+                >
+                  {link.label}
+                </button>
+              ))}
             </div>
             <p className="text-xs text-zinc-600">© Vines & Branches 2025. All rights reserved.</p>
           </div>

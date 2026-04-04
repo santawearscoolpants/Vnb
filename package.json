@@ -40,7 +40,6 @@
             "jspdf": "^4.2.0",
             "lucide-react": "^0.487.0",
             "motion": "*",
-            "next": "^16.0.1",
             "next-themes": "^0.4.6",
             "react": "^18.3.1",
             "react-day-picker": "^8.10.1",
@@ -71,6 +70,7 @@
             "build": "vite build",
             "preview": "vite preview",
             "test": "vitest run",
+            "smoke": "node scripts/smoke/smoke.mjs",
             "functions:deploy": "supabase functions deploy resend-email-hook",
             "functions:serve": "supabase functions serve resend-email-hook --no-verify-jwt"
       }

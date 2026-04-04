@@ -684,7 +684,8 @@ function StewardTab() {
                   <span className="font-medium text-black">
                     {application.application_type === 'brand_ambassador' ? 'a brand ambassador' : 'an affiliate'}
                   </span>
-                  . We sent a confirmation email—our team will review and activate eligible stewards.
+                  . Our team will review and activate eligible stewards. If steward email notifications are enabled,
+                  you will also receive an email update.
                 </p>
                 <p className="mt-3 text-xs text-zinc-500">
                   Submitted {new Date(application.submitted_at).toLocaleString()} · Status:{' '}

@@ -80,9 +80,9 @@ export function OrderConfirmationPage() {
           </div>
 
           <p className="mb-8 text-xs text-zinc-500 leading-relaxed">
-            A confirmation email will be sent to{' '}
+            {`If email notifications are enabled, a confirmation will be sent to `}
             <span className="font-medium text-zinc-700">{email || 'your email'}</span>.
-            We'll notify you when your order ships.
+            We&apos;ll notify you when your order ships.
           </p>
 
           <Button
@@ -100,8 +100,20 @@ export function OrderConfirmationPage() {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex flex-wrap justify-center gap-4">
-              {['Terms and conditions', 'Privacy & cookies', 'Legal issues', 'Accessibility'].map(link => (
-                <a key={link} href="#" className="text-xs text-zinc-600 hover:text-black">{link}</a>
+              {[
+                { label: 'Terms and conditions', topic: 'terms' },
+                { label: 'Privacy & cookies', topic: 'privacy-policy' },
+                { label: 'Legal issues', topic: 'legal-notices' },
+                { label: 'Accessibility', topic: 'accessibility' },
+              ].map((link) => (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => navigateTo('info', { topic: link.topic })}
+                  className="text-xs text-zinc-600 hover:text-black"
+                >
+                  {link.label}
+                </button>
               ))}
             </div>
             <p className="text-xs text-zinc-600">© Vines & Branches 2025. All rights reserved.</p>

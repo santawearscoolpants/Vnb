@@ -442,7 +442,7 @@ class ApiService {
       message: data.message || '',
     });
     if (error) throw new Error(error.message);
-    return { message: 'Thank you for your interest! Our investment team will contact you within 48 hours.' };
+    return { message: 'Thank you for your interest. Our investment team will review and contact you soon.' };
   }
 
   async getPublicStoreMetrics(): Promise<PublicStoreMetrics> {
@@ -570,8 +570,7 @@ class ApiService {
       throw new Error(msg);
     }
     return {
-      message:
-        'Application received. Check your email for confirmation. We will review and follow up soon.',
+      message: 'Application received. We will review and follow up soon.',
     };
   }
 
