@@ -37,7 +37,7 @@
 - [ ] Add admin workflow support for fulfillment communication, not just order status edits.
 - [x] Add steward-facing reporting or portal views for code performance, commissions, and payouts.
 - [x] Improve SEO baseline beyond client-side meta updates (path URLs + sitemap + robots + canonical URL consistency).
-- [ ] Add a real order tracking/status communication flow.
+- [x] Add a real order tracking/status communication flow.
 - [ ] Reduce bundle size and split large frontend chunks.
 
 ## Optional But Valuable Polish

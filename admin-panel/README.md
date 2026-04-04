@@ -9,6 +9,7 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 - **Categories:** create, list, edit (name, slug, description, image_url, is_active), activate/deactivate, delete
 - **Products:** create, list, edit (name, slug, sku, category, price, stock, image_url, description, is_active, is_featured), and in **Edit product**: manage **images** (add/delete, alt text, primary, order), **colors** (name, hex, available), **sizes** (size, available), **details** (bullet points with order); activate/deactivate, feature/unfeature, delete
 - **Orders:** list, edit status + payment status, **View** (order items + shipping address)
+- **Orders:** list, edit status + payment status + tracking carrier/number/url + status note + estimated delivery date, **View** includes fulfillment metadata
 - **Payment attempts:** read-only list (reference, email, total, currency, status, Paystack status)
 - **Contact messages:** list (with phone), **View** (full message), mark read/unread
 - **Investment inquiries:** list (with phone), **View** (full message), mark contacted
@@ -18,7 +19,7 @@ This folder is a standalone admin website you can deploy to `admin.vnbway.com`.
 
 1. Open Supabase project
 2. SQL Editor: run `supabase/01_core.sql`, then `supabase/02_rls.sql`, then `supabase/03_checkout.sql`
-3. Run `supabase/04_affiliates.sql`, `supabase/05_steward_applications.sql`, and `supabase/06_ops_reporting.sql` for the full VNB Steward + reporting module
+3. Run `supabase/04_affiliates.sql`, `supabase/05_steward_applications.sql`, `supabase/06_ops_reporting.sql`, and `supabase/07_order_tracking.sql` for the full VNB Steward + reporting + tracking module
 
 ## 2) Create admin user
 
@@ -49,7 +50,7 @@ window.VNB_ADMIN_CONFIG = {
 
 `API_BASE_URL` should point at your Cloudflare Worker. The admin panel now:
 - uploads category/product images through `POST /media/upload`
-- updates order status through `POST /orders/status` (which can trigger transactional status emails)
+- updates order status and tracking details through `POST /orders/status` (which can trigger transactional status emails)
 
 ## 4) Deploy via GitHub Actions (optional)
 

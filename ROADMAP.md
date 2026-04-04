@@ -67,6 +67,7 @@ If the goal is a credible public launch, this is the order I would use.
 - [ ] Test the three core payment states end to end: success, cancelled, and failed verification.
 - [x] Decide whether the dashboard “Payments” tab should become real saved methods functionality or be removed from the account area for now.
 - [x] Tighten steward payout operations, commission review workflow, steward activation workflow, and milestone issuance workflow on top of the new ledger tables.
+- [x] Add a real order tracking/status communication flow across admin updates, customer account visibility, and status emails.
 
 ### 3. Brand Honesty
 - [x] Replace investor metrics and deck claims with real numbers, or hide the investment page until the business data is defensible.

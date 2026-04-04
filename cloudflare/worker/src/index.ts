@@ -548,6 +548,12 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
 async function sendOrderStatusEmail(env: Env, order: any, previousStatus: string) {
   if (!order?.email || previousStatus === order.status) return;
   const currency = order.payment_currency || 'GHS';
+  const trackingLine = order.tracking_url
+    ? `<p><strong>Tracking:</strong> <a href="${order.tracking_url}">${order.tracking_number || order.tracking_url}</a></p>`
+    : order.tracking_number
+      ? `<p><strong>Tracking number:</strong> ${order.tracking_number}</p>`
+      : '';
+  const noteLine = order.status_note ? `<p><strong>Note:</strong> ${order.status_note}</p>` : '';
   const payload: Record<string, unknown> = {
     from: env.EMAIL_FROM,
     to: [order.email],
@@ -558,9 +564,11 @@ async function sendOrderStatusEmail(env: Env, order: any, previousStatus: string
       <p><strong>Previous status:</strong> ${previousStatus || 'pending'}</p>
       <p><strong>Current status:</strong> ${order.status || '-'}</p>
       <p><strong>Total:</strong> ${currency} ${Number(order.total || 0).toFixed(2)}</p>
+      ${trackingLine}
+      ${noteLine}
       <p>If you need support, reply to this email and our team will help.</p>
     `,
-    text: `Order ${order.order_number || ''} moved from ${previousStatus} to ${order.status}.`,
+    text: `Order ${order.order_number || ''} moved from ${previousStatus} to ${order.status}. ${order.tracking_number ? `Tracking: ${order.tracking_number}.` : ''} ${order.status_note ? `Note: ${order.status_note}` : ''}`.trim(),
   };
   if (env.EMAIL_REPLY_TO) payload.reply_to = env.EMAIL_REPLY_TO;
   await sendEmailViaResend(env, payload);
@@ -577,12 +585,30 @@ async function handleOrderStatusUpdate(request: Request, env: Env) {
   const orderId = Number(body.order_id);
   const status = String(body.status || '');
   const paymentStatus = String(body.payment_status || '');
+  const trackingCarrier = String(body.tracking_carrier || '').trim();
+  const trackingNumber = String(body.tracking_number || '').trim();
+  const trackingUrl = String(body.tracking_url || '').trim();
+  const statusNote = String(body.status_note || '').trim();
+  const estimatedDeliveryDate = String(body.estimated_delivery_date || '').trim();
   if (!Number.isFinite(orderId) || orderId <= 0) return badRequest('Invalid order_id.', request, env);
   if (!ORDER_STATUS_VALUES.has(status)) return badRequest('Invalid order status.', request, env);
   if (paymentStatus && !PAYMENT_STATUS_VALUES.has(paymentStatus)) return badRequest('Invalid payment status.', request, env);
+  if (trackingUrl) {
+    try {
+      const parsed = new URL(trackingUrl);
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return badRequest('Invalid tracking_url protocol.', request, env);
+      }
+    } catch {
+      return badRequest('Invalid tracking_url.', request, env);
+    }
+  }
+  if (estimatedDeliveryDate && !/^\d{4}-\d{2}-\d{2}$/.test(estimatedDeliveryDate)) {
+    return badRequest('Invalid estimated_delivery_date format. Use YYYY-MM-DD.', request, env);
+  }
 
   const params = new URLSearchParams({
-    select: 'id,order_number,email,total,payment_currency,status',
+    select: 'id,order_number,email,total,payment_currency,status,tracking_carrier,tracking_number,tracking_url,status_note,shipped_at,delivered_at,estimated_delivery_date',
     id: `eq.${orderId}`,
     limit: '1',
   });
@@ -593,6 +619,19 @@ async function handleOrderStatusUpdate(request: Request, env: Env) {
 
   const patch: Record<string, unknown> = { status };
   if (paymentStatus) patch.payment_status = paymentStatus;
+  patch.tracking_carrier = trackingCarrier;
+  patch.tracking_number = trackingNumber;
+  patch.tracking_url = trackingUrl;
+  patch.status_note = statusNote;
+  patch.estimated_delivery_date = estimatedDeliveryDate || null;
+  if (status === 'shipped') {
+    patch.shipped_at = existingOrder.shipped_at || nowIso();
+  }
+  if (status === 'delivered') {
+    patch.delivered_at = existingOrder.delivered_at || nowIso();
+    patch.shipped_at = existingOrder.shipped_at || nowIso();
+  }
+
   await supabaseRequest(env, `/rest/v1/orders?id=eq.${orderId}`, {
     method: 'PATCH',
     body: JSON.stringify(patch),

@@ -396,7 +396,7 @@ async function loadProducts() {
 async function loadOrders() {
   const { data, error } = await supabase
     .from('orders')
-    .select('id,order_number,email,total,status,payment_status,created_at')
+    .select('id,order_number,email,total,status,payment_status,tracking_carrier,tracking_number,tracking_url,status_note,estimated_delivery_date,created_at')
     .order('created_at', { ascending: false })
     .limit(200);
   if (error) throw error;
@@ -407,7 +407,7 @@ async function loadOrders() {
 
   ui.ordersTable.innerHTML = `
     <table>
-      <thead><tr><th>Order</th><th>Email</th><th>Total</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Order</th><th>Email</th><th>Total</th><th>Status</th><th>Payment</th><th>Tracking</th><th>Status note</th><th>Actions</th></tr></thead>
       <tbody>
         ${orderList
           .map(
@@ -429,6 +429,15 @@ async function loadOrders() {
                   .map((s) => `<option value="${s}" ${o.payment_status === s ? 'selected' : ''}>${s}</option>`)
                   .join('')}
               </select>
+            </td>
+            <td>
+              <input data-order-tracking-carrier-id="${o.id}" placeholder="carrier" value="${escapeHtml(o.tracking_carrier || '')}" />
+              <input data-order-tracking-number-id="${o.id}" placeholder="tracking number" value="${escapeHtml(o.tracking_number || '')}" />
+              <input data-order-tracking-url-id="${o.id}" placeholder="tracking url" value="${escapeHtml(o.tracking_url || '')}" />
+              <input data-order-estimated-delivery-id="${o.id}" type="date" value="${escapeHtml(o.estimated_delivery_date || '')}" />
+            </td>
+            <td>
+              <input data-order-status-note-id="${o.id}" placeholder="internal/customer note" value="${escapeHtml(o.status_note || '')}" />
             </td>
             <td class="actions">
               <button data-action="view-order" data-id="${o.id}">View</button>
@@ -850,10 +859,20 @@ async function handleTableActions(event) {
       case 'save-order': {
         const status = document.querySelector(`[data-order-status-id="${id}"]`)?.value;
         const payment_status = document.querySelector(`[data-order-payment-id="${id}"]`)?.value;
+        const tracking_carrier = document.querySelector(`[data-order-tracking-carrier-id="${id}"]`)?.value || '';
+        const tracking_number = document.querySelector(`[data-order-tracking-number-id="${id}"]`)?.value || '';
+        const tracking_url = document.querySelector(`[data-order-tracking-url-id="${id}"]`)?.value || '';
+        const status_note = document.querySelector(`[data-order-status-note-id="${id}"]`)?.value || '';
+        const estimated_delivery_date = document.querySelector(`[data-order-estimated-delivery-id="${id}"]`)?.value || '';
         await adminApiRequest('/orders/status', {
           order_id: id,
           status,
           payment_status,
+          tracking_carrier,
+          tracking_number,
+          tracking_url,
+          status_note,
+          estimated_delivery_date,
         });
         break;
       }
@@ -932,9 +951,18 @@ async function handleTableActions(event) {
         const { data: items } = await supabase.from('order_items').select('*').eq('order_id', id);
         const addr = [order.address, order.city, order.state, order.zip_code, order.country].filter(Boolean).join(', ');
         const rows = (items || []).map((i) => `${escapeHtml(i.product_name)} × ${i.quantity} (${i.size || '-'} / ${i.color || '-'}) — ${Number(i.subtotal).toFixed(2)}`).join('\n');
+        const trackingParts = [
+          order.tracking_carrier ? `<p><strong>Carrier:</strong> ${escapeHtml(order.tracking_carrier)}</p>` : '',
+          order.tracking_number ? `<p><strong>Tracking #:</strong> ${escapeHtml(order.tracking_number)}</p>` : '',
+          order.tracking_url ? `<p><strong>Tracking URL:</strong> <a href="${escapeHtml(order.tracking_url)}" target="_blank" rel="noreferrer">${escapeHtml(order.tracking_url)}</a></p>` : '',
+          order.estimated_delivery_date ? `<p><strong>Estimated delivery:</strong> ${escapeHtml(order.estimated_delivery_date)}</p>` : '',
+          order.shipped_at ? `<p><strong>Shipped at:</strong> ${new Date(order.shipped_at).toLocaleString()}</p>` : '',
+          order.delivered_at ? `<p><strong>Delivered at:</strong> ${new Date(order.delivered_at).toLocaleString()}</p>` : '',
+          order.status_note ? `<p><strong>Status note:</strong> ${escapeHtml(order.status_note)}</p>` : '',
+        ].filter(Boolean).join('');
         showDetailModal(
           `Order ${escapeHtml(order.order_number)}`,
-          `<p><strong>Customer:</strong> ${escapeHtml(order.first_name)} ${escapeHtml(order.last_name)} &lt;${escapeHtml(order.email)}&gt;</p><p><strong>Phone:</strong> ${escapeHtml(order.phone)}</p><p><strong>Address:</strong> ${escapeHtml(addr)}</p><p><strong>Items:</strong></p><pre>${rows || '-'}</pre><p><strong>Total:</strong> ${escapeHtml(order.payment_currency || 'GHS')} ${Number(order.total).toFixed(2)}</p>`
+          `<p><strong>Customer:</strong> ${escapeHtml(order.first_name)} ${escapeHtml(order.last_name)} &lt;${escapeHtml(order.email)}&gt;</p><p><strong>Phone:</strong> ${escapeHtml(order.phone)}</p><p><strong>Address:</strong> ${escapeHtml(addr)}</p><p><strong>Items:</strong></p><pre>${rows || '-'}</pre><p><strong>Total:</strong> ${escapeHtml(order.payment_currency || 'GHS')} ${Number(order.total).toFixed(2)}</p>${trackingParts}`
         );
         break;
       }

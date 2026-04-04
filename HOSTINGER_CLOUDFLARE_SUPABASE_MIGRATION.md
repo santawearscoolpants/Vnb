@@ -51,6 +51,8 @@ Run, in order:
 4. `supabase/04_affiliates.sql`
 5. `supabase/05_steward_applications.sql`
 6. `supabase/06_ops_reporting.sql`
+7. `supabase/07_order_tracking.sql`
+7. `supabase/07_order_tracking.sql`
 
 Then import your existing product/order/customer data.
 

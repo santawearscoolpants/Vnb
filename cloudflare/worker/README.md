@@ -54,3 +54,4 @@ npm run dev
 - Steward referral attribution is validated here and persisted to payment attempts before payment completes.
 - Customer-facing reads still go directly to Supabase from the frontend.
 - Order status updates can be routed through this Worker so customer status emails are sent centrally.
+- `POST /orders/status` also accepts tracking metadata (`tracking_carrier`, `tracking_number`, `tracking_url`, `status_note`, `estimated_delivery_date`) and persists fulfillment timestamps (`shipped_at`, `delivered_at`) from status transitions.

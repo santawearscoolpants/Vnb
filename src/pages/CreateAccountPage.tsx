@@ -285,7 +285,7 @@ export function CreateAccountPage() {
             By creating an account, you agree to our{' '}
             <button
               type="button"
-              onClick={() => navigateTo('info', { topic: 'terms-and-conditions' })}
+              onClick={() => navigateTo('info', { topic: 'terms' })}
               className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 rounded"
             >
               General Terms and Conditions
@@ -703,7 +703,7 @@ export function CreateAccountPage() {
                   I agree to the{' '}
                   <button
                     type="button"
-                    onClick={() => navigateTo('info', { topic: 'terms-and-conditions' })}
+                    onClick={() => navigateTo('info', { topic: 'terms' })}
                     className="underline hover:text-black focus:outline-none focus:ring-2 focus:ring-black rounded"
                   >
                     Terms and Conditions

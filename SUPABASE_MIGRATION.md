@@ -9,6 +9,7 @@ This repo now includes:
 - `supabase/04_affiliates.sql` -> VNB Steward waitlist, referral, commission, payout, and milestone module
 - `supabase/05_steward_applications.sql` -> steward application workflow + invite-code validation RPC
 - `supabase/06_ops_reporting.sql` -> steward ops hardening + investor reporting snapshots/RPCs
+- `supabase/07_order_tracking.sql` -> order tracking fields for carrier, tracking number/url, and fulfillment timestamps
 - `admin-panel/` -> deployable admin website for `admin.vnbway.com`
 
 ## Immediate goal achieved
@@ -25,10 +26,11 @@ Use the admin site + Supabase dashboard for auth/user management.
 5. Run `supabase/04_affiliates.sql`
 6. Run `supabase/05_steward_applications.sql`
 7. Run `supabase/06_ops_reporting.sql`
-8. Create an auth admin user
-9. Insert that user into `public.admin_users`
-10. Configure and deploy `admin-panel/` to `admin.vnbway.com`
-11. Import your legacy catalog/order/customer data into Supabase tables
+8. Run `supabase/07_order_tracking.sql`
+9. Create an auth admin user
+10. Insert that user into `public.admin_users`
+11. Configure and deploy `admin-panel/` to `admin.vnbway.com`
+12. Import your legacy catalog/order/customer data into Supabase tables
 
 ## Data import order
 

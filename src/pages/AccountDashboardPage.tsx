@@ -49,6 +49,13 @@ type Order = {
   city: string;
   state: string;
   country: string;
+  tracking_carrier?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  status_note?: string;
+  shipped_at?: string | null;
+  delivered_at?: string | null;
+  estimated_delivery_date?: string | null;
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
@@ -288,6 +295,48 @@ function OrderCard({ order }: { order: Order }) {
               <p className="mt-3 text-xs text-zinc-400">
                 Delivered to: {order.address}, {order.city}, {order.state}, {order.country}
               </p>
+              {(order.tracking_number || order.tracking_url || order.status_note || order.shipped_at || order.delivered_at || order.estimated_delivery_date) && (
+                <div className="mt-3 rounded-sm border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600 space-y-1">
+                  {(order.tracking_carrier || order.tracking_number) && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Tracking:</span>{' '}
+                      {[order.tracking_carrier, order.tracking_number].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                  {order.tracking_url && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Tracking link:</span>{' '}
+                      <a href={order.tracking_url} target="_blank" rel="noreferrer" className="underline hover:text-black">
+                        Open
+                      </a>
+                    </p>
+                  )}
+                  {order.estimated_delivery_date && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Estimated delivery:</span>{' '}
+                      {new Date(order.estimated_delivery_date).toLocaleDateString()}
+                    </p>
+                  )}
+                  {order.shipped_at && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Shipped:</span>{' '}
+                      {new Date(order.shipped_at).toLocaleString()}
+                    </p>
+                  )}
+                  {order.delivered_at && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Delivered:</span>{' '}
+                      {new Date(order.delivered_at).toLocaleString()}
+                    </p>
+                  )}
+                  {order.status_note && (
+                    <p>
+                      <span className="font-medium text-zinc-800">Note:</span>{' '}
+                      {order.status_note}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
