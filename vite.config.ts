@@ -52,6 +52,45 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      // Stable entry + CSS names help shared hosting: index.html and these two paths must always
+      // be uploaded together with the rest of build/assets (lazy chunks still use hashed names).
+      rollupOptions: {
+        output: {
+          entryFileNames: 'assets/app.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name?.endsWith('.css')) return 'assets/app.css';
+            return 'assets/[name]-[hash][extname]';
+          },
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            // Match real React packages only (not @radix-ui/react-*).
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/') ||
+              id.includes('node_modules/react-router')
+            ) {
+              return 'react-vendor';
+            }
+            if (id.includes('node_modules/framer-motion/') || id.includes('node_modules/motion/')) {
+              return 'motion';
+            }
+            if (id.includes('@supabase')) return 'supabase';
+            if (/node_modules\/(cookie|set-cookie-parser)\//.test(id)) return 'supabase';
+            if (id.includes('@radix-ui')) return 'radix';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('recharts')) return 'recharts';
+            if (id.includes('embla-carousel')) return 'carousel';
+            // One Rollup chunk per top-level package avoids a single multi‑MB vendor bundle.
+            const m = /node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(id);
+            const pkg = m?.[1];
+            if (!pkg) return 'vendor';
+            const safe = (pkg.startsWith('@') ? pkg.slice(1) : pkg).replace(/[^a-zA-Z0-9-]/g, '-');
+            return `lib-${safe}`;
+          },
+        },
+      },
     },
     server: {
       port: 3000,

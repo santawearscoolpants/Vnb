@@ -1,8 +1,21 @@
+# Vite SPA on Apache (Hostinger)
+# If /assets/app.js returns HTML, app.js is missing on disk or index.html is stale vs assets (upload full build).
+
+<IfModule mod_mime.c>
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+  AddType text/css .css
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Do not rewrite real files or directories (required so /assets/*.js is not sent to index.html)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Client-side routes → SPA shell
   RewriteRule . /index.html [L]
 </IfModule>
