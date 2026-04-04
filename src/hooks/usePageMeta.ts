@@ -106,4 +106,8 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: 'VNB Stewards',
     description: 'Join the VNB Steward community program, earn commission on verified referred orders, and unlock milestone rewards.',
   },
+  info: {
+    title: 'Information',
+    description: 'Official Vines & Branches information pages for legal notices, policies, and service details.',
+  },
 };

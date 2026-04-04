@@ -16,8 +16,8 @@
 ## Must Finish Before A Serious Public Launch
 
 - [ ] Replace the custom in-memory router with URL-backed routing.
-- [ ] Build Terms, Privacy, Legal Notices, Sitemap, and Accessibility pages.
-- [ ] Replace footer placeholder toasts with real pages or remove the dead links.
+- [x] Build Terms, Privacy, Legal Notices, Sitemap, and Accessibility pages.
+- [x] Replace footer placeholder link toasts with real pages or remove dead links.
 - [ ] Add transactional emails for order confirmation and shipping/order-status updates.
 - [ ] Review and implement the real shipping policy.
 - [ ] Review and implement the real tax policy instead of the fixed `8%` placeholder logic.

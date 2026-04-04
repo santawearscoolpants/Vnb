@@ -23,6 +23,7 @@ import { ContactPage } from './pages/ContactPage';
 import { FAQPage } from './pages/FAQPage';
 import { CareServicesPage } from './pages/CareServicesPage';
 import { StewardsPage } from './pages/StewardsPage';
+import { InfoPage } from './pages/InfoPage';
 import { Toaster } from './components/ui/sonner';
 import { usePageMeta, PAGE_META } from './hooks/usePageMeta';
 import { initGA, trackPageView } from './utils/analytics';
@@ -73,6 +74,8 @@ function AppContent() {
         return <CareServicesPage />;
       case 'stewards':
         return <StewardsPage />;
+      case 'info':
+        return <InfoPage />;
       default:
         return <HomePage />;
     }

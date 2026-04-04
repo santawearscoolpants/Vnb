@@ -12,35 +12,36 @@ export function FooterNew() {
   const { t } = useI18n();
   const { navigateTo } = useRouter();
 
-  const helpLinks: { label: string; page?: string }[] = [
+  const helpLinks: { label: string; page?: string; topic?: string }[] = [
     { label: t('footer.faqs'), page: 'faq' },
     { label: t('footer.productCare'), page: 'care-services' },
-    { label: t('footer.stores') },
+    { label: t('footer.stores'), page: 'info', topic: 'stores' },
   ];
 
-  const servicesLinks = [
-    { label: t('footer.repairs') },
-    { label: t('footer.personalization') },
-    { label: t('footer.artOfGifting') },
-    { label: t('footer.downloadApps') },
+  const servicesLinks: { label: string; page?: string; topic?: string }[] = [
+    { label: t('footer.repairs'), page: 'info', topic: 'repairs' },
+    { label: t('footer.personalization'), page: 'info', topic: 'personalization' },
+    { label: t('footer.artOfGifting'), page: 'info', topic: 'gifting' },
+    { label: t('footer.downloadApps'), page: 'info', topic: 'download-apps' },
   ];
 
-  const aboutLinks = [
+  const aboutLinks: { label: string; page?: string; topic?: string }[] = [
     { label: 'VNB Stewards', page: 'stewards' },
-    { label: t('footer.fashionShows') },
-    { label: t('footer.artsCulture') },
-    { label: t('footer.laMaison') },
-    { label: t('footer.sustainability') },
-    { label: t('footer.latestNews') },
-    { label: t('footer.careers') },
-    { label: t('footer.foundation') },
+    { label: t('footer.fashionShows'), page: 'info', topic: 'fashion-shows' },
+    { label: t('footer.artsCulture'), page: 'info', topic: 'arts-culture' },
+    { label: t('footer.laMaison'), page: 'info', topic: 'la-maison' },
+    { label: t('footer.sustainability'), page: 'info', topic: 'sustainability' },
+    { label: t('footer.latestNews'), page: 'info', topic: 'latest-news' },
+    { label: t('footer.careers'), page: 'info', topic: 'careers' },
+    { label: t('footer.foundation'), page: 'info', topic: 'foundation' },
   ];
 
-  const legalLinks: { label: string; page?: string }[] = [
-    { label: 'Sitemap' },
-    { label: 'Legal Notices' },
-    { label: 'Privacy Policy' },
-    { label: 'Accessibility' },
+  const legalLinks: { label: string; page?: string; topic?: string }[] = [
+    { label: 'Terms & Conditions', page: 'info', topic: 'terms' },
+    { label: 'Privacy Policy', page: 'info', topic: 'privacy-policy' },
+    { label: 'Legal Notices', page: 'info', topic: 'legal-notices' },
+    { label: 'Accessibility', page: 'info', topic: 'accessibility' },
+    { label: 'Sitemap', page: 'info', topic: 'sitemap' },
   ];
 
   const [email, setEmail] = useState('');
@@ -51,6 +52,15 @@ export function FooterNew() {
       toast.success('Successfully subscribed to our newsletter!');
       setEmail('');
     }
+  };
+
+  const navigateFooterLink = (link: { page?: string; topic?: string }) => {
+    if (!link.page) return;
+    if (link.topic) {
+      navigateTo(link.page, { topic: link.topic });
+      return;
+    }
+    navigateTo(link.page);
   };
 
   return (
@@ -88,7 +98,7 @@ export function FooterNew() {
                 <li key={link.label}>
                   <button
                     type="button"
-                    onClick={() => link.page ? navigateTo(link.page) : toast.info('This page will be available soon.')}
+                    onClick={() => navigateFooterLink(link)}
                     className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
@@ -106,7 +116,7 @@ export function FooterNew() {
                 <li key={link.label}>
                   <button
                     type="button"
-                    onClick={() => toast.info('This service will be available soon.')}
+                    onClick={() => navigateFooterLink(link)}
                     className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
@@ -124,7 +134,7 @@ export function FooterNew() {
                 <li key={link.label}>
                   <button
                     type="button"
-                    onClick={() => 'page' in link && link.page ? navigateTo(link.page) : toast.info('This page will be available soon.')}
+                    onClick={() => navigateFooterLink(link)}
                     className="text-left text-xs text-zinc-700 transition-colors hover:text-black"
                   >
                     {link.label}
@@ -189,7 +199,7 @@ export function FooterNew() {
             <button
               key={link.label}
               type="button"
-              onClick={() => toast.info('Legal information pages will be available soon.')}
+              onClick={() => navigateFooterLink(link)}
               className="text-xs text-zinc-600 transition-colors hover:text-black"
             >
               {link.label}

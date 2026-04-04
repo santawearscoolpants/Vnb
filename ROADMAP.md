@@ -35,6 +35,7 @@ This file is intentionally stricter than a hype roadmap. It reflects what is act
 - [x] Currency switching, exchange-rate loading, and geo-based currency prompt exist.
 - [x] English and French translation support exists.
 - [x] Client-side page meta updates and GA page-view tracking exist.
+- [x] Footer links now route to real content pages (legal + service/about information pages), not toast-only dead ends.
 
 ## Partial Or Misleading Today
 
@@ -46,7 +47,7 @@ These areas exist, but they are not complete enough to describe as fully finishe
 - [ ] The dashboard payments tab is mostly placeholder UI. It does not manage real saved payment methods.
 - [ ] The investor page and generated investor deck use hardcoded metrics and narrative claims, not live business data.
 - [ ] The Steward program now has a public waitlist page, a steward dashboard tab, and basic admin stewardship tools, but approval workflow depth, payout batching, and fraud/returns handling are still incomplete.
-- [ ] Footer links are not complete. Several links still show “available soon” toasts instead of real pages.
+- [ ] Several non-footer interactions still use placeholder toasts (for example live chat/social prompts) and should be converted to real destinations as the product scope matures.
 - [ ] Wishlist hearts are local UI state only. There is no real wishlist model or persistence.
 - [ ] The storefront says confirmation and shipping emails will happen, but there is no current transactional email pipeline in the Worker or frontend repo.
 - [ ] There is no automated test suite covering checkout, auth, admin CRUD, or payment callback.
@@ -57,8 +58,8 @@ If the goal is a credible public launch, this is the order I would use.
 
 ### 1. Trust And Navigation
 - [ ] Replace the custom router with URL-backed routing so refresh, deep linking, and analytics are reliable.
-- [ ] Build real legal pages and wire footer links to actual routes.
-- [ ] Remove or hide any footer/service/about links that are still placeholders until their pages exist.
+- [x] Build real legal pages and wire footer links to actual routes.
+- [x] Remove or replace footer/service/about placeholder link toasts with real pages.
 
 ### 2. Commerce Reliability
 - [ ] Review shipping and tax rules and encode the real business policy in the Worker and order records.
