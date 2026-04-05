@@ -11,6 +11,8 @@ const requiredBase = [
 
 const optionalFlows = [
   'SMOKE_CHECKOUT_PRODUCT_ID',
+  'SMOKE_USER_EMAIL',
+  'SMOKE_USER_PASSWORD',
   'SMOKE_ADMIN_EMAIL',
   'SMOKE_ADMIN_PASSWORD',
 ];
@@ -21,6 +23,8 @@ const config = {
   supabaseUrl: String(process.env.SMOKE_SUPABASE_URL || '').replace(/\/+$/, ''),
   supabaseAnonKey: String(process.env.SMOKE_SUPABASE_ANON_KEY || ''),
   checkoutProductId: Number(process.env.SMOKE_CHECKOUT_PRODUCT_ID || 0),
+  smokeUserEmail: String(process.env.SMOKE_USER_EMAIL || '').trim(),
+  smokeUserPassword: String(process.env.SMOKE_USER_PASSWORD || '').trim(),
   adminEmail: String(process.env.SMOKE_ADMIN_EMAIL || ''),
   adminPassword: String(process.env.SMOKE_ADMIN_PASSWORD || ''),
 };
@@ -65,11 +69,13 @@ function requireStatus(response, accepted, message) {
 }
 
 async function main() {
-  const userEmail = randomEmail('smoke-user');
-  const userPassword = `Vnb${Date.now()}!Aa1`;
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  let userEmail = '';
+  let userPassword = '';
+  let userAccessToken = '';
 
   await runCheck('storefront reachable', async () => {
     const response = await fetch(config.frontendUrl, { method: 'GET' });
@@ -85,29 +91,90 @@ async function main() {
     return `${config.apiUrl}/health`;
   });
 
-  await runCheck('auth sign-up', async () => {
-    const { error } = await supabase.auth.signUp({
-      email: userEmail,
-      password: userPassword,
-      options: {
-        data: { first_name: 'Smoke', last_name: 'User' },
+  const quoteProductId = config.checkoutProductId > 0 ? config.checkoutProductId : 4;
+  await runCheck('checkout quote (no auth)', async () => {
+    const response = await fetch(`${config.apiUrl}/checkout/quote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: config.frontendUrl,
       },
+      body: JSON.stringify({
+        country: 'Ghana',
+        items: [{ product_id: quoteProductId, quantity: 1 }],
+      }),
     });
-    if (error) throw new Error(error.message);
-    return userEmail;
+    requireStatus(response, [200], 'Checkout quote failed');
+    const data = await response.json().catch(() => null);
+    if (!data || typeof data.total !== 'number') {
+      throw new Error('Checkout quote returned unexpected payload');
+    }
+    return `product_id=${quoteProductId} total=${data.total}`;
   });
 
-  let userAccessToken = '';
-  await runCheck('auth sign-in', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: userEmail,
-      password: userPassword,
+  const useFixedUser = config.smokeUserEmail && config.smokeUserPassword;
+  if (useFixedUser) {
+    userEmail = config.smokeUserEmail;
+    userPassword = config.smokeUserPassword;
+    pushResult(
+      'auth sign-up',
+      'skipped',
+      'SMOKE_USER_EMAIL and SMOKE_USER_PASSWORD set — using existing confirmed account',
+    );
+    await runCheck('auth sign-in', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: userPassword,
+      });
+      if (error) throw new Error(error.message);
+      userAccessToken = data.session?.access_token || '';
+      if (!userAccessToken) throw new Error('No access token returned from sign-in');
+      return 'session issued';
     });
-    if (error) throw new Error(error.message);
-    userAccessToken = data.session?.access_token || '';
-    if (!userAccessToken) throw new Error('No access token returned from sign-in');
-    return 'session issued';
-  });
+  } else {
+    userEmail = randomEmail('smoke-user');
+    userPassword = `Vnb${Date.now()}!Aa1`;
+    await runCheck('auth sign-up', async () => {
+      const { data, error } = await supabase.auth.signUp({
+        email: userEmail,
+        password: userPassword,
+        options: {
+          data: { first_name: 'Smoke', last_name: 'User' },
+        },
+      });
+      if (error) throw new Error(error.message);
+      if (data.session?.access_token) {
+        userAccessToken = data.session.access_token;
+      }
+      return userEmail;
+    });
+
+    if (userAccessToken) {
+      pushResult('auth sign-in', 'passed', 'session returned on sign-up (no email confirmation delay)');
+    } else {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: userEmail,
+          password: userPassword,
+        });
+        if (error) throw new Error(error.message);
+        userAccessToken = data.session?.access_token || '';
+        if (!userAccessToken) throw new Error('No access token returned from sign-in');
+        pushResult('auth sign-in', 'passed', 'session issued');
+      } catch (e) {
+        const msg = e?.message || 'failed';
+        if (/confirm|verified|not confirmed/i.test(msg)) {
+          pushResult(
+            'auth sign-in',
+            'skipped',
+            'Supabase requires email confirmation for new users. Set SMOKE_USER_EMAIL + SMOKE_USER_PASSWORD to a confirmed account, or disable email confirmations on a staging project.',
+          );
+        } else {
+          pushResult('auth sign-in', 'failed', msg);
+        }
+      }
+    }
+  }
 
   if (config.checkoutProductId > 0 && userAccessToken) {
     let checkoutReference = '';
@@ -174,6 +241,12 @@ async function main() {
         `Complete one Paystack test payment using reference ${checkoutReference}, then re-run verify flow manually.`,
       );
     }
+  } else if (config.checkoutProductId > 0 && !userAccessToken) {
+    pushResult(
+      'checkout/payment flow',
+      'skipped',
+      'SMOKE_CHECKOUT_PRODUCT_ID is set but there is no auth session (email confirmation or auth failure).',
+    );
   } else {
     pushResult(
       'checkout/payment flow',

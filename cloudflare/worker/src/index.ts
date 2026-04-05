@@ -755,22 +755,22 @@ export default {
         return json({ ok: true }, request, env);
       }
       if (request.method === 'POST' && url.pathname === '/checkout/init') {
-        return handleCheckoutInit(request, env);
+        return await handleCheckoutInit(request, env);
       }
       if (request.method === 'POST' && url.pathname === '/checkout/quote') {
-        return handleCheckoutQuote(request, env);
+        return await handleCheckoutQuote(request, env);
       }
       if (request.method === 'GET' && url.pathname === '/payments/verify') {
-        return handlePaymentVerify(request, env);
+        return await handlePaymentVerify(request, env);
       }
       if (request.method === 'POST' && url.pathname === '/orders/status') {
-        return handleOrderStatusUpdate(request, env);
+        return await handleOrderStatusUpdate(request, env);
       }
       if (request.method === 'POST' && url.pathname === '/webhooks/paystack') {
-        return handlePaystackWebhook(request, env);
+        return await handlePaystackWebhook(request, env);
       }
       if (request.method === 'POST' && url.pathname === '/media/upload') {
-        return handleMediaUpload(request, env);
+        return await handleMediaUpload(request, env);
       }
       return badRequest('Not found.', request, env, 404);
     } catch (error: any) {
