@@ -1,14 +1,26 @@
 # Deploys admin-panel/ to Hostinger public_html/admin/ on push to main (when admin-panel changes) or manual run.
+#
+# Cloudflare nameservers: GitHub Actions must connect to Hostinger’s real FTP host, not Cloudflare edge IPs.
+# If `nslookup ftp.yourdomain` shows 104.x / 172.67.x, FTPS to port 21 will time out — set the repo variable
+# ADMIN_HOSTINGER_FTP_SERVER (or manual run “ftp_server” input) to the hostname from hPanel → Files → FTP Accounts.
+# Alternatively set an ftp DNS record to DNS only (grey cloud) pointing at Hostinger’s FTP target.
 name: Deploy Admin Panel to Hostinger (FTP)
 
 on:
   push:
     branches: [main]
     paths: ['admin-panel/**']
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ftp_server:
+        description: Hostinger FTP hostname from hPanel (use when ftp.vnbway.com hits Cloudflare)
+        required: false
+        default: ''
+        type: string
 
 concurrency:
-  group: deploy-admin-hostinger
+  # Bumped so a fresh concurrency group applies after DNS/hosting changes (avoids a stuck old queue).
+  group: deploy-admin-hostinger-cf
   cancel-in-progress: true
 
 jobs:
@@ -21,7 +33,8 @@ jobs:
       - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftp.vnbway.com
+          server: >-
+            ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.ftp_server != '' && github.event.inputs.ftp_server) || vars.ADMIN_HOSTINGER_FTP_SERVER || 'ftp.vnbway.com' }}
           username: ${{ secrets.ADMIN_HOSTINGER_FTP_USERNAME }}
           password: ${{ secrets.ADMIN_HOSTINGER_FTP_PASSWORD }}
           protocol: ftps
