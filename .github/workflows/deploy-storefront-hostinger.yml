@@ -1,0 +1,85 @@
+# Builds the Vite storefront (npm run build → build/) and deploys to Hostinger via FTPS.
+#
+# Use the Hostinger FTP account whose root is the MAIN site document root (typically public_html for
+# www.vnbway.com). The admin workflow often uses a separate account scoped to public_html/admin — do not
+# mix them unless you know both map to the right trees.
+#
+# dangerous-clean-slate: false — only add/update files; does not delete remote paths (e.g. admin/).
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   STOREFRONT_HOSTINGER_FTP_USERNAME
+#   STOREFRONT_HOSTINGER_FTP_PASSWORD
+#   VITE_API_URL
+#   VITE_MEDIA_URL
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+# Optional secret: VITE_GA_MEASUREMENT_ID
+#
+# Variables (optional):
+#   STOREFRONT_HOSTINGER_FTP_SERVER — else ADMIN_HOSTINGER_FTP_SERVER — else ftp.vnbway.com
+#   STOREFRONT_HOSTINGER_FTP_SERVER_DIR — remote folder under FTP login home (default /)
+name: Deploy Storefront to Hostinger (FTP)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - 'components.json'
+      - '.github/workflows/deploy-storefront-hostinger.yml'
+  workflow_dispatch:
+    inputs:
+      ftp_server:
+        description: Override FTP hostname (optional)
+        required: false
+        default: ''
+        type: string
+      server_dir:
+        description: Remote directory under FTP home (e.g. / or /public_html)
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: deploy-storefront-hostinger-cf
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_MEDIA_URL: ${{ secrets.VITE_MEDIA_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+        run: npm ci && npm run build
+
+      - name: Deploy via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.ftp_server != '' && github.event.inputs.ftp_server) || vars.STOREFRONT_HOSTINGER_FTP_SERVER || vars.ADMIN_HOSTINGER_FTP_SERVER || 'ftp.vnbway.com' }}
+          username: ${{ secrets.STOREFRONT_HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.STOREFRONT_HOSTINGER_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: build/
+          server-dir: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.server_dir != '' && github.event.inputs.server_dir) || vars.STOREFRONT_HOSTINGER_FTP_SERVER_DIR || '/' }}
+          dangerous-clean-slate: false
