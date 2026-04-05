@@ -31,6 +31,21 @@ Worker if you like).
 This does not replace your Edge Function `resend-email-hook` (database webhooks);
 it only changes how Supabase Auth sends its own system emails.
 
+Redirect after “Confirm email” (avoid localhost:3000)
+-----------------------------------------------------
+If the confirmation link opens http://localhost:3000, Supabase **Site URL** is still
+set to dev. Fix:
+
+  Dashboard → Authentication → URL Configuration
+    • Site URL: https://www.vnbway.com   (your real storefront origin)
+    • Additional Redirect URLs (add each on its own line, include wildcards if offered):
+        https://www.vnbway.com/**
+        https://vnbway.com/**
+        http://localhost:3000/**          (optional, for local dev)
+
+The storefront also sends emailRedirectTo on sign-up (current browser origin) so new
+signups from production use the correct host even before you fix Site URL.
+
 Optional: remove a stuck / unconfirmed user
 --------------------------------------------
 Prefer: Authentication → Users → select user → Delete.

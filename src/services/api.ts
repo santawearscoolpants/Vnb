@@ -613,6 +613,7 @@ class ApiService {
       email: data.email,
       password: data.password,
       options: {
+        emailRedirectTo: `${window.location.origin}/`,
         data: {
           first_name: data.first_name,
           last_name: data.last_name,
