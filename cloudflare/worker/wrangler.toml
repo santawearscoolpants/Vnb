@@ -8,6 +8,8 @@ binding = "MEDIA_BUCKET"
 bucket_name = "vnbway-media"
 
 [vars]
+# Public project URL; keys stay in the dashboard / Secrets Store (not in git).
+SUPABASE_URL = "https://ebanbtnxyiwgfbfbyvws.supabase.co"
 FRONTEND_ORIGIN = "https://www.vnbway.com"
 PAYSTACK_CURRENCY = "GHS"
 PAYSTACK_CHANNELS = "card,mobile_money,bank_transfer"
