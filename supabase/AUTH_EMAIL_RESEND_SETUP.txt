@@ -31,6 +31,32 @@ Worker if you like).
 This does not replace your Edge Function `resend-email-hook` (database webhooks);
 it only changes how Supabase Auth sends its own system emails.
 
+VNB Steward application / waitlist emails (resend-email-hook)
+-------------------------------------------------------------
+These are **not** Auth emails. They fire from Database Webhooks → Edge Function
+`supabase/functions/resend-email-hook` (Resend HTTP API).
+
+Deploy the function and set secrets: RESEND_API_KEY, RESEND_FROM, WEBHOOK_SECRET,
+SUPABASE_SERVICE_ROLE_KEY (see comments in the function file).
+
+Then Dashboard → Database → Webhooks (or Integrations → Webhooks), add:
+
+  1) Table `public.steward_applications`, event INSERT → function URL  
+     — Sends “We received your VNB Steward application” to the user’s auth email  
+       (Account → VNB Steward apply flow).
+
+  2) Table `public.steward_waitlist`, event INSERT → same function URL  
+     — Sends a waitlist thank-you only when `converted_user_id` is null  
+       (public interest form). Rows created by `submit_steward_application` set  
+       `converted_user_id`, so the hook skips (no duplicate with (1)).
+
+Use header `x-webhook-secret` with the same value as WEBHOOK_SECRET.
+
+If (1) is missing, signed-in applicants get **no** confirmation email even though
+the app shows success. If migration `05_steward_applications.sql` was never applied,
+`submit_steward_application` fails and nothing is stored — check SQL Editor for the
+function and tables `steward_applications`, `steward_waitlist`.
+
 Redirect after “Confirm email” (avoid localhost:3000)
 -----------------------------------------------------
 If the confirmation link opens http://localhost:3000, Supabase **Site URL** is still

@@ -18,6 +18,7 @@ const ui = {
   ordersTable: $('ordersTable'),
   paymentsTable: $('paymentsTable'),
   stewardWaitlistTable: $('stewardWaitlistTable'),
+  stewardApplicationsTable: $('stewardApplicationsTable'),
   activateStewardForm: $('activateStewardForm'),
   stewardsTable: $('stewardsTable'),
   stewardCommissionsTable: $('stewardCommissionsTable'),
@@ -294,6 +295,7 @@ async function loadStats() {
     ['orders', 'Orders'],
     ['payment_attempts', 'Payments'],
     ['steward_waitlist', 'Steward Leads'],
+    ['steward_applications', 'Steward Apps'],
     ['vnb_stewards', 'Stewards'],
     ['steward_commissions', 'Commissions'],
     ['contact_messages', 'Contact'],
@@ -492,14 +494,14 @@ async function loadStewardWaitlist() {
   if (!ui.stewardWaitlistTable) return;
   const { data, error } = await supabase
     .from('steward_waitlist')
-    .select('id,full_name,email,phone,location,background,message,status,created_at')
-    .order('created_at', { ascending: false })
+    .select('id,full_name,email,phone,location,background,message,status,created_at,updated_at,converted_user_id')
+    .order('updated_at', { ascending: false })
     .limit(200);
   if (error) throw error;
 
   ui.stewardWaitlistTable.innerHTML = `
     <table>
-      <thead><tr><th>Name</th><th>Contact</th><th>Location</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Contact</th><th>Location</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead>
       <tbody>
         ${(data || []).map((row) => `
           <tr>
@@ -513,11 +515,38 @@ async function loadStewardWaitlist() {
                 )).join('')}
               </select>
             </td>
-            <td>${new Date(row.created_at).toLocaleString()}</td>
+            <td>${new Date(row.updated_at || row.created_at).toLocaleString()}${row.converted_user_id ? `<div class="muted">account</div>` : ''}</td>
             <td class="actions">
               <button data-action="view-waitlist" data-id="${row.id}">View</button>
               <button data-action="save-waitlist" data-id="${row.id}" class="primary">Save</button>
             </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadStewardApplications() {
+  if (!ui.stewardApplicationsTable) return;
+  const { data, error } = await supabase
+    .from('steward_applications')
+    .select('id,user_id,application_type,ambassador_invite_code,status,submitted_at')
+    .order('submitted_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  ui.stewardApplicationsTable.innerHTML = `
+    <table>
+      <thead><tr><th>User ID</th><th>Type</th><th>Code</th><th>Status</th><th>Submitted</th></tr></thead>
+      <tbody>
+        ${(data || []).length === 0 ? '<tr><td colspan="5" class="muted">No signed-in applications yet (or migration <code>05_steward_applications.sql</code> not applied).</td></tr>' : (data || []).map((row) => `
+          <tr>
+            <td class="muted" style="word-break:break-all;">${escapeHtml(row.user_id)}</td>
+            <td>${escapeHtml(row.application_type || '-')}</td>
+            <td>${escapeHtml(row.ambassador_invite_code || '—')}</td>
+            <td>${escapeHtml(row.status || '-')}</td>
+            <td>${new Date(row.submitted_at).toLocaleString()}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -815,6 +844,7 @@ async function refreshAll() {
     loadOrders(),
     loadPayments(),
     loadStewardWaitlist(),
+    loadStewardApplications(),
     loadStewards(),
     loadStewardCommissions(),
     loadStewardPayouts(),

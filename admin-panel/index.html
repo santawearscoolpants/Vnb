@@ -215,8 +215,20 @@
         <section id="stewardWaitlist" class="panel">
           <div class="card">
             <h3>Steward waitlist</h3>
-            <p class="muted">Review interest, update status, and use the steward activation form once a candidate is approved.</p>
+            <p class="muted">
+              Review interest, update status, and use the steward activation form once a candidate is approved. Rows are
+              sorted by <strong>last updated</strong> so repeat applications (same email) surface at the top.
+            </p>
             <div id="stewardWaitlistTable"></div>
+          </div>
+          <div class="card">
+            <h3>Signed-in steward applications</h3>
+            <p class="muted">
+              One row per auth user who applied from Account → VNB Steward (<code>submit_steward_application</code>).
+              Confirmation email requires a Database Webhook on <code>steward_applications</code> INSERT → Edge Function
+              <code>resend-email-hook</code> (see repo <code>supabase/functions/resend-email-hook</code>).
+            </p>
+            <div id="stewardApplicationsTable"></div>
           </div>
         </section>
 

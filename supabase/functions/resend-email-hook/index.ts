@@ -1,9 +1,11 @@
 /**
  * Resend email dispatcher for Supabase Database Webhooks.
  *
- * Configure two webhooks (Dashboard → Database → Webhooks):
- * 1) Table public.steward_applications, event INSERT → POST this function URL
- * 2) Optional: public.payment_attempts, event INSERT → same URL (steward notify; see env below)
+ * Configure webhooks (Dashboard → Database → Webhooks), all POST this function URL:
+ * 1) public.steward_applications, INSERT → applicant confirmation (signed-in apply flow)
+ * 2) public.steward_waitlist, INSERT → waitlist confirmation only when converted_user_id is null
+ *    (public interest form). Rows from submit_steward_application set converted_user_id — skip to avoid duplicate mail.
+ * 3) Optional: public.payment_attempts, INSERT → steward notify (see env below)
  *
  * Set Edge Function secrets (Dashboard → Edge Functions → Secrets):
  *   RESEND_API_KEY       — Resend API key (re_...)
@@ -21,6 +23,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const RESEND_API = "https://api.resend.com/emails";
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 type DbWebhookPayload = {
   type?: "INSERT" | "UPDATE" | "DELETE";
@@ -180,6 +190,49 @@ Deno.serve(async (req) => {
       return json({ error: "resend failed", detail: out.error }, 502);
     }
     return json({ ok: true, event: "steward_application_confirmation", to: email });
+  }
+
+  // ─── steward_waitlist: public form only (no converted_user_id) ─────────
+  if (schema === "public" && payload.table === "steward_waitlist") {
+    const rec = record as {
+      email?: string | null;
+      full_name?: string | null;
+      converted_user_id?: string | null;
+    };
+    if (rec.converted_user_id) {
+      return json({
+        skipped: true,
+        reason: "converted_user_id set; application confirmation uses steward_applications webhook",
+      });
+    }
+    const email = (rec.email || "").trim();
+    if (!email) {
+      return json({ error: "record missing email" }, 400);
+    }
+    const name = (rec.full_name || "").trim() || "there";
+    const subject = "You're on the VNB Steward waitlist";
+    const text =
+      `Hi ${name},\n\nThanks for your interest in the VNB Steward program. We received your details and will follow up when we're ready to onboard the next cohort.\n\n— Vines & Branches`;
+    const html = `
+<!DOCTYPE html>
+<html><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#18181b;">
+  <p>Hi ${escapeHtml(name)},</p>
+  <p>Thanks for your interest in the <strong>VNB Steward</strong> program. We received your details and will follow up when we're ready to onboard the next cohort.</p>
+  <p style="margin-top:2rem;color:#71717a;font-size:13px;">— Vines & Branches</p>
+</body></html>`;
+
+    const internalBcc = Deno.env.get("RESEND_INTERNAL_BCC")?.trim();
+    const out = await sendResend({
+      to: email,
+      subject,
+      html,
+      text,
+      bcc: internalBcc ? [internalBcc] : undefined,
+    });
+    if (!out.ok) {
+      return json({ error: "resend failed", detail: out.error }, 502);
+    }
+    return json({ ok: true, event: "steward_waitlist_confirmation", to: email });
   }
 
   // ─── payment_attempts: optional steward heads-up ────────────────────────

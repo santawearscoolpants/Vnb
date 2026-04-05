@@ -212,6 +212,10 @@ for select using (
 -- Optional: insert brand-ambassador invite codes (admin SQL or admin panel).
 -- insert into public.steward_invite_codes (code, note) values ('VNB-INV-001', 'Issued to Jane');
 
--- Resend setup: Dashboard → Edge Functions → deploy resend-email-hook; set secrets RESEND_API_KEY, RESEND_FROM,
--- WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY. Database → Webhooks → POST .../functions/v1/resend-email-hook
--- with header x-webhook-secret. Optional second webhook on payment_attempts INSERT (see function env).
+-- Email confirmations (Resend): deploy supabase/functions/resend-email-hook; set secrets RESEND_API_KEY, RESEND_FROM,
+-- WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY. In Supabase Dashboard → Database → Webhooks, POST the function URL with
+-- header x-webhook-secret matching WEBHOOK_SECRET:
+--   • Table steward_applications, INSERT — "We received your application" (signed-in apply from Account → VNB Steward).
+--   • Table steward_waitlist, INSERT — waitlist thank-you only when converted_user_id is null (public form); RPC rows
+--     set converted_user_id so the hook skips (avoids duplicate with steward_applications).
+-- Optional: payment_attempts INSERT (see resend-email-hook env RESEND_NOTIFY_STEWARD_ON_PAYMENT_ATTEMPT).
