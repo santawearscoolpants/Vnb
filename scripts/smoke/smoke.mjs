@@ -134,43 +134,60 @@ async function main() {
   } else {
     userEmail = randomEmail('smoke-user');
     userPassword = `Vnb${Date.now()}!Aa1`;
-    await runCheck('auth sign-up', async () => {
-      const { data, error } = await supabase.auth.signUp({
-        email: userEmail,
-        password: userPassword,
-        options: {
-          data: { first_name: 'Smoke', last_name: 'User' },
-        },
-      });
-      if (error) throw new Error(error.message);
-      if (data.session?.access_token) {
-        userAccessToken = data.session.access_token;
-      }
-      return userEmail;
+    let signUpCompleted = false;
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: userEmail,
+      password: userPassword,
+      options: {
+        data: { first_name: 'Smoke', last_name: 'User' },
+      },
     });
 
-    if (userAccessToken) {
-      pushResult('auth sign-in', 'passed', 'session returned on sign-up (no email confirmation delay)');
+    if (signUpError) {
+      const msg = signUpError.message || 'sign-up failed';
+      if (/confirmation email|sending.*email|smtp|mail delivery/i.test(msg)) {
+        pushResult('auth sign-up', 'skipped', msg);
+        pushResult(
+          'auth sign-in',
+          'skipped',
+          'Configure Supabase Auth SMTP or use SMOKE_USER_EMAIL + SMOKE_USER_PASSWORD (confirmed user).',
+        );
+      } else {
+        pushResult('auth sign-up', 'failed', msg);
+        pushResult('auth sign-in', 'skipped', 'sign-up failed — skipping sign-in');
+      }
     } else {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: userEmail,
-          password: userPassword,
-        });
-        if (error) throw new Error(error.message);
-        userAccessToken = data.session?.access_token || '';
-        if (!userAccessToken) throw new Error('No access token returned from sign-in');
-        pushResult('auth sign-in', 'passed', 'session issued');
-      } catch (e) {
-        const msg = e?.message || 'failed';
-        if (/confirm|verified|not confirmed/i.test(msg)) {
-          pushResult(
-            'auth sign-in',
-            'skipped',
-            'Supabase requires email confirmation for new users. Set SMOKE_USER_EMAIL + SMOKE_USER_PASSWORD to a confirmed account, or disable email confirmations on a staging project.',
-          );
-        } else {
-          pushResult('auth sign-in', 'failed', msg);
+      signUpCompleted = true;
+      if (signUpData.session?.access_token) {
+        userAccessToken = signUpData.session.access_token;
+      }
+      pushResult('auth sign-up', 'passed', userEmail);
+    }
+
+    if (signUpCompleted) {
+      if (userAccessToken) {
+        pushResult('auth sign-in', 'passed', 'session returned on sign-up (no email confirmation delay)');
+      } else {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: userEmail,
+            password: userPassword,
+          });
+          if (error) throw new Error(error.message);
+          userAccessToken = data.session?.access_token || '';
+          if (!userAccessToken) throw new Error('No access token returned from sign-in');
+          pushResult('auth sign-in', 'passed', 'session issued');
+        } catch (e) {
+          const msg = e?.message || 'failed';
+          if (/confirm|verified|not confirmed/i.test(msg)) {
+            pushResult(
+              'auth sign-in',
+              'skipped',
+              'Supabase requires email confirmation for new users. Set SMOKE_USER_EMAIL + SMOKE_USER_PASSWORD to a confirmed account, or disable email confirmations on a staging project.',
+            );
+          } else {
+            pushResult('auth sign-in', 'failed', msg);
+          }
         }
       }
     }

@@ -71,6 +71,8 @@
             "preview": "vite preview",
             "test": "vitest run",
             "smoke": "node scripts/smoke/smoke.mjs",
+            "smoke:live": "node scripts/smoke/run-with-dotenv.mjs",
+            "smoke:live:checkout": "SMOKE_CHECKOUT_PRODUCT_ID=4 node scripts/smoke/run-with-dotenv.mjs",
             "functions:deploy": "supabase functions deploy resend-email-hook",
             "functions:serve": "supabase functions serve resend-email-hook --no-verify-jwt"
       }
