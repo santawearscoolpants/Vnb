@@ -114,6 +114,7 @@ export function parseRouteFromLocation(pathname: string, search: string): Parsed
     '/invest': 'invest',
     '/account': 'account',
     '/create-account': 'create-account',
+    '/check-email': 'check-email',
     '/cart': 'cart',
     '/account/dashboard': 'account-dashboard',
     '/account-dashboard': 'account-dashboard',
@@ -162,6 +163,9 @@ export function buildUrlFromRoute(
       break;
     case 'create-account':
       pathname = '/create-account';
+      break;
+    case 'check-email':
+      pathname = '/check-email';
       break;
     case 'cart':
       pathname = '/cart';

@@ -14,6 +14,7 @@ import { CategoryPage } from './pages/CategoryPage';
 import { InvestPage } from './pages/InvestPage';
 import { AccountPage } from './pages/AccountPage';
 import { CreateAccountPage } from './pages/CreateAccountPage';
+import { CheckEmailPage } from './pages/CheckEmailPage';
 import { CartPage } from './pages/CartPage';
 import { AccountDashboardPage } from './pages/AccountDashboardPage';
 import { CheckoutPage } from './pages/CheckoutPage';
@@ -54,6 +55,8 @@ function AppContent() {
         return <AccountPage />;
       case 'create-account':
         return <CreateAccountPage />;
+      case 'check-email':
+        return <CheckEmailPage />;
       case 'cart':
         return <CartPage />;
       case 'account-dashboard':

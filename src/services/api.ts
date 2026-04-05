@@ -636,6 +636,19 @@ class ApiService {
     return authData;
   }
 
+  async resendSignupConfirmation(email: string) {
+    const client = requireSupabase();
+    const { error } = await client.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+    if (error) throw error;
+    return { message: 'Confirmation email sent.' };
+  }
+
   async login(email: string, password: string) {
     const client = requireSupabase();
     const { data, error } = await client.auth.signInWithPassword({ email, password });

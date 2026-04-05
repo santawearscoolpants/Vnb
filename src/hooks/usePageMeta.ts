@@ -97,6 +97,10 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: 'Create Account',
     description: 'Create your Vines & Branches account to start shopping.',
   },
+  'check-email': {
+    title: 'Check Your Email',
+    description: 'Confirm your email address to finish setting up your Vines & Branches account.',
+  },
   'account-dashboard': {
     title: 'My Account',
     description: 'Manage your orders, addresses, and profile settings.',
