@@ -6,14 +6,16 @@
 #
 # dangerous-clean-slate: false — only add/update files; does not delete remote paths (e.g. admin/).
 #
-# Secrets (Settings → Secrets and variables → Actions):
-#   STOREFRONT_HOSTINGER_FTP_USERNAME
+# Secrets (repo → Settings → Secrets and variables → Actions):
+#   STOREFRONT_HOSTINGER_FTP_USERNAME   — main-site FTP user (home = public_html / www root)
 #   STOREFRONT_HOSTINGER_FTP_PASSWORD
-#   VITE_API_URL
-#   VITE_MEDIA_URL
+#   VITE_API_URL                        — e.g. https://api.vnbway.com
+#   VITE_MEDIA_URL                      — e.g. https://media.vnbway.com
 #   VITE_SUPABASE_URL
 #   VITE_SUPABASE_ANON_KEY
-# Optional secret: VITE_GA_MEASUREMENT_ID
+# Optional: VITE_GA_MEASUREMENT_ID
+# If you only have one Hostinger FTP account, you can paste the same username/password as the admin
+# workflow uses, but only if that login’s root is the storefront root (not admin-only chroot).
 #
 # Variables (optional):
 #   STOREFRONT_HOSTINGER_FTP_SERVER — else ADMIN_HOSTINGER_FTP_SERVER — else ftp.vnbway.com
@@ -56,6 +58,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check required secrets
+        env:
+          SFTP_USER: ${{ secrets.STOREFRONT_HOSTINGER_FTP_USERNAME }}
+          SFTP_PASS: ${{ secrets.STOREFRONT_HOSTINGER_FTP_PASSWORD }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_MEDIA_URL: ${{ secrets.VITE_MEDIA_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          ok=1
+          [ -n "$SFTP_USER" ] || { echo "::error::Missing secret STOREFRONT_HOSTINGER_FTP_USERNAME"; ok=0; }
+          [ -n "$SFTP_PASS" ] || { echo "::error::Missing secret STOREFRONT_HOSTINGER_FTP_PASSWORD"; ok=0; }
+          [ -n "$VITE_API_URL" ] || { echo "::error::Missing secret VITE_API_URL"; ok=0; }
+          [ -n "$VITE_MEDIA_URL" ] || { echo "::error::Missing secret VITE_MEDIA_URL"; ok=0; }
+          [ -n "$VITE_SUPABASE_URL" ] || { echo "::error::Missing secret VITE_SUPABASE_URL"; ok=0; }
+          [ -n "$VITE_SUPABASE_ANON_KEY" ] || { echo "::error::Missing secret VITE_SUPABASE_ANON_KEY"; ok=0; }
+          [ "$ok" = 1 ] || exit 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
