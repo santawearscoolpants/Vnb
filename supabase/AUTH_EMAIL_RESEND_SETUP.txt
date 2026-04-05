@@ -1,0 +1,42 @@
+Supabase Auth emails (signup confirmation, password reset, magic link) via Resend
+================================================================================
+
+Supabase’s own mail is optional. Point Auth at Resend’s SMTP so all auth emails
+go out through your verified domain (same provider you use for Edge Functions /
+Worker if you like).
+
+1) Resend
+   - Verify your domain (DNS: SPF/DKIM as Resend shows).
+   - Create an API key (re_...).
+
+2) Supabase Dashboard → Project Settings → Authentication
+   - Open the SMTP / “Custom SMTP” (or “Send emails”) section.
+   - Enable custom SMTP and enter (from https://resend.com/docs/send-with-smtp):
+
+       Host:     smtp.resend.com
+       Port:     465 (SSL) or 587 (STARTTLS) — match what the form asks for
+       Username: resend
+       Password: YOUR_RESEND_API_KEY   (the re_... key)
+
+   - Set “Sender email” to an address on your verified domain, e.g.
+       orders@vnbway.com  or  noreply@vnbway.com
+   - Set “Sender name” e.g. Vines & Branches
+
+3) Save. Trigger a test: sign up a new user or use “Forgot password” and
+   confirm mail appears in Resend → Emails and the inbox.
+
+4) Email templates
+   - Same section: Authentication → Email Templates — edit subjects/bodies if needed.
+
+This does not replace your Edge Function `resend-email-hook` (database webhooks);
+it only changes how Supabase Auth sends its own system emails.
+
+Optional: remove a stuck / unconfirmed user
+--------------------------------------------
+Prefer: Authentication → Users → select user → Delete.
+
+If you use SQL Editor and your project allows it (watch for FKs to public.*):
+
+  delete from auth.users where email = 'vnbwayltd@gmail.com';
+
+See also: supabase/08_remove_test_auth_user.sql
