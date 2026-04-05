@@ -4,7 +4,8 @@
 #   CLOUDFLARE_API_TOKEN — create at https://dash.cloudflare.com/profile/api-tokens (User profile),
 #   NOT "Account API tokens" under Manage account. Wrangler calls /memberships and fails (e.g. 9106)
 #   with the wrong token type. Use "Edit Cloudflare Workers" template + add Workers R2 Storage:Edit.
-#   Optional: CLOUDFLARE_ACCOUNT_ID — 32-char hex from Workers overview URL (helps some token setups).
+#   If deploy still fails with /memberships or code 10000, add token permission: User → User Details → Read.
+#   Optional: CLOUDFLARE_ACCOUNT_ID — same as account_id in wrangler.toml (redundant if toml is set).
 name: Deploy Cloudflare Worker (vnbway-api)
 
 on:

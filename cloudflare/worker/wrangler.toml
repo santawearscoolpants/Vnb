@@ -1,6 +1,7 @@
 name = "vnbway-api"
 main = "src/index.ts"
 compatibility_date = "2026-04-03"
+account_id = "4adbc8d64b6d37c224a4b3f628c21b53"
 
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
